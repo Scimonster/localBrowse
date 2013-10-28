@@ -3,12 +3,15 @@
  * Module dependencies.
  */
 
-var express = require('express');
-var routes = require('./routes');
-var http = require('http');
-var path = require('path');
+var express = require('express'),
+	routes = require('./routes'),
+	info = require('./info'),
+	http = require('http'),
+	path = require('path'),
+	params = require('express-params'),
+	app = express();
 
-var app = express();
+params.extend(app);
 
 // all environments
 app.set('port', process.env.PORT || 8000);
@@ -26,7 +29,13 @@ if ('development' == app.get('env')) {
 	app.use(express.errorHandler());
 }
 
+// end user's page
 app.get('/', routes.index);
+
+// info for parsing
+app.get('/info/:action/*', info.master);
+
+// pages to render
 
 http.createServer(app).listen(app.get('port'), function(){
 	console.log('Express server listening on port ' + app.get('port'));
