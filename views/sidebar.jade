@@ -1,0 +1,57 @@
+extends index
+
+block sidebar
+	#locations-container
+		nav#locations
+			h3
+				span.ui-icon.ui-icon-folder-open
+				| Tree
+			#sidebar-tree
+				ul
+			h3
+				span.ui-icon.ui-icon-flag
+				| Places
+			div
+				ul
+					li
+						a(href='#~/', style='font-weight: bold;')
+							span.ui-icon.ui-icon-home
+							| Home
+					li
+						a(href='#~/Documents/')
+							span.ui-icon.ui-icon-document
+							| Documents
+					li
+						a(href='#~/Downloads/')
+							span.ui-icon.ui-icon-arrowthick-1-s
+							| Downloads
+					li
+						a(href='#~/Music/')
+							span(style='display: inline-block;') ♫
+							| Music
+					li
+						a(href='#~/Pictures/')
+							span.ui-icon.ui-icon-image
+							| Pictures
+					li
+						a(href='#~/Videos/')
+							span.ui-icon.ui-icon-video
+							| Videos
+					li
+						a(href='#/')
+							span.ui-icon.ui-icon-disk
+							| Root
+					li
+						a(href='#~/.local/share/recently-used.xbel')
+							span.ui-icon.ui-icon-clock
+							| Recent
+					li
+						a(href='#trash')
+							span.ui-icon.ui-icon-trash
+							| Trash
+			h3
+				span.ui-icon.ui-icon-tag
+				| Bookmarks
+			div
+				button#new-bookmark bookmark here
+				ul#sidebar-bookmarks
