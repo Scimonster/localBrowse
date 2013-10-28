@@ -1,11 +1,19 @@
 // info functions
 
-var fs = require('fs')//, process = require('process');
+var fs = require('fs');
 
-exports.master = function(req, res){
-	req.file = req.path.substr(req.path.indexOf('/',6));
-	//res.send('you want to check "'+req.params.action+'" of '+req.path.substr(req.path.indexOf('/',6)))
-	exports[req.params.action](req, res);
+exports.master = {
+	get: function(req, res){
+		req.file = req.path.substr(req.path.indexOf('/',6));
+		exports.master.all(req,res);
+	},
+	post: function(req, res){
+		req.file = req.body.file;
+		exports.master.all(req,res);
+	},
+	all: function(req, res) {
+		exports[req.params.action](req, res);
+	}
 };
 
 exports.exists = function(req, res){

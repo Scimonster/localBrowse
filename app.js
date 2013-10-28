@@ -1,4 +1,3 @@
-
 /**
  * Module dependencies.
  */
@@ -33,8 +32,8 @@ if ('development' == app.get('env')) {
 app.get('/', routes.index);
 
 // info for parsing
-app.get('/info/:action/*', info.master);
-//app.get('/info/exists/*', info.exists);
+app.get('/info/:action/*', info.master.get);
+app.post('/info/:action', info.master.post);
 
 // pages to render
 
