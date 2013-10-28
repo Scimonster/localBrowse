@@ -34,6 +34,7 @@ app.get('/', routes.index);
 
 // info for parsing
 app.get('/info/:action/*', info.master);
+app.get('/info/exists/*', info.exists);
 
 // pages to render
 
