@@ -49,7 +49,10 @@ html
 							each obj in sidebar
 								li
 									a(href='#'+obj.url, style='font-weight: bold;')
-										span.ui-icon(class='ui-icon-'+obj.icon)
+										if obj.icon
+											span.ui-icon(class='ui-icon-'+obj.icon)
+										else
+											!= obj.span
 										= obj.name
 					h3
 						span.ui-icon.ui-icon-tag

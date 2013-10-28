@@ -5,11 +5,11 @@
 
 exports.index = function(req, res){
 	res.render('index', {
-		sidebar: [
+		sidebar: [ // for convenience
 			{name:'Home',icon:'home',url:'~/'},
 			{name:'Documents',icon:'document',url:'~/Document/'},
 			{name:'Downloads',icon:'arrowthick-1-s',url:'~/Downloads/'},
-			{name:'Music',icon:null,url:'~/Music/',span:"span(style='display: inline-block;') ♫"},
+			{name:'Music',icon:null,url:'~/Music/',span:'<span style="display: inline-block;">♫</span>'},
 			{name:'Pictures',icon:'image',url:'~/Pictures/'},
 			{name:'Videos',icon:'video',url:'~/Videos/'},
 			{name:'Root',icon:'disk',url:'/'},
@@ -20,4 +20,3 @@ exports.index = function(req, res){
 		homeroot: process.env.HOME,
 	});
 };
-console.log(process.env)
