@@ -126,7 +126,7 @@ exports.info = function(req, res) {
 
 exports['info.date'] = function(req, res) {
 	fs.stat(req.file,function(e,s){
-		res.send(e?0:s.mtime.getTime()/1000);
+		res.send((e?0:s.mtime.getTime()/1000).toString(10));
 	});
 };
 
