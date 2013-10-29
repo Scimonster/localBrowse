@@ -123,3 +123,15 @@ exports.info = function(req, res) {
 		content
 	);
 };
+
+exports['info.date'] = function(req, res) {
+	fs.stat(req.file,function(e,s){
+		res.send(e?0:s.mtime.getTime()/1000);
+	});
+};
+
+exports.isDir = function(req, res) {
+	fs.stat(req.file,function(e,s){
+		res.send(e?false:s.isDirectory());
+	});
+};
