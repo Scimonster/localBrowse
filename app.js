@@ -33,6 +33,7 @@ app.get('/', routes.index);
 
 // info for parsing
 app.get('/info/:action/*', info.master.get);
+app.get('/info/localbrowseCWD', info.localbrowseCWD);
 app.post('/info/:action', info.master.post);
 
 // pages to render

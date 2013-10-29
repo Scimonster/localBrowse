@@ -230,3 +230,7 @@ exports.dirSize = function(req, res) {
 	var depth = (req.body && req.body.depth) || 3;
 	dirSize(req.file,depth===0?Infinity:depth,function(s){res.send(s.toString())})
 };
+
+exports.localbrowseCWD = function(req, res){
+	res.send(process.env.PWD);
+};
