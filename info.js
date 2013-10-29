@@ -1,6 +1,9 @@
 // info functions
 
-var fs = require('fs-extra'), mmm = require('mmmagic'), mimeLazy = require('mime');
+var fs = require('fs-extra'),
+	mmm = require('mmmagic'),
+	mimeLazy = require('mime'),
+	fileOps = require('./public/js/fileOps.js');
 
 exports.master = {
 	get: function(req, res){
@@ -22,11 +25,23 @@ exports.exists = function(req, res){
 	});
 };
 
-function canReadWrite(file, read, cb){ // based on https://groups.google.com/d/msg/nodejs/qmZtIwDRSYo/N7xOioUnwjsJ
-	fs.stat(file, function (err, stat) {
-		if (err) {cb(false)}
-		cb(!!((stat.mode & (read?00004:00002)) || (stat.mode & (read?00400:00200)) && process.uid === stat.uid || (stat.mode & (read?00040:00020)) && process.gid === stat.gid));
-	});
+function canReadWrite(file, read, cb, s){
+	if (s) {
+		run(s);
+	} else {
+		fs.stat(file, function (err, stat) {
+			if (err) {cb(false)}
+			run(stat);
+		});
+	}
+	function run(stat) {
+		var mode = stat.mode.toString(8).split('').map(function(m){return parseInt(m).toString(2)});
+		if (read) {
+			cb(!!((mode[4]&100) || ((mode[2]&100) && process.getuid() === stat.uid) || ((mode[3]&100) && process.getgid() === stat.gid)));
+		} else {
+			cb(!!((mode[4]&010) || ((mode[2]&010) && process.getuid() === stat.uid) || ((mode[3]&010) && process.getgid() === stat.gid)));
+		}
+	}
 }
 
 exports.writable = function(req, res) {
@@ -41,7 +56,7 @@ exports.readable = function(req, res) {
 	});
 };
 
-function info(file,cb,content){
+function info(file,cb,content,stat){
 	var i = {name: file};
 	fs.exists(file,function(e){
 		i.exists = e;
@@ -49,15 +64,27 @@ function info(file,cb,content){
 			cb(i);
 			return;
 		}
-		canReadWrite(file,false,function(w){
-			i.writable = w;
-			finished();
-		});
-		canReadWrite(file,true,function(r){
-			i.readable = r;
-			fs.stat(file,function(e,s){
-				i.date = s.mtime.getTime()/1000;
-				i.perm = parseInt(parseInt(s.mode.toString(8),10).toString(10).substr(2),8);
+		fs.stat(file,function(e,s){
+			if (stat) {
+				i.stat = s;
+			}
+			canReadWrite(file,false,function(w){
+				i.writable = w;
+				finished();
+			},s);
+			canReadWrite(file,true,function(r){
+				i.readable = r;
+				fs.lstat(file,function(e,ls){
+					i.isLink = ls.isSymbolicLink();
+					if (i.isLink) {
+						fs.readlink(file,function(e,l){
+							i.link = l;
+							finished();
+						});
+					} else {
+						finished();
+					}
+				});
 				i.type = s.isDirectory()?'directory':'';
 				if (!i.type) { // is file
 					if (r && content) {
@@ -85,18 +112,10 @@ function info(file,cb,content){
 					i.size = null;
 				}
 				finished();
-			});
-			fs.lstat(file,function(e,s){
-				i.isLink = s.isSymbolicLink();
-				if (i.isLink) {
-					fs.readlink(file,function(e,l){
-						i.link = l;
-						finished();
-					});
-				} else {
-					finished();
-				}
-			});
+			},s);
+			i.date = s.mtime.getTime()/1000;
+			i.perm = parseInt(s.mode.toString(8),10).toString(10).substr(2);
+			finished();
 		});
 	});
 	function finished(){
@@ -109,18 +128,20 @@ function info(file,cb,content){
 			typeof i.perm !== 'undefined' &&
 			typeof i.type !== 'undefined' && i.type !== '' &&
 			typeof i.isLink !== 'undefined' && (!i.isLink || typeof i.link !== 'undefined') &&
-			(content?typeof i.cont !== 'undefined':true)) {
+			(content?typeof i.cont !== 'undefined':true) &&
+			(stat?typeof i.stat !== 'undefined':true)) {
 			cb(i);
 		}
 	}
 }
 
 exports.info = function(req, res) {
-	var content = req.body && req.body.content;
+	var content = req.body && req.body.content, stat = req.body && req.body.stat;
 	info(
 		req.file,
 		function(i){res.send(i)},
-		content
+		content,
+		stat
 	);
 };
 
@@ -133,5 +154,28 @@ exports['info.date'] = function(req, res) {
 exports.isDir = function(req, res) {
 	fs.stat(req.file,function(e,s){
 		res.send(e?false:s.isDirectory());
+	});
+};
+
+exports.dir = function(req, res) {
+	var content = req.body && req.body.content, simple = req.body && req.body.simple, files = [];
+	fs.readdir(req.file,function(e,d){
+		if (e) {
+			res.send({error: e.code==='EACCES'?'perms':'exist'});
+		} else if (simple) {
+			res.send(d);
+		} else {
+			d.forEach(function(f){
+				info(fileOps.addSlashIfNeeded(req.file)+f,function(i){
+					files.push(i);
+					finished();
+				},content);
+			});
+		}
+		function finished(){
+			if (files.length===d.length) {
+				res.send(files);
+			}
+		}
 	});
 };
