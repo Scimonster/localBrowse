@@ -179,3 +179,54 @@ exports.dir = function(req, res) {
 		}
 	});
 };
+
+function fullDirSize(dir,cb) {
+	var size = require('child_process').spawn('du', ['-sb','--apparent-size', dir]);
+	size.stdout.on('data', function (data) {
+		cb(parseInt(data).toString());
+	});
+}
+
+function dirSize(dir, depth, cb) { // http://procbits.com/2011/10/29/a-node-js-experiment-thinking-asynchronously-recursion-calculate-file-size-directory
+	var async_running = 0, file_counter = 1, total = 0;
+	function again(current_dir, depth) {
+		return fs.lstat(current_dir, function(err, stat) {
+			if (err) {
+				file_counter--;
+				return;
+			}
+			if (stat.isFile()) {
+				file_counter--;
+				total += stat.size;
+			} else if (stat.isDirectory() && depth) {
+				file_counter--;
+				async_running++;
+				fs.readdir(current_dir, function(err, files) {
+					var file, _i, _len, _results;
+					async_running--;
+					if (err) {
+						return;
+					}
+					file_counter += files.length;
+					_results = [];
+					for (_i = 0, _len = files.length; _i < _len; _i++) {
+						file = files[_i];
+						_results.push(again(fileOps.addSlashIfNeeded(current_dir)+file,depth-1));
+					}
+					return _results;
+				});
+			} else {
+				file_counter--;
+			}
+			if (file_counter === 0 && async_running === 0) {
+				cb(total);
+			}
+		});
+	};
+	again(dir,depth);
+};
+
+exports.dirSize = function(req, res) {
+	var depth = (req.body && req.body.depth) || 3;
+	dirSize(req.file,depth===0?Infinity:depth,function(s){res.send(s.toString())})
+};
