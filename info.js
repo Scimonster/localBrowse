@@ -41,7 +41,7 @@ exports.readable = function(req, res) {
 	});
 };
 
-function info(file,cb){
+function info(file,cb,content){
 	var i = {name: file};
 	fs.exists(file,function(e){
 		i.exists = e;
@@ -60,6 +60,12 @@ function info(file,cb){
 				i.perm = parseInt(parseInt(s.mode.toString(8),10).toString(10).substr(2),8);
 				i.type = s.isDirectory()?'directory':'';
 				if (!i.type) { // is file
+					if (r && content) {
+						fs.readFile(file,'utf8',function(f_e,f){
+							i.cont = e?null:f;
+							finished();
+						});
+					}
 					var magic = new mmm.Magic(mmm.MAGIC_MIME_TYPE);
 					magic.detectFile(file,function(m_e,m_type){
 						if (m_e) { // Magic error, use lazy checking
@@ -102,12 +108,18 @@ function info(file,cb){
 			typeof i.date !== 'undefined' &&
 			typeof i.perm !== 'undefined' &&
 			typeof i.type !== 'undefined' && i.type !== '' &&
-			typeof i.isLink !== 'undefined' && (!i.isLink || typeof i.link !== 'undefined')) {
+			typeof i.isLink !== 'undefined' && (!i.isLink || typeof i.link !== 'undefined') &&
+			(content?typeof i.cont !== 'undefined':true)) {
 			cb(i);
 		}
 	}
 }
 
-exports.info = function(req, res, content) {
-	info(req.file,function(i){res.send(i)});
+exports.info = function(req, res) {
+	var content = req.body && req.body.content;
+	info(
+		req.file,
+		function(i){res.send(i)},
+		content
+	);
 };
