@@ -70,11 +70,13 @@ function info(file,cb){
 						finished();
 					});
 					i.size = s.size;
-				} else {
+				} else if (r) {
 					fs.readdir(file,function(d_e,d){
 						i.size = d.length;
 						finished();
 					});
+				} else {
+					i.size = null;
 				}
 				finished();
 			});
