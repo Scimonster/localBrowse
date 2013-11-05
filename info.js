@@ -167,6 +167,7 @@ exports.dir = function(req, res) {
 		} else {
 			d.forEach(function(f){
 				info(fileOps.addSlashIfNeeded(req.file)+f,function(i){
+					i.name = fileOps.getFileName(i.name);
 					files.push(i);
 					finished();
 				},content);
