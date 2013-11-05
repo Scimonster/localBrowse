@@ -14,7 +14,7 @@ var w = window, d= document, // this stuff is global just for the dev period
 	},
 	file, type, bookmarks, iconset = [],
 	homeroot = '/home/'+user;
-$.get('functions.php?action=localbrowseCWD',function(cwd){getDirContents(cwd+'/img/fatcow/16x16',function(i){iconset = i().select('name')})});
+$.get('/info/localbrowseCWD',function(cwd){getDirContents(cwd+'/img/fatcow/16x16',function(i){iconset = i().select('name')})});
 
 function load() {
 	// This function runs when a new file/dir is loaded, and at startup.
@@ -33,7 +33,7 @@ function load() {
 	if (!type) { 
 		$.ajax({
 			dataType: "json",
-			url: 'functions.php?action=info&file='+file.replace(/^trash/,'~/.local/share/Trash/files').replace(/^~/,homeroot),
+			url: 'info/info/'+file.replace(/^trash/,'~/.local/share/Trash/files').replace(/^~/,homeroot),
 			async: false,
 			success: function(d){type = d.type}
 		});
@@ -100,7 +100,7 @@ function viewFile() {
 		trash=true;
 	}
 	// Check if the requested file exists
-	$.getJSON('functions.php?action=info&file='+file,function(f){
+	$.getJSON('info/info'+file,function(f){
 		$('#file').remove();
 		if (f.exists) {
 			if (f.type == 'directory') {
@@ -127,7 +127,7 @@ function viewFile() {
 				} else {
 					d.title = file + ' - editing [read-only] - localBrowse';
 				}
-				$.get('functions.php?action=writable&file='+getParentDir(file),function(d){
+				$.get('info/writable'+getParentDir(file),function(d){
 					if (parseInt(d)){
 						$('<button id="saveAs">save as</button>').appendTo('#toolbar-left');
 					}
@@ -136,7 +136,7 @@ function viewFile() {
 				$('#message').html('Editing with '+editor+' editor.'+(f.writable?'':' This file is read-only to localBrowse.')+(f.name.substr(-1)=='~'?' Warning: you are editing a backup file.':''));
 			} else {
 				// Load the browser's view of the file.
-				$('<iframe id="file">').attr('src','functions.php?action=echo&file='+file).appendTo('#file-container');
+				$('<iframe id="file">').attr('src','info/echo/'+file).appendTo('#file-container');
 			}
 			$('#file').data('modDate',f.date);
 		} else {
@@ -156,7 +156,7 @@ function listDir(files) {
 		return;
 	}
 	$('#message').html(files({type:'directory'}).count()+' directories; '+files({type:{'!is':'directory'}}).count()+' files. <span id="dirSize">Approximately <span id="directorySize">'+($('#directorySize').text()||'...')+'</span> (<span id="dirSizeDepth">'+($('#dirSizeDepth').text()||3)+'</span> levels deep). <a id="fullDirSize" href="'+location.hash+'">More accurate calculation.</a></span>');
-	$.getJSON('functions.php?action=dirSize&depth='+$('#dirSizeDepth').text()+'&file='+file,function(size){
+	$.post('info/dirSize','depth='+$('#dirSizeDepth').text()+'&file='+file,function(size){
 		$('#dirSize').html('Approximately <span id="directorySize">'+filesizeFormatted(size)+'</span> (<span id="dirSizeDepth">'+$('#dirSizeDepth').text()+'</span> levels deep). <a id="fullDirSize" href="'+location.hash+'">More accurate calculation.</a>');
 	});
 	$('#toolbar-left').children().remove();
@@ -286,15 +286,15 @@ function paste(files,destination) {
 	files = files || sessionStorage.getItem('copy').split('\n');
 	destination = destination || file;
 	$.each(files, function(i, srcFile) {
-		$.get('functions.php?action=info&file='+srcFile,function(src){
+		$.get('info/info/'+srcFile,function(src){
 			if (src.readable) {
-				$.get('functions.php?action=info&file='+addSlashIfNeeded(destination)+getFileName(srcFile),function(dest){
+				$.get('info/info/'+addSlashIfNeeded(destination)+getFileName(srcFile),function(dest){
 					// we now have info on the source and destination files
 					console.log(src)
 					console.log(dest)
 					if (dest.exists) { // we'll need to overwrite/merge
 						if (dest.type=='directory' && src.type=='directory') { // merge
-							$.getJSON('functions.php?action=dir&simple&file='+getParentDir(dest.name),function(otherfiles){
+							$.post('info/dir','simple&file='+getParentDir(dest.name),function(otherfiles){
 								console.log(otherfiles)
 								var d = jqUI.prompt({
 									title:'Merge folder "'+getFileName(srcFile)+'"?',
@@ -304,7 +304,7 @@ function paste(files,destination) {
 								},getFileName(srcFile),function(newname){
 									if (newname) {
 										if (otherfiles.indexOf(newname)>-1) { // merge
-											$.get('functions.php?action=dir&simple&file='+srcFile,function(children){
+											$.post('info/dir','simple&file='+srcFile,function(children){
 											run(src.name,getParentDir(dest.name)+newname,true);
 												paste(children.map(function(item){return addSlashIfNeeded(srcFile)+item}),getParentDir(dest.name)+newname);
 											});
@@ -322,7 +322,7 @@ function paste(files,destination) {
 							});
 						}
 						else { // overwrite files
-							$.get('functions.php?action=dir&simple&file='+getParentDir(dest.name),function(otherfiles){
+							$.post('info/dir','simple&file='+getParentDir(dest.name),function(otherfiles){
 								var d = jqUI.prompt({
 									title:'Overwrite file "'+getFileName(srcFile)+'"?',
 									text:'<div>A '+(src.date<dest.date?'newer':'older')+' file with the same name already exists in "'+getFileName(getParentDir(dest.name))+'".<br/>Do you want to replace this file?</div><div class="fileOverwriteDialog-fileInfo"><img src="'+imageForFile(src,true)+'"/><p><b>Replacement file</b><br/>Size: '+filesizeFormatted(src.size)+'<br/>Last modified: '+s.dateFormat(src.date)+'</p></div><div class="fileOverwriteDialog-fileInfo"><img src="'+imageForFile(dest,true)+'"/><p><b>Existing file</b><br/>Size: '+filesizeFormatted(dest.size)+'<br/>Last modified: '+s.dateFormat(dest.date)+'</p></div><p>You can type in a new name for the file. If it exists, the new file will replace the old one.</p><p class="fileOverwriteDialog-exists">A file with the current name exists in the destination folder.</p>',
@@ -341,7 +341,7 @@ function paste(files,destination) {
 						}
 					} else {
 						if (src.type=='directory') {
-							$.get('functions.php?action=dir&simple&file='+srcFile,function(children){
+							$.post('info/dir','simple&file='+srcFile,function(children){
 								run(src.name,dest.name,true);
 								paste(children.map(function(item){return addSlashIfNeeded(srcFile)+item}),dest.name);
 							});
@@ -411,7 +411,7 @@ function getDirContents(dir,cont, callback) {
 		callback = cont;
 		cont = false;
 	}
-	$.getJSON('functions.php?action=dir'+(cont?'&content':'')+'&file='+dir.replace(/^trash/,'~/.local/share/Trash/files').replace(/^~/,homeroot),function(r){
+	$.post('info/dir',(cont?'content=true':'')+'&file='+dir.replace(/^trash/,'~/.local/share/Trash/files').replace(/^~/,homeroot),function(r){
 		if (r.error) {callback(r.error)}
 		else {callback(TAFFY(r))}
 	});
@@ -836,7 +836,7 @@ $(d).on('contextmenu','#file.dirlist',function(e){
 	$('#contextMenu').remove();
 	function open(d,id){return '<li'+(d?' class="ui-state-disabled"':'')+' id="contextMenu-folder-'+id+'"><a>'}
 	var close = '</a></li>', line = '<li></li>';
-	$.get('functions.php?action=writable&file='+file,function(r){
+	$.get('info/writable/'+file,function(r){
 		//console.log(!!r);
 		$('<ul id="contextMenu">').append(
 			open(!r,'newFolder')+'New folder'+close,
@@ -863,7 +863,7 @@ setInterval(function(){
 			$('.file').filter(function(){return $(this).find('.file-name').text()==selLast}).addClass('last');
 		})
 	} else if ($('textarea#file').length) {
-		$.getJSON('functions.php?action=info.date&file='+file,function(d){
+		$.getJSON('info/info.date/'+file,function(d){
 			if (d!=$('#file').data('modDate')) {
 				jqUI.confirm({title:'Changed on disk',text:'The file has been changed on disk. Do you want to reload it?',buttonLabel:['Reload','Cancel']},function(reload){
 					if (reload) {load()}
