@@ -857,15 +857,21 @@ setInterval(function(){
 				selList.push($(this).find('.file-name').text());
 			});
 			var selLast = $('.sel.last .file-name').text();
+			var scroll = {top:$('#file').scrollTop(),left:$('#file').scrollLeft()};
 			listDir(f);
 			$('.file').filter(function(){return selList.indexOf($(this).find('.file-name').text())>-1}).addClass('sel');
 			$('.file').filter(function(){return $(this).find('.file-name').text()==selLast}).addClass('last');
+			$('#file').scrollTop(scroll.top).scrollLeft(scroll.left);
 		})
 	} else if ($('textarea#file').length) {
 		$.getJSON('info/info.date'+file,function(d){
 			if (d!=$('#file').data('modDate')) {
 				jqUI.confirm({title:'Changed on disk',text:'The file has been changed on disk. Do you want to reload it?',buttonLabel:['Reload','Cancel']},function(reload){
-					if (reload) {load()}
+					if (reload) {
+						var scroll = {top:$('#file').scrollTop(),left:$('#file').scrollLeft()};
+						load();
+						$('#file').scrollTop(scroll.top).scrollLeft(scroll.left);
+					}
 					else {$('#file').data('modDate',d)}
 				});
 			}
