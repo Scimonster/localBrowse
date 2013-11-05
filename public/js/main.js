@@ -100,7 +100,7 @@ function viewFile() {
 		trash=true;
 	}
 	// Check if the requested file exists
-	$.getJSON('info/info'+file,function(f){
+	$.post('info/info','content=true&file='+file,function(f){
 		$('#file').remove();
 		if (f.exists) {
 			if (f.type == 'directory') {
@@ -862,7 +862,7 @@ setInterval(function(){
 			$('.file').filter(function(){return $(this).find('.file-name').text()==selLast}).addClass('last');
 		})
 	} else if ($('textarea#file').length) {
-		$.getJSON('info/info.date/'+file,function(d){
+		$.getJSON('info/info.date'+file,function(d){
 			if (d!=$('#file').data('modDate')) {
 				jqUI.confirm({title:'Changed on disk',text:'The file has been changed on disk. Do you want to reload it?',buttonLabel:['Reload','Cancel']},function(reload){
 					if (reload) {load()}
