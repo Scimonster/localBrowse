@@ -156,9 +156,11 @@ function listDir(files) {
 		return;
 	}
 	$('#message').html(files({type:'directory'}).count()+' directories; '+files({type:{'!is':'directory'}}).count()+' files. <span id="dirSize">Approximately <span id="directorySize">'+($('#directorySize').text()||'...')+'</span> (<span id="dirSizeDepth">'+($('#dirSizeDepth').text()||3)+'</span> levels deep). <a id="fullDirSize" href="'+location.hash+'">More accurate calculation.</a></span>');
-	$.post('info/dirSize','depth='+$('#dirSizeDepth').text()+'&file='+file,function(size){
-		$('#dirSize').html('Approximately <span id="directorySize">'+filesizeFormatted(size)+'</span> (<span id="dirSizeDepth">'+$('#dirSizeDepth').text()+'</span> levels deep). <a id="fullDirSize" href="'+location.hash+'">More accurate calculation.</a>');
-	});
+	if (file.substr(0,6)!='search') {
+		$.post('info/dirSize','depth='+$('#dirSizeDepth').text()+'&file='+file,function(size){
+			$('#dirSize').html('Approximately <span id="directorySize">'+filesizeFormatted(size)+'</span> (<span id="dirSizeDepth">'+$('#dirSizeDepth').text()+'</span> levels deep). <a id="fullDirSize" href="'+location.hash+'">More accurate calculation.</a>');
+		});
+	}
 	$('#toolbar-left').children().remove();
 	$('<span><input id="show_hide_hidden" type="checkbox" name="show_hide_hidden"'+(s.hidden?' checked="checked"':'')+' /><input id="show_hide_restricted" type="checkbox" name="show_hide_restricted"'+(s.restricted?' checked="checked"':'')+' /><label for="show_hide_hidden"><span>show</span> hidden files</label><label for="show_hide_restricted"><span>show</span> restricted files</label></span>').buttonset().appendTo('#toolbar-left');
 	$('<span><input id="dir_type_list" type="radio" name="dir_type" value="list"'+(s.dirTiles?'':' checked="checked"')+' /><input id="dir_type_tiles" type="radio" name="dir_type" value="tiles"'+(s.dirTiles?' checked="checked"':'')+' /><label for="dir_type_list">list</label><label for="dir_type_tiles">tiles</label></span>').buttonset().appendTo('#toolbar-left');
@@ -166,7 +168,7 @@ function listDir(files) {
 	function action(f){
 		var last;
 		if (s.dirTiles) {
-			last = $('<div class="file" data-path="'+addSlashIfNeeded(file)+f.name+'">').appendTo('#file');
+			last = $('<div class="file" data-path="'+addSlashIfNeeded(file.substr(0,6)!='search'?file:cwd)+f.name+'">').appendTo('#file');
 			last.append(
 				'<img class="file-img" src="'+imageForFile(f,true)+'" />',
 				'<span class="file-name">'+f.name+'</span>',
@@ -177,7 +179,7 @@ function listDir(files) {
 			if (f.name.substr(0,1)=='.'||f.name.substr(-1)=='~') {last.addClass('hidden')}
 			if (!isReadable(f)) {last.addClass('restricted')}
 		} else {
-			last = $('<tr class="file" data-path="'+addSlashIfNeeded(file)+f.name+'">').appendTo('#file tbody');
+			last = $('<tr class="file" data-path="'+addSlashIfNeeded(file.substr(0,6)!='search'?file:cwd)+f.name+'">').appendTo('#file tbody');
 			last.append(
 				'<td class="file-name"><img class="file-img" src="'+imageForFile(f,false)+'" /> '+f.name+'</td>',
 				'<td class="file-size">'+(f.type=='directory'?f.size+' items':(isReadable(f)?filesizeFormatted(f.size):f.size))+'</td>',
@@ -254,10 +256,9 @@ function search(term) {
 	
 	if (typeof cwd == "undefined") {cwd = homeroot}
 	$('<div id="ajax-loader"><img src="img/ajax-loader.gif">').appendTo('#content');
-	$.getJSON('functions.php?action=search&file='+encodeURIComponent(term)+'&cwd='+encodeURIComponent(cwd),function(results){
+	$.post('/search','term='+encodeURIComponent(term)+'&cwd='+encodeURIComponent(cwd),function(results){
 		listDir(TAFFY(results));
 		$('#ajax-loader').remove();
-		delete cwd;
 	});
 }
 
@@ -707,9 +708,7 @@ $(d).on('click','#file th',function() {
 	($('#file.trash').length?listTrash:listDir)($('#file').data('files'));
 });
 $(d).on('dblclick','#file .file',function() {
-	var newFile = $(this).find('.file-name').text().trim();
-	if (newFile.charAt(0)=="/") {location.hash = newFile}
-	else {location.hash = addSlashIfNeeded(location.hash) + newFile}
+	location.hash = $(this).data('path');
 });
 $(d).on('click','#file .file',function(e){
 	if ($(this).hasClass('sel')) {
@@ -851,7 +850,7 @@ $(d).on('click','#contextMenu-file-open',function(){
 });
 $(d).on('click','#contextMenu-folder-paste',function(){paste()}); // no event object
 setInterval(function(){
-	if ($('#file.dirlist').length) {
+	if ($('#file.dirlist').length && file.substr(0,6)!='search') {
 		getDirContents(file,function(f){
 			var selList = [];
 			$('.sel').each(function(){

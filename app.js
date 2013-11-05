@@ -5,6 +5,7 @@
 var express = require('express'),
 	routes = require('./routes'),
 	info = require('./info'),
+	search = require('./search'),
 	http = require('http'),
 	path = require('path'),
 	params = require('express-params'),
@@ -35,6 +36,7 @@ app.get('/', routes.index);
 app.get('/info/:action/*', info.master.get);
 app.get('/info/localbrowseCWD', info.localbrowseCWD);
 app.post('/info/:action', info.master.post);
+app.post('/search', search.search);
 
 // pages to render
 

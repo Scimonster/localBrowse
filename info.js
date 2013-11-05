@@ -157,6 +157,21 @@ exports.isDir = function(req, res) {
 	});
 };
 
+function fileListInfo(files,cb,content) {
+	var fileList = [];
+	files.forEach(function(f){
+		info(f,function(i){
+			fileList.push(i);
+			finished();
+		},content);
+	});
+	function finished(){
+		if (files.length===fileList.length) {
+			cb(fileList);
+		}
+	}
+}
+
 exports.dir = function(req, res) {
 	var content = req.body && req.body.content, simple = req.body && req.body.simple, files = [];
 	fs.readdir(req.file,function(e,d){
@@ -165,18 +180,12 @@ exports.dir = function(req, res) {
 		} else if (simple) {
 			res.send(d);
 		} else {
-			d.forEach(function(f){
-				info(fileOps.addSlashIfNeeded(req.file)+f,function(i){
+			fileListInfo(d.map(function(f){return fileOps.addSlashIfNeeded(req.file)+f}),function(files){
+				files.forEach(function(i){
 					i.name = fileOps.getFileName(i.name);
-					files.push(i);
-					finished();
-				},content);
-			});
-		}
-		function finished(){
-			if (files.length===d.length) {
+				});
 				res.send(files);
-			}
+			},content);
 		}
 	});
 };
@@ -188,7 +197,8 @@ function fullDirSize(dir,cb) {
 	});
 }
 
-function dirSize(dir, depth, cb) { // http://procbits.com/2011/10/29/a-node-js-experiment-thinking-asynchronously-recursion-calculate-file-size-directory
+// http://procbits.com/2011/10/29/a-node-js-experiment-thinking-asynchronously-recursion-calculate-file-size-directory
+function dirSize(dir, depth, cb) {
 	var async_running = 0, file_counter = 1, total = 0;
 	function again(current_dir, depth) {
 		return fs.lstat(current_dir, function(err, stat) {
@@ -234,4 +244,10 @@ exports.dirSize = function(req, res) {
 
 exports.localbrowseCWD = function(req, res){
 	res.send(process.env.PWD);
+};
+
+exports.funcs = {
+	info: info,
+	dirSize: dirSize,
+	fileListInfo: fileListInfo
 };
