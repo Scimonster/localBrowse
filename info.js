@@ -87,7 +87,7 @@ function info(file,cb,content,stat){
 				});
 				i.type = s.isDirectory()?'directory':'';
 				if (!i.type) { // is file
-					if (r && content) {
+					if (r && !s.isDirectory() && content) {
 						fs.readFile(file,'utf8',function(f_e,f){
 							i.cont = e?null:f;
 							finished();
@@ -128,7 +128,7 @@ function info(file,cb,content,stat){
 			typeof i.perm !== 'undefined' &&
 			typeof i.type !== 'undefined' && i.type !== '' &&
 			typeof i.isLink !== 'undefined' && (!i.isLink || typeof i.link !== 'undefined') &&
-			(content?typeof i.cont !== 'undefined':true) &&
+			(content && i.type!='directory'?typeof i.cont !== 'undefined':true) &&
 			(stat?typeof i.stat !== 'undefined':true)) {
 			cb(i);
 		}
@@ -149,6 +149,10 @@ exports['info.date'] = function(req, res) {
 	fs.stat(req.file,function(e,s){
 		res.send((e?0:s.mtime.getTime()/1000).toString(10));
 	});
+};
+
+exports.echo = function(req, res) {
+	res.sendfile(req.file);
 };
 
 exports.isDir = function(req, res) {
