@@ -14,7 +14,7 @@ var w = window, d= document, // this stuff is global just for the dev period
 	},
 	file, type, bookmarks, iconset = [],
 	homeroot = '/home/'+user;
-$.get('/info/localbrowseCWD',function(cwd){getDirContents(cwd+'/img/fatcow/16x16',function(i){iconset = i().select('name')})});
+$.get('/info/localbrowseCWD',function(cwd){getDirContents(cwd+'/public/img/fatcow/16x16',function(i){iconset = i().select('name')})});
 
 function load() {
 	// This function runs when a new file/dir is loaded, and at startup.
