@@ -177,7 +177,7 @@ function fileListInfo(files,cb,content) {
 }
 
 exports.dir = function(req, res) {
-	var content = req.body && req.body.content, simple = req.body && req.body.simple, files = [];
+	var content = req.body.cont=="true", simple = req.body.simple=="true", files = [];
 	fs.readdir(req.file,function(e,d){
 		if (e) {
 			res.send({error: e.code==='EACCES'?'perms':'exist'});
@@ -253,5 +253,6 @@ exports.localbrowseCWD = function(req, res){
 exports.funcs = {
 	info: info,
 	dirSize: dirSize,
-	fileListInfo: fileListInfo
+	fileListInfo: fileListInfo,
+	canReadWrite: canReadWrite
 };
