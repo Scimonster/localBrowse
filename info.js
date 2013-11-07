@@ -15,6 +15,7 @@ exports.master = {
 		exports.master.all(req,res);
 	},
 	all: function(req, res) {
+		req.file = decodeURIComponent(req.file);
 		exports[req.params.action](req, res);
 	}
 };

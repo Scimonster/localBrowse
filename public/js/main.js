@@ -14,7 +14,7 @@ var w = window, d= document, // this stuff is global just for the dev period
 	},
 	file, type, bookmarks, iconset = [],
 	homeroot = '/home/'+user;
-$.get('/info/localbrowseCWD',function(cwd){getDirContents(cwd+'/public/img/fatcow/16x16',function(i){iconset = i().select('name')})});
+$.get('/info/localbrowseCWD',function(cwd){getDirContents(cwd+'/public/img/fatcow/16x16',{cont:false,simple:true},function(i){iconset = i().select('name')})});
 
 function load() {
 	// This function runs when a new file/dir is loaded, and at startup.
@@ -221,7 +221,7 @@ function listTrash(files) {
 	$('#toolbar-left').html('<input id="show_hide_restricted" type="checkbox" name="show_hide_restricted" checked="checked" /><label for="show_hide_restricted"><span>show</span> restricted files</label>').buttonset();
 	$('#file').remove();
 	$('<table id="file" class="trash">').appendTo('#file-container').html('<thead><tr><th id="name">Name</th><th id="size">Size</th><th id="date">Date Deleted</th><th id="orig">Original Location</th><th id="type">Type</th><th id="perm">Permissions</th></tr></thead><tbody></tbody>');
-	getDirContents('~/.local/share/Trash/info',true,function(trashinfo){
+	getDirContents('~/.local/share/Trash/info',{cont:true,simple:false},function(trashinfo){
 		function action(f){
 			if (trashinfo({name:f.name+'.trashinfo'}).get().length) {
 				var i = parseTrashInfo(trashinfo({name:f.name+'.trashinfo'}).get()[0].cont), last = $('<tr class="file">').appendTo('#file tbody');
@@ -287,12 +287,10 @@ function paste(files,destination) {
 	files = files || sessionStorage.getItem('copy').split('\n');
 	destination = destination || file;
 	$.each(files, function(i, srcFile) {
-		$.get('info/info/'+srcFile,function(src){
+		$.get('info/info'+srcFile,function(src){
 			if (src.readable) {
-				$.get('info/info/'+addSlashIfNeeded(destination)+getFileName(srcFile),function(dest){
+				$.get('info/info'+addSlashIfNeeded(destination)+getFileName(srcFile),function(dest){
 					// we now have info on the source and destination files
-					console.log(src)
-					console.log(dest)
 					if (dest.exists) { // we'll need to overwrite/merge
 						if (dest.type=='directory' && src.type=='directory') { // merge
 							$.post('info/dir','simple&file='+getParentDir(dest.name),function(otherfiles){
@@ -405,14 +403,14 @@ function sidebarTree(f) {
 	$('li[data-path="/"]>span.ui-icon').trigger('click',[1]);
 }
 
-function getDirContents(dir,cont, callback) {
+function getDirContents(dir, opts, callback) {
 	// This function is used to fetch contents of a dir into a DB.
 
-	if (typeof cont == "function") {
-		callback = cont;
-		cont = false;
+	if (typeof opts == "function") {
+		callback = opts;
+		opts = {cont:false,simple:false};
 	}
-	$.post('info/dir',(cont?'content=true':'')+'&file='+dir.replace(/^trash/,'~/.local/share/Trash/files').replace(/^~/,homeroot),function(r){
+	$.post('info/dir',$.extend(opts,{file:dir.replace(/^trash/,'~/.local/share/Trash/files').replace(/^~/,homeroot)}),function(r){
 		if (r.error) {callback(r.error)}
 		else {callback(TAFFY(r))}
 	});
@@ -468,7 +466,7 @@ $(function(){
 			},
 			function(filename){
 				$.post(
-					'functions.php?action=mk'+$(me).attr('id').substr(4)+'&file='+file+'/'+filename,
+					'/mod',{action:'mk'+$(me).attr('id').substr(4),file:addSlashIfNeeded(file)+filename},
 					function(){location.hash=addSlashIfNeeded(location.hash)+filename;}
 				);
 			}
@@ -480,7 +478,7 @@ $(function(){
 			function(filename){if (filename) {
 				jqUI.prompt(
 					{text: 'File to link to',tilte: 'New link'},
-					function(linkto){$.post('functions.php?action=mklink&file='+file+'/'+filename+'&link='+linkto,load);}
+					function(linkto){$.post('/mod',{action:'link',dest:addSlashIfNeeded(file)+filename,src:linkto},load);}
 				);
 			}}
 		);
@@ -731,7 +729,7 @@ $(d).on('click','#file .file',function(e){
 	}
 });
 $(d).on('click','#save',function(){
-	$.post('functions.php?action=save&file='+file,{content:$('#file').val()},function(info){
+	$.post('/mod',{action:'save',file:file,content:$('#file').val()},function(info){
 		var oldMessage = $('#message').html();
 		$('#message').html('File saved.');
 		setTimeout(function(){$('#message').html(oldMessage)},1500);
@@ -741,7 +739,7 @@ $(d).on('click','#save',function(){
 $(d).on('click','#saveAs',function(){
 	jqUI.prompt({title:'Save as',text:'Name of new file:'},function(name){
 		if (name) {
-			$.post('functions.php?action=mkfile&file='+getParentDir()+name,{content:$('#file').val()},function(){
+			$.post('/mod',{action:'mkfile',file:getParentDir()+name,content:$('#file').val()},function(){
 				$('#message').html('File saved to '+getParentDir()+name);
 				location.hash = "#"+getParentDir()+name;
 			});
