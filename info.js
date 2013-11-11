@@ -1,8 +1,6 @@
 // info functions
 
 var fs = require('fs-extra'),
-	mmm = require('mmmagic'),
-	mimeLazy = require('mime'),
 	fileOps = require('./public/js/fileOps.js');
 
 exports.master = {
@@ -94,17 +92,17 @@ function info(file,cb,content,stat){
 							finished();
 						});
 					}
-					var magic = new mmm.Magic(mmm.MAGIC_MIME_TYPE);
+					var mmm = require('mmmagic'), magic = new mmm.Magic(mmm.MAGIC_MIME_TYPE);
 					magic.detectFile(file,function(m_e,m_type){
 						if (m_e) { // Magic error, use lazy checking
-							i.type = mimeLazy.lookup(file);
+							i.type = require('mime').lookup(file);
 						} else {
 							i.type = m_type;
 						}
 						finished();
 					});
 					i.size = s.size;
-				} else if (r) {
+				} else if (r) { // is dir
 					fs.readdir(file,function(d_e,d){
 						i.size = d.length;
 						finished();
