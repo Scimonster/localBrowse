@@ -161,48 +161,18 @@ function listDir(files) {
 	$('<span><input id="show_hide_hidden" type="checkbox" name="show_hide_hidden"'+(s.hidden?' checked="checked"':'')+' /><input id="show_hide_restricted" type="checkbox" name="show_hide_restricted"'+(s.restricted?' checked="checked"':'')+' /><label for="show_hide_hidden"><span>show</span> hidden files</label><label for="show_hide_restricted"><span>show</span> restricted files</label></span>').buttonset().appendTo('#toolbar-left');
 	$('<span><input id="dir_type_list" type="radio" name="dir_type" value="list"'+(s.dirTiles?'':' checked="checked"')+' /><input id="dir_type_tiles" type="radio" name="dir_type" value="tiles"'+(s.dirTiles?' checked="checked"':'')+' /><label for="dir_type_list">list</label><label for="dir_type_tiles">tiles</label></span>').buttonset().appendTo('#toolbar-left');
 	$('#file').remove();
-	function action(f){
-		var last;
-		if (s.dirTiles) {
-			last = $('<div class="file" data-path="'+addSlashIfNeeded(file.substr(0,6)!='search'?file:cwd)+f.name+'">').appendTo('#file');
-			last.append(
-				'<img class="file-img" src="'+imageForFile(f,true)+'" />',
-				'<span class="file-name">'+f.name+'</span>',
-				'<span class="file-size">'+(f.type=='directory'?f.size+' items':(isReadable(f)?filesizeFormatted(f.size):f.size))+'</span>',
-				'<span class="file-date">'+(isReadable(f)?dateFormat(f.date,false):f.date)+'</span>',
-				'<span class="file-type">'+f.type+'</span>',
-				'<span class="file-perm">'+permsFormatted(f.perm)+'</span>');
-			if (f.name.substr(0,1)=='.'||f.name.substr(-1)=='~') {last.addClass('hidden')}
-			if (!isReadable(f)) {last.addClass('restricted')}
-		} else {
-			last = $('<tr class="file" data-path="'+addSlashIfNeeded(file.substr(0,6)!='search'?file:cwd)+f.name+'">').appendTo('#file tbody');
-			last.append(
-				'<td class="file-name"><img class="file-img" src="'+imageForFile(f,false)+'" /> '+f.name+'</td>',
-				'<td class="file-size">'+(f.type=='directory'?f.size+' items':(isReadable(f)?filesizeFormatted(f.size):f.size))+'</td>',
-				'<td class="file-date">'+(isReadable(f)?dateFormat(f.date,true):f.date)+'</td>',
-				'<td class="file-type">'+f.type+'</td>',
-				'<td class="file-perm">'+permsFormatted(f.perm)+'</td>');
-			if (f.name.substr(0,1)=='.'||f.name.substr(-1)=='~') {last.addClass('hidden')}
-			if (!isReadable(f)) {last.addClass('restricted')}
+	$('<'+(s.dirTiles?'div':'table')+' id="file" class="dirlist">').appendTo('#file-container');
+	$('#file').load('/render/dir?type='+(s.dirTiles?'tiles':'list'),{
+		base:addSlashIfNeeded(file.substr(0,6)!='search'?file:cwd),
+		files:(s.dirFirst?files({type:'directory'}).order(s.sortby).get().concat(files({type:{'!is':'directory'}}).order(s.sortby).get()):files().order(s.sortby).get())
+	},function(){
+		if (!s.dirTiles) {
+			if (!s.asec) {$('#file tr').reverse()}
+			$('#file th span.ui-icon').remove();
+			$('<span>').appendTo('#'+s.sortby).addClass('ui-icon ui-icon-triangle-1-'+(s.asec?'s':'n'));
+			$('#file').menu();
 		}
-	}
-	if (s.dirTiles) {
-		$('<div id="file" class="dirlist">').appendTo('#file-container');
-	} else {
-		$('<table id="file" class="dirlist">').appendTo('#file-container').html('<thead><tr><th id="name">Name</th><th id="size">Size</th><th id="date">Last Modified</th><th id="type">Type</th><th id="perm">Permissions</th></tr></thead><tbody></tbody>');
-	}
-	if (s.dirFirst) {
-		files({type:'directory'}).order(s.sortby).each(action);
-		files({type:{'!is':'directory'}}).order(s.sortby).each(action);
-	} else {
-		files().order(s.sortby).each(action);
-	}
-	if (!s.dirTiles) {
-		if (!s.asec) {$('#file tr').reverse()}
-		$('#file th span.ui-icon').remove();
-		$('<span>').appendTo('#'+s.sortby).addClass('ui-icon ui-icon-triangle-1-'+(s.asec?'s':'n'));
-		$('#file').menu();
-	}
+	});
 	$('#file').data('files',files);
 }
 
