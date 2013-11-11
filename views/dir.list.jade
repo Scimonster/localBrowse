@@ -1,0 +1,20 @@
+thead
+  tr
+    th#name Name
+    th#size Size
+    th#date Last Modified
+    th#type Type
+    th#perm Permissions
+  tbody
+    each f in files
+      - var classes = ['file']
+      - if (f.name.substr(0,1)=='.'||f.name.substr(-1)=='~') {classes.push('hidden')}
+      - if (!f.readable) {classes.push('restricted')}
+      tr(class=classes,data-path=base+f.name)
+        td.file-name
+          img.file-img(src=ops.imageForFile(f,false))
+          = f.name
+        td.file-size!= f.type=='directory'?f.size+' items':(f.readable?ops.filesizeFormatted(f.size):f.size)
+        td.file-date!= f.readable?ops.dateFormat(f.date,false):f.date
+        td.file-type!= f.type
+        td.file-perm!= ops.permsFormatted(f.perm)

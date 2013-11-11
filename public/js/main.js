@@ -3,10 +3,6 @@ var w = window, d= document, // this stuff is global just for the dev period
 		sortby: 'name',
 		asec: true,
 		dirFirst: 1,
-		dateFormat: function(d,table){
-			D = new Date(d*1000);
-			return table?crit.dateGetFullMonthName(D)+' '+D.getDate()+' '+D.getFullYear()+' '+padNum(D.getHours())+':'+padNum(D.getMinutes())+':'+padNum(D.getSeconds()):padNum(D.getMonth()+1)+'-'+D.getDate()+'-'+D.getFullYear().toString(10).slice(2)+' '+padNum(D.getHours())+':'+padNum(D.getMinutes());
-		},
 		hidden: true,
 		restricted: true,
 		dirTiles: true,
@@ -173,7 +169,7 @@ function listDir(files) {
 				'<img class="file-img" src="'+imageForFile(f,true)+'" />',
 				'<span class="file-name">'+f.name+'</span>',
 				'<span class="file-size">'+(f.type=='directory'?f.size+' items':(isReadable(f)?filesizeFormatted(f.size):f.size))+'</span>',
-				'<span class="file-date">'+(isReadable(f)?s.dateFormat(f.date,false):f.date)+'</span>',
+				'<span class="file-date">'+(isReadable(f)?dateFormat(f.date,false):f.date)+'</span>',
 				'<span class="file-type">'+f.type+'</span>',
 				'<span class="file-perm">'+permsFormatted(f.perm)+'</span>');
 			if (f.name.substr(0,1)=='.'||f.name.substr(-1)=='~') {last.addClass('hidden')}
@@ -183,7 +179,7 @@ function listDir(files) {
 			last.append(
 				'<td class="file-name"><img class="file-img" src="'+imageForFile(f,false)+'" /> '+f.name+'</td>',
 				'<td class="file-size">'+(f.type=='directory'?f.size+' items':(isReadable(f)?filesizeFormatted(f.size):f.size))+'</td>',
-				'<td class="file-date">'+(isReadable(f)?s.dateFormat(f.date,true):f.date)+'</td>',
+				'<td class="file-date">'+(isReadable(f)?dateFormat(f.date,true):f.date)+'</td>',
 				'<td class="file-type">'+f.type+'</td>',
 				'<td class="file-perm">'+permsFormatted(f.perm)+'</td>');
 			if (f.name.substr(0,1)=='.'||f.name.substr(-1)=='~') {last.addClass('hidden')}
@@ -227,7 +223,7 @@ function listTrash(files) {
 				var i = parseTrashInfo(trashinfo({name:f.name+'.trashinfo'}).get()[0].cont), last = $('<tr class="file">').appendTo('#file tbody');
 				last.append('<td class="file-name"><img class="file-img" src="'+imageForFile(f,false)+'" /> '+f.name+'</td>');
 				last.append('<td class="file-size">'+(f.type=='directory'?f.size+' items':(isReadable(f)?filesizeFormatted(f.size):f.size))+'</td>');
-				last.append('<td class="file-date">'+(isReadable(f)?s.dateFormat(f.date,true):f.date)+'</td>');
+				last.append('<td class="file-date">'+(isReadable(f)?dateFormat(f.date,true):f.date)+'</td>');
 				last.append('<td>'+getParentDir(decodeURIComponent(i.Path))+'</td>');
 				if (!s.expandHomeroot) {last.find('td:last').html(function(x,old){return old.replace(homeroot,'~')})}
 				last.append('<td class="file-perm">'+permsFormatted(f.perm)+'</td>');
@@ -297,7 +293,7 @@ function paste(files,destination) {
 								console.log(otherfiles)
 								var d = jqUI.prompt({
 									title:'Merge folder "'+getFileName(srcFile)+'"?',
-									text:'<div>A '+(src.date<dest.date?'newer':'older')+' folder with the same name already exists in "'+getFileName(getParentDir(dest.name))+'".<br/>Do you want to merge these folders? Merging will ask for confirmation in case of file conflicts.</div><div class="fileOverwriteDialog-fileInfo"><img src="'+imageForFile(src,true)+'"/><p><b>Replacement folder</b><br/>Size: '+src.size+' items<br/>Last modified: '+s.dateFormat(src.date)+'</p></div><div class="fileOverwriteDialog-fileInfo"><img src="'+imageForFile(dest,true)+'"/><p><b>Existing folder</b><br/>Size: '+dest.size+' items<br/>Last modified: '+s.dateFormat(dest.date)+'</p></div><p>You can type in a new name for the folder. If it exists, the new folder will be merged with the old one.</p><p class="fileOverwriteDialog-exists">A file with the current name exists in the destination folder.</p>',
+									text:'<div>A '+(src.date<dest.date?'newer':'older')+' folder with the same name already exists in "'+getFileName(getParentDir(dest.name))+'".<br/>Do you want to merge these folders? Merging will ask for confirmation in case of file conflicts.</div><div class="fileOverwriteDialog-fileInfo"><img src="'+imageForFile(src,true)+'"/><p><b>Replacement folder</b><br/>Size: '+src.size+' items<br/>Last modified: '+dateFormat(src.date)+'</p></div><div class="fileOverwriteDialog-fileInfo"><img src="'+imageForFile(dest,true)+'"/><p><b>Existing folder</b><br/>Size: '+dest.size+' items<br/>Last modified: '+dateFormat(dest.date)+'</p></div><p>You can type in a new name for the folder. If it exists, the new folder will be merged with the old one.</p><p class="fileOverwriteDialog-exists">A file with the current name exists in the destination folder.</p>',
 									buttonLabel: ['Paste','Skip'],
 									width: 500
 								},getFileName(srcFile),function(newname){
@@ -324,7 +320,7 @@ function paste(files,destination) {
 							$.post('info/dir','simple&file='+getParentDir(dest.name),function(otherfiles){
 								var d = jqUI.prompt({
 									title:'Overwrite file "'+getFileName(srcFile)+'"?',
-									text:'<div>A '+(src.date<dest.date?'newer':'older')+' file with the same name already exists in "'+getFileName(getParentDir(dest.name))+'".<br/>Do you want to replace this file?</div><div class="fileOverwriteDialog-fileInfo"><img src="'+imageForFile(src,true)+'"/><p><b>Replacement file</b><br/>Size: '+filesizeFormatted(src.size)+'<br/>Last modified: '+s.dateFormat(src.date)+'</p></div><div class="fileOverwriteDialog-fileInfo"><img src="'+imageForFile(dest,true)+'"/><p><b>Existing file</b><br/>Size: '+filesizeFormatted(dest.size)+'<br/>Last modified: '+s.dateFormat(dest.date)+'</p></div><p>You can type in a new name for the file. If it exists, the new file will replace the old one.</p><p class="fileOverwriteDialog-exists">A file with the current name exists in the destination folder.</p>',
+									text:'<div>A '+(src.date<dest.date?'newer':'older')+' file with the same name already exists in "'+getFileName(getParentDir(dest.name))+'".<br/>Do you want to replace this file?</div><div class="fileOverwriteDialog-fileInfo"><img src="'+imageForFile(src,true)+'"/><p><b>Replacement file</b><br/>Size: '+filesizeFormatted(src.size)+'<br/>Last modified: '+dateFormat(src.date)+'</p></div><div class="fileOverwriteDialog-fileInfo"><img src="'+imageForFile(dest,true)+'"/><p><b>Existing file</b><br/>Size: '+filesizeFormatted(dest.size)+'<br/>Last modified: '+dateFormat(dest.date)+'</p></div><p>You can type in a new name for the file. If it exists, the new file will replace the old one.</p><p class="fileOverwriteDialog-exists">A file with the current name exists in the destination folder.</p>',
 									buttonLabel: ['Paste','Skip'],
 									width: 500
 								},getFileName(srcFile),function(newname){

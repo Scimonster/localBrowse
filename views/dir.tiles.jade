@@ -1,0 +1,11 @@
+each f in files
+  - var classes = ['file']
+  - if (f.name.substr(0,1)=='.'||f.name.substr(-1)=='~') {classes.push('hidden')}
+  - if (!f.readable) {classes.push('restricted')}
+  div(class=classes,data-path=base+f.name)
+    img.file-img(src=ops.imageForFile(f,true))
+    span.file-name!= f.name
+    span.file-size!= f.type=='directory'?f.size+' items':(f.readable?ops.filesizeFormatted(f.size):f.size)
+    span.file-date!= f.readable?ops.dateFormat(f.date,false):f.date
+    span.file-type!= f.type
+    span.file-perm!= ops.permsFormatted(f.perm)

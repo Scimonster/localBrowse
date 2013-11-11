@@ -34,11 +34,16 @@ function permsFormatted(perms) {
 	var permsReadable = '';
 	perms = perms.split('');
 	if (perms.length==4) {perms.shift()}
-	$.each(perms,function(i,p) {
+	perms.forEach(function(p) {
 		var permsBin = parseInt(p,8).toString(2).split('');
 		permsReadable += (permsBin[0]=='1'?'r':'-') + (permsBin[1]=='1'?'w':'-') + (permsBin[2]=='1'?'x':'-');
 	});
 	return permsReadable;
+}
+
+function dateFormat(d,table) {
+	D = new Date(d*1000);
+	return table?crit.dateGetFullMonthName(D)+' '+D.getDate()+' '+D.getFullYear()+' '+padNum(D.getHours())+':'+padNum(D.getMinutes())+':'+padNum(D.getSeconds()):padNum(D.getMonth()+1)+'-'+D.getDate()+'-'+D.getFullYear().toString(10).slice(2)+' '+padNum(D.getHours())+':'+padNum(D.getMinutes());
 }
 
 module = module||{}; // for the client
@@ -49,5 +54,6 @@ module.exports = { // make it accessible to Node
 	filesizeFormatted: filesizeFormatted,
 	numberFormat: numberFormat,
 	padNum: padNum,
-	permsFormatted: permsFormatted
+	permsFormatted: permsFormatted,
+	dateFormat: dateFormat
 };
