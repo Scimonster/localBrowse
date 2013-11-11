@@ -730,10 +730,10 @@ $(d).on('click','#file .file',function(e){
 });
 $(d).on('click','#save',function(){
 	$.post('/mod',{action:'save',file:file,content:$('#file').val()},function(info){
+		$('#file').data('modDate',info.date);
 		var oldMessage = $('#message').html();
 		$('#message').html('File saved.');
 		setTimeout(function(){$('#message').html(oldMessage)},1500);
-		$('#file').data('modDate',info.date);
 	});
 });
 $(d).on('click','#saveAs',function(){
