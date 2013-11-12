@@ -39,7 +39,9 @@ h2 {
 	top: calc(50% - 33px);}
 
 #toolbar-left {float: left;}
-#toolbar-right {float: right;}
+#toolbar-right {
+	float: right;
+	margin-right: 50px;}
 #toolbar {margin-bottom: 30px;}
 
 #locations-container {
