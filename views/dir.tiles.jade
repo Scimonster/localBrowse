@@ -4,7 +4,9 @@ each f in files
   - if (!f.readable) {classes.push('restricted')}
   div(class=classes,data-path=base+f.name)
     img.file-img(src=ops.imageForFile(f,true))
-    span.file-name!= f.name
+    span.file-name
+      = f.name.substr(0,25)
+      != f.name.length<25?'':'&#x2026;'
     span.file-size!= f.type=='directory'?f.size+' items':(f.readable?ops.filesizeFormatted(f.size):f.size)
     span.file-date!= f.readable?ops.dateFormat(f.date,false):f.date
     span.file-type!= f.type

@@ -143,9 +143,10 @@ function viewFile() {
 	if (trash) {file = file.replace(homeroot+'/.local/share/Trash/files','trash')}
 }
 
-function listDir(files) {
+function listDir(files,afterLoad) {
 	// This function lists the contents of a directory
 	
+	afterLoad = afterLoad || $.noop;
 	if (files == 'perms') {
 		$('#file').remove();
 		$('<div id="file" style="text-align:center">').appendTo('#file-container').html(file+' is not readable to localBrowse.');
@@ -172,6 +173,7 @@ function listDir(files) {
 			$('<span>').appendTo('#'+s.sortby).addClass('ui-icon ui-icon-triangle-1-'+(s.asec?'s':'n'));
 			$('#file').menu();
 		}
+		afterLoad();
 	});
 	$('#file').data('files',files);
 }
@@ -822,10 +824,11 @@ setInterval(function(){
 			});
 			var selLast = $('.sel.last .file-name').text();
 			var scroll = {top:$('#file').scrollTop(),left:$('#file').scrollLeft()};
-			listDir(f);
-			$('.file').filter(function(){return selList.indexOf($(this).find('.file-name').text())>-1}).addClass('sel');
-			$('.file').filter(function(){return $(this).find('.file-name').text()==selLast}).addClass('last');
-			$('#file').scrollTop(scroll.top).scrollLeft(scroll.left);
+			listDir(f,function(){
+				$('.file').filter(function(){return selList.indexOf($(this).find('.file-name').text())>-1}).addClass('sel');
+				$('.file').filter(function(){return $(this).find('.file-name').text()==selLast}).addClass('last');
+				$('#file').scrollTop(scroll.top).scrollLeft(scroll.left);
+			});
 		})
 	} else if ($('textarea#file').length) {
 		$.getJSON('info/info.date'+file,function(d){

@@ -13,7 +13,8 @@ thead
       tr(class=classes,data-path=base+f.name)
         td.file-name
           img.file-img(src=ops.imageForFile(f,false))
-          = f.name
+          = f.name.substr(0,35)
+          != f.name.length<35?'':'&#x2026;'
         td.file-size!= f.type=='directory'?f.size+' items':(f.readable?ops.filesizeFormatted(f.size):f.size)
         td.file-date!= f.readable?ops.dateFormat(f.date,false):f.date
         td.file-type!= f.type
