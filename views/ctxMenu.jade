@@ -1,0 +1,9 @@
+mixin item(i)
+  if i===null
+    li
+  else
+    li(class=i.r?'ui-state-disabled':'',id='contextMenu-file-'+i.id)
+      a= i.text
+ul#contextMenu
+  - each i in l?one:more
+    +item(i)
