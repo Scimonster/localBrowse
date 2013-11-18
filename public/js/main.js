@@ -750,49 +750,18 @@ $(d).on('contextmenu','#file .file',function(e){
 		$('.sel').removeClass('sel last');
 		$(this).addClass('sel class');
 	}
-	function open(d,id){return '<li'+(d?' class="ui-state-disabled"':'')+' id="contextMenu-file-'+id+'"><a>'}
-	var close = '</a></li>', line = '<li></li>', r = $('.sel').hasClass('restricted');
-	if ($('.sel').length==1) {
-		$('<ul id="contextMenu">').append(
-			open(r,'open')+'Open'+close,
-			line,
-			open(r,'cut')+'Cut'+close,
-			open(r,'copy')+'Copy'+close,
-			line,
-			open(r,'moveTo')+'Move to...'+close,
-			open(r,'copyTo')+'Copy to...'+close,
-			open(false,'makeLink')+'Make link'+close,
-			open(r,'rename')+'Rename'+close,
-			line,
-			open(r,'trash')+'Move to Trash'+close,
-			line,
-			open(false,'props')+'Properties'+close).
-		appendTo('body').menu().offset({top:e.pageY,left:e.pageX});
-	} else {
-		$('<ul id="contextMenu">').append(
-			open(r,'newFolder')+'New folder with selection'+close,
-			line,
-			open(r,'cut')+'Cut'+close,
-			open(r,'copy')+'Copy'+close,
-			line,
-			open(r,'moveTo')+'Move to...'+close,
-			open(r,'copyTo')+'Copy to...'+close,
-			open(false,'makeLink')+'Make links'+close,
-			line,
-			open(r,'trash')+'Move to Trash'+close,
-			line,
-			open(false,'props')+'Properties'+close).
-		appendTo('body').menu().offset({top:e.pageY,left:e.pageX});
-	}
-	$('#contextMenu-file-cut').zclip({
-		path: 'js/ZeroClipboard.swf',
-		copy: function(){return copy($('.sel'),true)},
-		afterCopy: $.noop
-	});
-	$('#contextMenu-file-copy').zclip({
-		path: 'js/ZeroClipboard.swf',
-		copy: function(){return copy($('.sel'))},
-		afterCopy: $.noop
+	$('<ul id="contextMenu">').appendTo('body').offset({top:e.pageY,left:e.pageX}).load('/render/ctxMenu?type=seledFiles',{r:$('.sel').hasClass('restricted'),l:$('.sel').length==1},function(){
+		$('#contextMenu').menu();
+		$('#contextMenu-file-cut').zclip({
+			path: 'js/ZeroClipboard.swf',
+			copy: function(){return copy($('.sel'),true)},
+			afterCopy: $.noop
+		});
+		$('#contextMenu-file-copy').zclip({
+			path: 'js/ZeroClipboard.swf',
+			copy: function(){return copy($('.sel'))},
+			afterCopy: $.noop
+		});
 	});
 });
 $(d).on('contextmenu','#file.dirlist',function(e){

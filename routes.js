@@ -38,37 +38,41 @@ exports.dir = function(req, res) {
 };
 
 exports.ctxMenu = function(req, res) {
-	res.render('ctxMenu', {
-		r: req.body.r,
-		l: req.body.l,
-		one: [
-			{r:req.body.r,id:'open',text:'Open'},
-			null,
-			{r:req.body.r,id:'cut',text:'Cut'},
-			{r:req.body.r,id:'copy',text:'Copy'},
-			null,
-			{r:req.body.r,id:'moveTo',text:'Move to...'},
-			{r:req.body.r,id:'copyTo',text:'Copy to...'},
-			{r:false,id:'makeLink',text:'Make link...'},
-			{r:req.body.r,id:'rename',text:'Rename'},
-			null,
-			{r:req.body.r,id:'trash',text:'Move to Trash'},
-			null,
-			{r:false,id:'props',text:'Properties'},
-		],
-		more: [
-			{r:req.body.r,id:'newFolder',text:'New folder with selection'},
-			null,
-			{r:req.body.r,id:'cut',text:'Cut'},
-			{r:req.body.r,id:'copy',text:'Copy'},
-			null,
-			{r:req.body.r,id:'moveTo',text:'Move to...'},
-			{r:req.body.r,id:'copyTo',text:'Copy to...'},
-			{r:false,id:'makeLink',text:'Make links...'},
-			null,
-			{r:req.body.r,id:'trash',text:'Move to Trash'},
-			null,
-			{r:false,id:'props',text:'Properties'},
-		]
-	});
+	switch (req.query.type) {
+		case 'seledFiles':
+			res.render('ctxMenu.seledFiles.jade', {
+				r: req.body.r,
+				list: req.body.l?[
+					{r:req.body.r,id:'open',text:'Open'},
+					null,
+					{r:req.body.r,id:'cut',text:'Cut'},
+					{r:req.body.r,id:'copy',text:'Copy'},
+					null,
+					{r:req.body.r,id:'moveTo',text:'Move to...'},
+					{r:req.body.r,id:'copyTo',text:'Copy to...'},
+					{r:false,id:'makeLink',text:'Make link...'},
+					{r:req.body.r,id:'rename',text:'Rename'},
+					null,
+					{r:req.body.r,id:'trash',text:'Move to Trash'},
+					null,
+					{r:false,id:'props',text:'Properties'},
+				]:[
+					{r:req.body.r,id:'newFolder',text:'New folder with selection'},
+					null,
+					{r:req.body.r,id:'cut',text:'Cut'},
+					{r:req.body.r,id:'copy',text:'Copy'},
+					null,
+					{r:req.body.r,id:'moveTo',text:'Move to...'},
+					{r:req.body.r,id:'copyTo',text:'Copy to...'},
+					{r:false,id:'makeLink',text:'Make links...'},
+					null,
+					{r:req.body.r,id:'trash',text:'Move to Trash'},
+					null,
+					{r:false,id:'props',text:'Properties'},
+				]
+			});
+			break;
+		default:
+			res.send('<h2>Improper "type" GET variable set.</h2>');
+	}
 };
