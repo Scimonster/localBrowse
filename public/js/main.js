@@ -163,7 +163,7 @@ function listDir(files,afterLoad) {
 	$('<span><input id="dir_type_list" type="radio" name="dir_type" value="list"'+(s.dirTiles?'':' checked="checked"')+' /><input id="dir_type_tiles" type="radio" name="dir_type" value="tiles"'+(s.dirTiles?' checked="checked"':'')+' /><label for="dir_type_list">list</label><label for="dir_type_tiles">tiles</label></span>').buttonset().appendTo('#toolbar-left');
 	$('#file').remove();
 	$('<'+(s.dirTiles?'div':'table')+' id="file" class="dirlist">').appendTo('#file-container');
-	$('#file').load('/render/dir?type='+(s.dirTiles?'tiles':'list'),{
+	$('#file').load('render/dir?type='+(s.dirTiles?'tiles':'list'),{
 		base:addSlashIfNeeded(file.substr(0,6)!='search'?file:cwd),
 		files:(s.dirFirst?files({type:'directory'}).order(s.sortby).get().concat(files({type:{'!is':'directory'}}).order(s.sortby).get()):files().order(s.sortby).get())
 	},function(){
@@ -602,21 +602,23 @@ $(d).ajaxError(function(e, jqxhr, settings, exception){
 	var message = jqUI.alert({
 		text:
 			({
-				echo: "Could not echo content of",
-				mkdir: "Could not make directory",
-				mkfile: "Could not make file",
-				mklink: "Could not make link",
-				exists: "Could not determine existence of",
-				readable: "Could not determine readability of",
-				writable: "Could not determine writability of",
-				info: "Could not get information for",
-				dir: "Could not get directory listing for",
-				save: "Could not save file",
-				search: "Could not search for",
-				dirSize: "Could not calculate size of directory",
-				localbrowseCWD: "Could not access localBrowse source directory",
-			})[getUrlVars(settings.url).action] +
-			(getUrlVars(settings.url).action=="localbrowseCWD"?'':' '+getUrlVars(settings.url).file) +
+				'mod/mkdir': "Could not make directory",
+				'mod/mkfile': "Could not make file",
+				'mod/mklink': "Could not make link",
+				'mod/save': "Could not save file",
+				'search': "Could not search for",
+				'info/echo': "Could not echo content of",
+				'info/exists': "Could not determine existence of",
+				'info/readable': "Could not determine readability of",
+				'info/writable': "Could not determine writability of",
+				'info/info': "Could not get information for",
+				'info/dir': "Could not get directory listing for",
+				'info/dirSize': "Could not calculate size of directory",
+				'info/localbrowseCWD': "Could not access localBrowse source directory",
+				'render/dir': "Could not render contents of directory",
+				'render/ctxMenu': "Could not render context menu",
+			})[settings.url.split('?')[0]] +
+			(settings.url.split('?')[0]=="info/localbrowseCWD"||settings.url.split('?')[0]=="render/ctxMenu"?'':' '+decodeURIComponent(getUrlVars('i?'+settings.data).file)) +
 			(exception?"<br/>Response from the server: "+exception:'') +
 			'<div class="retrying_in">Retrying in <span>5</span> seconds</div>',
 		title: 'Connection Error',
@@ -750,7 +752,7 @@ $(d).on('contextmenu','#file .file',function(e){
 		$('.sel').removeClass('sel last');
 		$(this).addClass('sel class');
 	}
-	$('<ul id="contextMenu">').appendTo('body').offset({top:e.pageY,left:e.pageX}).load('/render/ctxMenu?type=seledFiles',{r:$('.sel').hasClass('restricted'),l:$('.sel').length==1},function(){
+	$('<ul id="contextMenu">').appendTo('body').offset({top:e.pageY,left:e.pageX}).load('render/ctxMenu?type=seledFiles',{r:$('.sel').hasClass('restricted'),l:$('.sel').length==1},function(){
 		$('#contextMenu').menu();
 		$('#contextMenu-file-cut').zclip({
 			path: 'js/ZeroClipboard.swf',
