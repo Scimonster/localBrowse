@@ -41,7 +41,6 @@ exports.ctxMenu = function(req, res) {
 	switch (req.query.type) {
 		case 'seledFiles':
 			res.render('ctxMenu.seledFiles.jade', {
-				r: req.body.r,
 				list: req.body.l?[
 					{r:req.body.r,id:'open',text:'Open'},
 					null,
