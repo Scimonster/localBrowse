@@ -94,3 +94,23 @@ exports.save = function(req, res) {
 		res.send({err:'no content'});
 	}
 };
+
+exports.move = function(req, res, copy) {
+	var pasted = [];
+	for (f in req.body.files) {
+		f = decodeURIComponent(f);
+		fs[copy?'copy':'rename'](f,req.body.files[f],function(e){
+			pasted.push(e?null:req.body.files[f]);
+			done();
+		});
+	}
+	function done() {
+		if (pasted.length===req.body.files.length) {
+			res.send(pasted.filter(function(i){return i}));
+		}
+	}
+};
+
+exports.copy = function(req, res) {
+	exports.move(req, res, true);
+};

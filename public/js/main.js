@@ -8,7 +8,7 @@ var w = window, d= document, // this stuff is global just for the dev period
 		dirTiles: true,
 		expandHomeroot: false
 	},
-	file, type, bookmarks, iconset = [],
+	file, type, bookmarks, iconset = [], toPaste = {},
 	homeroot = '/home/'+user;
 $.get('/info/localbrowseCWD',function(cwd){getDirContents(cwd+'/public/img/fatcow/16x16',{cont:false,simple:true},function(i){iconset = i().select('name')})});
 
@@ -244,6 +244,7 @@ function copy(files,cut) {
 	}
 	sessionStorage.setItem('copy',files.join('\n'));
 	sessionStorage.setItem('cut',!!cut);
+	toPaste = {};
 	return files.join('\n');
 }
 
@@ -254,84 +255,78 @@ function paste(files,destination) {
 	
 	files = files || sessionStorage.getItem('copy').split('\n');
 	destination = destination || file;
-	$.each(files, function(i, srcFile) {
-		$.get('info/info'+srcFile,function(src){
-			if (src.readable) {
-				$.get('info/info'+addSlashIfNeeded(destination)+getFileName(srcFile),function(dest){
-					// we now have info on the source and destination files
-					if (dest.exists) { // we'll need to overwrite/merge
-						if (dest.type=='directory' && src.type=='directory') { // merge
-							$.post('info/dir','simple&file='+getParentDir(dest.name),function(otherfiles){
-								console.log(otherfiles)
-								var d = jqUI.prompt({
-									title:'Merge folder "'+getFileName(srcFile)+'"?',
-									text:'<div>A '+(src.date<dest.date?'newer':'older')+' folder with the same name already exists in "'+getFileName(getParentDir(dest.name))+'".<br/>Do you want to merge these folders? Merging will ask for confirmation in case of file conflicts.</div><div class="fileOverwriteDialog-fileInfo"><img src="'+imageForFile(src,true)+'"/><p><b>Replacement folder</b><br/>Size: '+src.size+' items<br/>Last modified: '+dateFormat(src.date)+'</p></div><div class="fileOverwriteDialog-fileInfo"><img src="'+imageForFile(dest,true)+'"/><p><b>Existing folder</b><br/>Size: '+dest.size+' items<br/>Last modified: '+dateFormat(dest.date)+'</p></div><p>You can type in a new name for the folder. If it exists, the new folder will be merged with the old one.</p><p class="fileOverwriteDialog-exists">A file with the current name exists in the destination folder.</p>',
-									buttonLabel: ['Paste','Skip'],
-									width: 500
-								},getFileName(srcFile),function(newname){
-									if (newname) {
-										if (otherfiles.indexOf(newname)>-1) { // merge
-											$.post('info/dir','simple&file='+srcFile,function(children){
-											run(src.name,getParentDir(dest.name)+newname,true);
-												paste(children.map(function(item){return addSlashIfNeeded(srcFile)+item}),getParentDir(dest.name)+newname);
-											});
+	function run(files,destination,cb) {
+		var recurse = 0;
+		$.each(files, function(i, srcFile){
+			$.get('info/info'+srcFile,function(src){
+				if (src.readable) {
+					$.get('info/info'+addSlashIfNeeded(destination)+getFileName(srcFile),function(dest){
+						// we now have info on the source and destination files
+						if (dest.exists) { // we'll need to overwrite/merge
+							recurse++;
+							var dataForFile = function(f,replace){return f.type==='directory'?('<div class="fileOverwriteDialog-fileInfo"><img src="'+imageForFile(f,true)+'"/><p><b>'+(replace?'Replacement':'Existing')+' folder</b><br/>Size: '+src.size+' items<br/>Last modified: '+dateFormat(src.date)+'</p></div>'):('<div class="fileOverwriteDialog-fileInfo"><img src="'+imageForFile(f,true)+'"/><p><b>'+(replace?'Replacement':'Existing')+' file</b><br/>Size: '+filesizeFormatted(f.size)+' items<br/>Last modified: '+dateFormat(src.date)+'</p></div>')};
+							if (dest.type=='directory' && src.type=='directory') { // merge
+								$.post('info/dir','simple=true&file='+getParentDir(dest.name),function(otherfiles){ // other files in dest dir, to see if it will be overwritten
+									var d = jqUI.prompt({
+										title:'Merge folder "'+getFileName(srcFile)+'"?',
+										text:'<div>A '+(src.date<dest.date?'newer':'older')+' folder with the same name already exists in "'+getFileName(getParentDir(dest.name))+'".<br/>Do you want to merge these folders? Merging will ask for confirmation in case of file conflicts.</div>'+dataForFile(src,true)+dataForFile(dest,false)+'<p>You can type in a new name for the folder. If it exists, the new folder will be merged with the old one.</p><p class="fileOverwriteDialog-exists">A file with the current name exists in the destination folder.</p>',
+										buttonLabel: ['Paste','Skip'],
+										width: 500
+									},getFileName(srcFile),function(newname){
+										if (newname) { // will be null if skip was clicked
+											if (otherfiles.indexOf(newname)>-1) { // merge
+												recurse++;
+												$.post('info/dir','simple=true&file='+srcFile,function(children){
+													run(children.map(function(item){return addSlashIfNeeded(srcFile)+item}),getParentDir(dest.name)+newname,function(){
+														recurse--;
+														done();
+													});
+												});
+											} else { // name changed
+												toPaste[srcFile] = getParentDir(dest.name)+newname;
+											}
 										}
-										else { // name changed, so create new dir first
-											run(src.name,getParentDir(dest.name)+newname,true);
-											paste(children.map(function(item){return addSlashIfNeeded(srcFile)+item}),getParentDir(dest.name)+newname);
+										recurse--;
+										done();
+									});
+								});
+							} else { // overwrite
+								$.post('info/dir','simple=true&file='+getParentDir(dest.name),function(otherfiles){ // other files in dest dir, to see if it will be overwritten
+									var d = jqUI.prompt({
+										title:'Overwrite file "'+getFileName(srcFile)+'"?',
+										text:'<div>A '+(src.date<dest.date?'newer':'older')+' file with the same name already exists in "'+getFileName(getParentDir(dest.name))+'".<br/>Do you want to replace this file?</div>'+dataForFile(src,true)+dataForFile(dest,false)+'<p>You can type in a new name for the file. If it exists, the new file will replace the old one.</p><p class="fileOverwriteDialog-exists">A file with the current name exists in the destination folder.</p>',
+										buttonLabel: ['Paste','Skip'],
+										width: 500
+									},getFileName(srcFile),function(newname){
+										if (newname) { // will be null if skip was clicked
+											toPaste[srcFile] = getParentDir(dest.name)+newname;
 										}
-									}
+										recurse--;
+										done();
+									});
 								});
-								d.dialog.find('input').keyup(function(){
-									if (otherfiles.indexOf($(this).val())>-1) {d.dialog.find('.fileOverwriteDialog-exists').show()}
-									else {d.dialog.find('.fileOverwriteDialog-exists').hide()}
-								});
-							});
+							}
+						} else { // dest doesn't exist, everything's ok
+							toPaste[srcFile] = dest.name;
 						}
-						else { // overwrite files
-							$.post('info/dir','simple&file='+getParentDir(dest.name),function(otherfiles){
-								var d = jqUI.prompt({
-									title:'Overwrite file "'+getFileName(srcFile)+'"?',
-									text:'<div>A '+(src.date<dest.date?'newer':'older')+' file with the same name already exists in "'+getFileName(getParentDir(dest.name))+'".<br/>Do you want to replace this file?</div><div class="fileOverwriteDialog-fileInfo"><img src="'+imageForFile(src,true)+'"/><p><b>Replacement file</b><br/>Size: '+filesizeFormatted(src.size)+'<br/>Last modified: '+dateFormat(src.date)+'</p></div><div class="fileOverwriteDialog-fileInfo"><img src="'+imageForFile(dest,true)+'"/><p><b>Existing file</b><br/>Size: '+filesizeFormatted(dest.size)+'<br/>Last modified: '+dateFormat(dest.date)+'</p></div><p>You can type in a new name for the file. If it exists, the new file will replace the old one.</p><p class="fileOverwriteDialog-exists">A file with the current name exists in the destination folder.</p>',
-									buttonLabel: ['Paste','Skip'],
-									width: 500
-								},getFileName(srcFile),function(newname){
-									if (newname) {
-										run(src.name,getParentDir(dest.name)+newname); // run, as long as it's not null or empty
-									}
-								});
-								d.dialog.find('input').keyup(function(){
-									if (otherfiles.indexOf($(this).val())>-1) {d.dialog.find('.fileOverwriteDialog-exists').show()}
-									else {d.dialog.find('.fileOverwriteDialog-exists').hide()}
-								});
-							});
-						}
-					} else {
-						if (src.type=='directory') {
-							$.post('info/dir','simple&file='+srcFile,function(children){
-								run(src.name,dest.name,true);
-								paste(children.map(function(item){return addSlashIfNeeded(srcFile)+item}),dest.name);
-							});
-						} else {
-							run(src.name,dest.name);
-						}
-					}
-				});
-			}
-		});
-	});
-	function run(src,dest,dir) {
-		console.log(arguments)
-		if (dir) {
-			$.post('functions.php?action='+(sessionStorage.getItem('cut')==="true"?'move':'mk')+'dir&file='+dest,'src='+src,function(success){});
-		} else {
-			$.post('functions.php?action='+(sessionStorage.getItem('cut')==="true"?'move':'copy')+'&file='+src,'dest='+dest,function(success){
-				if (success && sessionStorage.getItem('cut')==="true") {
-					$.post('functions.php?action=moveCleanup');
+						done();
+					});
 				}
 			});
+		});
+		function done(){
+			console.log(recurse);
+			if (recurse===0) {cb()}
 		}
 	}
+	run(files,destination,function(){
+		$.post('/mod',{action:(sessionStorage.getItem('cut')==="true"?'move':'copy'),files:toPaste},function(pasted){
+			pasted = pasted.filter(function(item){return getParentDir(item)===addSlashIfNeeded(file)}); // in this dir
+			$('.file').removeClass('sel last').filter(function(){
+				return pasted.indexOf($(this).data('path'))>-1;
+			}).addClass('sel').last().addClass('last');
+		});
+	});
 }
 
 function loadBookmarks() {
@@ -602,10 +597,7 @@ $(d).ajaxError(function(e, jqxhr, settings, exception){
 	var message = jqUI.alert({
 		text:
 			({
-				'mod/mkdir': "Could not make directory",
-				'mod/mkfile': "Could not make file",
-				'mod/mklink': "Could not make link",
-				'mod/save': "Could not save file",
+				'/mod': "Could not modify filesystem",
 				'search': "Could not search for",
 				'info/echo': "Could not echo content of",
 				'info/exists': "Could not determine existence of",
@@ -618,7 +610,7 @@ $(d).ajaxError(function(e, jqxhr, settings, exception){
 				'render/dir': "Could not render contents of directory",
 				'render/ctxMenu': "Could not render context menu",
 			})[settings.url.split('?')[0]] +
-			(settings.url.split('?')[0]=="info/localbrowseCWD"||settings.url.split('?')[0]=="render/ctxMenu"?'':' '+decodeURIComponent(getUrlVars('i?'+settings.data).file)) +
+			(settings.url.split('?')[0]=="info/localbrowseCWD"||settings.url.split('?')[0]=="render/ctxMenu"||settings.url.split('?')[0]=="/mod"?'':' '+decodeURIComponent(getUrlVars('i?'+settings.data).file)) +
 			(exception?"<br/>Response from the server: "+exception:'') +
 			'<div class="retrying_in">Retrying in <span>5</span> seconds</div>',
 		title: 'Connection Error',
