@@ -163,9 +163,12 @@ function listDir(files,afterLoad) {
 	$('<span><input id="dir_type_list" type="radio" name="dir_type" value="list"'+(s.dirTiles?'':' checked="checked"')+' /><input id="dir_type_tiles" type="radio" name="dir_type" value="tiles"'+(s.dirTiles?' checked="checked"':'')+' /><label for="dir_type_list">list</label><label for="dir_type_tiles">tiles</label></span>').buttonset().appendTo('#toolbar-left');
 	$('#file').remove();
 	$('<'+(s.dirTiles?'div':'table')+' id="file" class="dirlist">').appendTo('#file-container');
-	$('#file').load('render/dir?type='+(s.dirTiles?'tiles':'list'),{
-		base:addSlashIfNeeded(file.substr(0,6)!='search'?file:cwd),
+	$('#file').load('render/dir?type='+(s.dirTiles?'tiles':'list'),file.substr(0,6)=='search'?{
+		base:addSlashIfNeeded(cwd),
 		files:(s.dirFirst?files({type:'directory'}).order(s.sortby).get().concat(files({type:{'!is':'directory'}}).order(s.sortby).get()):files().order(s.sortby).get())
+	}:{
+		dir: addSlashIfNeeded(file),
+		s: s
 	},function(){
 		if (!s.dirTiles) {
 			if (!s.asec) {$('#file tr').reverse()}

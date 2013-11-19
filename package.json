@@ -11,6 +11,7 @@
     "express-params": "*",
     "mmmagic": "*",
     "mime": "*",
-    "fs-extra": "*"
+    "fs-extra": "*",
+    "taffy": "*"
   }
 }

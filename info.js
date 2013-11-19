@@ -175,20 +175,38 @@ function fileListInfo(files,cb,content) {
 	}
 }
 
+function dir(files,cb,cont) {
+	if (typeof files==='string') {
+		fs.readdir(files,function(e,d){
+			if (e) {
+				cb({error: e.code==='EACCES'?'perms':'exist'});
+			} else {
+				files = d.map(function(f){return fileOps.addSlashIfNeeded(files)+f});
+				run();
+			}
+		});
+	} else {
+		run();
+	}
+	function run() {
+		fileListInfo(files,function(files){
+			files.forEach(function(i){
+				i.name = fileOps.getFileName(i.name);
+			});
+			cb(files);
+		},cont);
+	}
+}
+
 exports.dir = function(req, res) {
-	var content = req.body.cont=="true", simple = req.body.simple=="true", files = [];
+	var content = req.body.cont=="true", simple = req.body.simple=="true";
 	fs.readdir(req.file,function(e,d){
 		if (e) {
 			res.send({error: e.code==='EACCES'?'perms':'exist'});
 		} else if (simple) {
 			res.send(d);
 		} else {
-			fileListInfo(d.map(function(f){return fileOps.addSlashIfNeeded(req.file)+f}),function(files){
-				files.forEach(function(i){
-					i.name = fileOps.getFileName(i.name);
-				});
-				res.send(files);
-			},content);
+			dir(d.map(function(f){return fileOps.addSlashIfNeeded(req.file)+f}),function(files){res.send(files)},content);
 		}
 	});
 };
@@ -253,5 +271,6 @@ exports.funcs = {
 	info: info,
 	dirSize: dirSize,
 	fileListInfo: fileListInfo,
-	canReadWrite: canReadWrite
+	canReadWrite: canReadWrite,
+	dir: dir
 };

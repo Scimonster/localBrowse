@@ -11,7 +11,7 @@ thead
       - if (f.name.substr(0,1)=='.'||f.name.substr(-1)=='~') {classes.push('hidden')}
       - if (!f.readable) {classes.push('restricted')}
       tr(class=classes,data-path=base+f.name)
-        td.file-name
+        td.file-name(title=f.name)
           img.file-img(src=ops.imageForFile(f,false))
           = f.name.substr(0,35)
           != f.name.length<35?'':'&#x2026;'

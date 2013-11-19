@@ -18,9 +18,9 @@ exports.index = function(req, res) {
 };
 
 // GET directory listing
-var iconset = require('fs').readdirSync('./public/img/fatcow/16x16'); // so that it's ready; ok to sync during setup
+var fs = require('fs'), iconset = fs.readdirSync('./public/img/fatcow/16x16'); // so that it's ready; ok to sync during setup
 exports.dir = function(req, res) {
-	var ops = require('./public/js/fileOps.js');
+	var ops = require('./public/js/fileOps.js'), info = require('./info').funcs;
 	ops.imageForFile = function(f,big) {
 		if (f.type=='directory') {return 'img/fatcow/'+(big?'32x32':'16x16')+'/folder.png'}
 		else {
@@ -30,11 +30,22 @@ exports.dir = function(req, res) {
 			else {return 'img/fatcow/'+(big?'32x32':'16x16')+'/document_empty.png'}
 		}
 	};
-	res.render('dir.'+req.query.type+'.jade', {
-		ops: ops,
-		files: req.body.files,
-		base: req.body.base
-	});
+	if (req.body.files) {
+		send(req.body.files);
+	} else {
+		info.dir(req.body.dir,function(files){
+			var TAFFY = require('taffy');
+			files = TAFFY(files);
+			send((req.body.s.dirFirst?files({type:'directory'}).order(req.body.s.sortby).get().concat(files({type:{'!is':'directory'}}).order(req.body.s.sortby).get()):files().order(req.body.s.sortby).get()));
+		});
+	}
+	function send(files) {
+		res.render('dir.'+req.query.type+'.jade', {
+			ops: ops,
+			files: files,// req.body.files||info.dir(req.body.dir),
+			base: req.body.base||req.body.dir
+		});
+	}
 };
 
 exports.ctxMenu = function(req, res) {
