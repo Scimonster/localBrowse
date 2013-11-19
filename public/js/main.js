@@ -168,8 +168,11 @@ function listDir(files,afterLoad) {
 		dir: addSlashIfNeeded(file),
 		s: s
 	},function(res){
-		$('#file').remove();
-		$('<'+(s.dirTiles?'div':'table')+' id="file" class="dirlist">').appendTo('#file-container').append(res);
+		if ($('#file').prop('tagName')!==(s.dirTiles?'div':'table')) {
+			$('#file').remove();
+			$('<'+(s.dirTiles?'div':'table')+' id="file" class="dirlist">').appendTo('#file-container');
+		}
+		$('#file').html(res);
 		$('#show_hide_hidden,#show_hide_restricted').change();
 		if (!s.dirTiles) {
 			if (!s.asec) {$('#file tr').reverse()}
@@ -238,11 +241,7 @@ function copy(files,cut) {
 	// Replaces the copy buffer with the specified files. Optionally removes them upon paste.
 	
 	if ($.isJQuery(files)) {
-		oldfiles = files;
-		files = [];
-		oldfiles.each(function(){
-			files.push($(this).data('path'));
-		});
+		files = files.map(function(){return $(this).data('path')}).get();
 	} else if (typeof files==="string") {
 		files = files.split('\n');
 	}
@@ -785,10 +784,9 @@ $(d).on('click','#contextMenu-folder-paste',function(){paste()}); // no event ob
 setInterval(function(){
 	if ($('#file.dirlist').length && file.substr(0,6)!='search') {
 		getDirContents(file,function(f){
-			var selList = [];
-			$('.sel').each(function(){
-				selList.push($(this).find('.file-name').text());
-			});
+			var selList = $('.sel').map(function(){
+				return $(this).find('.file-name').text();
+			}).get();
 			var selLast = $('.sel.last .file-name').text();
 			var scroll = {top:$('#file').scrollTop(),left:$('#file').scrollLeft()};
 			listDir(f,function(){
