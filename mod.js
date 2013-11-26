@@ -45,7 +45,7 @@ exports.save = function(req, res) {
 				res.send({err:'could not stat'});
 				return;
 			}
-			info.canReadWrite(req.body.file,false,function(w){
+			info.perms(req.body.file,1,function(w){
 				if (w) {
 					var done = 1;
 					if (stat.size) { // currently not an empty file

@@ -18,13 +18,14 @@ exports.master = {
 	}
 };
 
-exports.exists = function(req, res){
-	fs.exists(req.file,function(e){
+exports.exists = function(req, res) {
+	fs.exists(req.file,function(e) {
 		res.send(e);
 	});
 };
 
-function canReadWrite(file, read, cb, s){
+function perms(file, type, cb, s) {
+	// type is 0 - read, 1 - write, 2 - exec
 	if (s) {
 		run(s);
 	} else {
@@ -33,24 +34,33 @@ function canReadWrite(file, read, cb, s){
 			run(stat);
 		});
 	}
+	function pad(strNum, count) {
+		// pad a number to a specified length
+		strNum = strNum.toString();
+		if (strNum.length==count) {return strNum}
+		else {return pad('0'+strNum,count)}
+	}
 	function run(stat) {
-		var mode = stat.mode.toString(8).split('').map(function(m){return parseInt(m).toString(2)});
-		if (read) {
-			cb(!!((mode[4]&100) || ((mode[2]&100) && process.getuid() === stat.uid) || ((mode[3]&100) && process.getgid() === stat.gid)));
-		} else {
-			cb(!!((mode[4]&010) || ((mode[2]&010) && process.getuid() === stat.uid) || ((mode[3]&010) && process.getgid() === stat.gid)));
-		}
+		var mode = stat.mode.toString(8).split('').map(function(m){return pad(parseInt(m).toString(2),3)});
+		console.log(mode);
+		console.log(mode[4][type]);
+		console.log(mode[2][type]);
+		console.log(mode[3][type]);
+		cb(!!(
+			parseInt(mode[4][type])
+			|| (parseInt(mode[2][type]) && process.getuid() === stat.uid)
+			|| (parseInt(mode[3][type]) && process.getgid() === stat.gid)));
 	}
 }
 
 exports.writable = function(req, res) {
-	canReadWrite(req.file,false,function(w){
+	perms(req.file,1,function(w) {
 		res.send(w);
 	});
 };
 
 exports.readable = function(req, res) {
-	canReadWrite(req.file,true,function(r){
+	perms(req.file,0,function(r){
 		res.send(r);
 	});
 };
@@ -67,11 +77,11 @@ function info(file,cb,content,stat){
 			if (stat) {
 				i.stat = s;
 			}
-			canReadWrite(file,false,function(w){
+			perms(file,1,function(w){
 				i.writable = w;
 				finished();
 			},s);
-			canReadWrite(file,true,function(r){
+			perms(file,0,function(r){
 				i.readable = r;
 				fs.lstat(file,function(e,ls){
 					i.isLink = ls.isSymbolicLink();
@@ -271,6 +281,6 @@ exports.funcs = {
 	info: info,
 	dirSize: dirSize,
 	fileListInfo: fileListInfo,
-	canReadWrite: canReadWrite,
+	perms: perms,
 	dir: dir
 };
