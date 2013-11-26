@@ -44,6 +44,6 @@ app.post('/mod', mod.master);
 app.post('/render/dir', routes.dir);
 app.post('/render/ctxMenu', routes.ctxMenu);
 
-http.createServer(app).listen(app.get('port'), function(){
+http.createServer(app).listen(app.get('port'), function() {
 	console.log('Express server listening on port ' + app.get('port'));
 });

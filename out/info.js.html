@@ -44,18 +44,18 @@ exports.master = {
 	 * @param {Object} req Express request object
 	 * @param {Object} res Express response object
 	 */
-	get: function(req, res){
-		req.file = req.path.substr(req.path.indexOf('/',6));
-		exports.master.all(req,res);
+	get: function(req, res) {
+		req.file = req.path.substr(req.path.indexOf('/', 6)); // the filename is everything after the first slash after /info/
+		exports.master.all(req, res);
 	},
 	/**
 	 * Intercepts POST requests
 	 * @param {Object} req Express request object
 	 * @param {Object} res Express response object
 	 */
-	post: function(req, res){
+	post: function(req, res) {
 		req.file = req.body.file;
-		exports.master.all(req,res);
+		exports.master.all(req, res);
 	},
 	/**
 	 * Run action after pre-parsing
@@ -63,8 +63,8 @@ exports.master = {
 	 * @param {Object} res Express response object
 	 */
 	all: function(req, res) {
-		req.file = decodeURIComponent(req.file);
-		exports[req.params.action](req, res);
+		req.file = decodeURIComponent(req.file); // fix it up
+		exports[req.params.action](req, res); // and do whatever we asked
 	}
 };
 
@@ -74,40 +74,38 @@ exports.master = {
  * @param {Object} res Express response object
  */
 exports.exists = function(req, res) {
-	fs.exists(req.file,function(e) {
+	fs.exists(req.file, function(e) {
 		res.send(e);
 	});
 };
 
 /**
  * Check if a file is readable, writable, or executable
- * @param {string} file The filename to check
+ * @param {(string|fs.Stats)} file The filename to check, or a stat to use to check
  * @param {number} type 0 - read, 1 - write, 2 - exec
  * @param {function} cb Callback to execute upon finish. Takes 1 parameter: return value {boolean}
- * @param {fs.Stats} [s] Optional stat to used; defaults to stat of file
  */
-function perms(file, type, cb, s) {
-	// type is 0 - read, 1 - write, 2 - exec
-	if (s) {
-		run(s);
-	} else {
+function perms(file, type, cb) {
+	if (typeof file === 'string') { // filename
 		fs.stat(file, function (err, stat) {
 			if (err) {cb(false)}
 			run(stat);
 		});
+	} else { // stat
+		run(s);
 	}
 	function pad(strNum, count) {
 		// pad a number to a specified length
 		strNum = strNum.toString();
 		if (strNum.length==count) {return strNum}
-		else {return pad('0'+strNum,count)}
+		else {return pad('0'+strNum, count)}
 	}
 	function run(stat) {
-		var mode = stat.mode.toString(8).split('').map(function(m){return pad(parseInt(m).toString(2),3)});
+		var mode = stat.mode.toString(8).split('').map(function(m){return pad(parseInt(m).toString(2), 3)}); // create padded binary representations of perms
 		cb(!!(
-			parseInt(mode[4][type])
-			|| (parseInt(mode[2][type]) &amp;&amp; process.getuid() === stat.uid)
-			|| (parseInt(mode[3][type]) &amp;&amp; process.getgid() === stat.gid)));
+			parseInt(mode[4][type]) || // other
+			(parseInt(mode[2][type]) &amp;&amp; process.getuid() === stat.uid) || // user
+			(parseInt(mode[3][type]) &amp;&amp; process.getgid() === stat.gid))); // group
 	}
 }
 
@@ -117,7 +115,7 @@ function perms(file, type, cb, s) {
  * @param {Object} res Express response object
  */
 exports.writable = function(req, res) {
-	perms(req.file,1,function(w) {
+	perms(req.file, 1, function(w) {
 		res.send(w);
 	});
 };
@@ -128,7 +126,7 @@ exports.writable = function(req, res) {
  * @param {Object} res Express response object
  */
 exports.readable = function(req, res) {
-	perms(req.file,0,function(r){
+	perms(req.file, 0, function(r) {
 		res.send(r);
 	});
 };
@@ -140,28 +138,28 @@ exports.readable = function(req, res) {
  * @param {boolean} [content=false] Add {@code cont} property to returned object with file contents
  * @param {fs.Stats} [stat=false] Add {@code stat} property to returned object with stat results
  */
-function info(file,cb,content,stat){
+function info(file, cb, content, stat) {
 	var i = {name: file};
-	fs.exists(file,function(e){
+	fs.exists(file, function(e) { // check existence
 		i.exists = e;
 		if (!e) {
 			cb(i);
-			return;
+			return; // doesn't exist, so quit
 		}
-		fs.stat(file,function(e,s){
+		fs.stat(file, function(e, s) { // get stat
 			if (stat) {
-				i.stat = s;
+				i.stat = s; // add the stat in if we want it
 			}
-			perms(file,1,function(w){
+			perms(s, 1, function(w) { // writable?
 				i.writable = w;
 				finished();
-			},s);
-			perms(file,0,function(r){
+			});
+			perms(s, 0, function(r) { // readable?
 				i.readable = r;
-				fs.lstat(file,function(e,ls){
+				fs.lstat(file, function(e, ls) { // check if it's a link
 					i.isLink = ls.isSymbolicLink();
 					if (i.isLink) {
-						fs.readlink(file,function(e,l){
+						fs.readlink(file, function(e, l) {
 							i.link = l;
 							finished();
 						});
@@ -172,13 +170,13 @@ function info(file,cb,content,stat){
 				i.type = s.isDirectory()?'directory':'';
 				if (!i.type) { // is file
 					if (r &amp;&amp; !s.isDirectory() &amp;&amp; content) {
-						fs.readFile(file,'utf8',function(f_e,f){
+						fs.readFile(file,'utf8',function(f_e, f){
 							i.cont = e?null:f;
 							finished();
 						});
 					}
-					var mmm = require('mmmagic'), magic = new mmm.Magic(mmm.MAGIC_MIME_TYPE);
-					magic.detectFile(file,function(m_e,m_type){
+					var mmm = require('mmmagic'), magic = new mmm.Magic(mmm.MAGIC_MIME_TYPE); // MIME checking dependencies
+					magic.detectFile(file, function(m_e, m_type) {
 						if (m_e) { // Magic error, use lazy checking
 							i.type = require('mime').lookup(file);
 						} else {
@@ -188,7 +186,7 @@ function info(file,cb,content,stat){
 					});
 					i.size = s.size;
 				} else if (r) { // is dir
-					fs.readdir(file,function(d_e,d){
+					fs.readdir(file, function(d_e, d) {
 						i.size = d.length;
 						finished();
 					});
@@ -196,9 +194,9 @@ function info(file,cb,content,stat){
 					i.size = null;
 				}
 				finished();
-			},s);
+			});
 			i.date = s.mtime;
-			i.perm = parseInt(s.mode.toString(8),10).toString(10).substr(2);
+			i.perm = parseInt(s.mode.toString(8), 10).toString(10).substr(2); // get the value as an octal number, turn it to decimal, turn it to string, and chop off the first couple characters
 			finished();
 		});
 	});
@@ -223,7 +221,7 @@ function info(file,cb,content,stat){
 }
 
 /**
- * Print results of {@link module:info.funcs~info info}
+ * Web abstraction for {@link module:info.funcs~info info}
  * @param {Object} req Express request object
  * @param {Object} res Express response object
  */
@@ -243,8 +241,8 @@ exports.info = function(req, res) {
  * @param {Object} res Express response object
  */
 exports.infoDate = function(req, res) {
-	fs.stat(req.file,function(e,s){
-		res.send((e?0:s.mtime.getTime()/1000).toString(10));
+	fs.stat(req.file, function(e, s){
+		res.send((e?0:s.mtime.getTime()/1000).toString(10)); // UNIX epoch offset time in seconds as string, so as not to send some crazy status
 	});
 };
 exports['info.date'] = exports.infoDate;
@@ -264,7 +262,7 @@ exports.echo = function(req, res) {
  * @param {Object} res Express response object
  */
 exports.isDir = function(req, res) {
-	fs.stat(req.file,function(e,s){
+	fs.stat(req.file, function(e, s){
 		res.send(e?false:s.isDirectory());
 	});
 };
@@ -274,17 +272,18 @@ exports.isDir = function(req, res) {
  * @param {Array} files Files to get info for
  * @param {function} cb Callback function. Takes 1 parameter: Array of info
  * @param {boolean} [content=false] Same as {@code cont} parameter to {@link module:info~info info}
+ * @todo Add CWD option to avoid hacks like used in {@link module:info~dir dir}
  */
-function fileListInfo(files,cb,content) {
-	var fileList = [];
-	files.forEach(function(f){
-		info(f,function(i){
+function fileListInfo(files, cb, content) {
+	var fileList = []; // final list, will be passed to cb once populated
+	files.forEach(function(f) {
+		info(f, function(i) { // get info on current one
 			fileList.push(i);
 			finished();
 		},content);
 	});
 	function finished(){
-		if (files.length===fileList.length) {
+		if (files.length===fileList.length) { // all present
 			cb(fileList);
 		}
 	}
@@ -296,13 +295,13 @@ function fileListInfo(files,cb,content) {
  * @param {function} cb Callback function; takes 1 parameter: array of file infos
  * @param {boolean} [cont=false] Same as {@code cont} parameter to {@link module:info~info info}
  */
-function dir(files,cb,cont) {
-	if (typeof files==='string') {
-		fs.readdir(files,function(e,d){
+function dir(files, cb, cont) {
+	if (typeof files==='string') { // filepath
+		fs.readdir(files, function(e, d){
 			if (e) {
-				cb({error: e.code==='EACCES'?'perms':'exist'});
+				cb({error: e.code==='EACCES'?'perms':'exist'}); // send correct error
 			} else {
-				files = d.map(function(f){return fileOps.addSlashIfNeeded(files)+f});
+				files = d.map(function(f){return fileOps.addSlashIfNeeded(files)+f}); // because fs.readdir doesn't give full path
 				run();
 			}
 		});
@@ -310,12 +309,12 @@ function dir(files,cb,cont) {
 		run();
 	}
 	function run() {
-		fileListInfo(files,function(files){
-			files.forEach(function(i){
-				i.name = fileOps.getFileName(i.name);
+		fileListInfo(files, function(files) {
+			files.forEach(function(i) {
+				i.name = fileOps.getFileName(i.name); // remove full path, only keep filename
 			});
 			cb(files);
-		},cont);
+		}, cont);
 	}
 }
 
@@ -326,13 +325,16 @@ function dir(files,cb,cont) {
  */
 exports.dir = function(req, res) {
 	var content = req.body.cont=="true", simple = req.body.simple=="true";
-	fs.readdir(req.file,function(e,d){
-		if (e) {
+	fs.readdir(req.file, function(e, d) {
+		if (e) { // can't leave this up to dir() because then we'd have an unresolved error
 			res.send({error: e.code==='EACCES'?'perms':'exist'});
 		} else if (simple) {
 			res.send(d);
 		} else {
-			dir(d.map(function(f){return fileOps.addSlashIfNeeded(req.file)+f}),function(files){res.send(files)},content);
+			dir(
+				d.map(function(f){return fileOps.addSlashIfNeeded(req.file)+f}),
+				function(files){res.send(files)}, // unfortunately, res.send doesn't like to be passed
+				content);
 		}
 	});
 };
@@ -389,21 +391,25 @@ function dirSize(dir, depth, cb) {
  * @param {Object} res Express response object
  */
 exports.dirSize = function(req, res) {
-	var depth = (req.body &amp;&amp; req.body.depth) || 3;
-	dirSize(req.file,depth===0?Infinity:depth,function(s){res.send(s.toString())})
+	var depth = (req.body &amp;&amp; req.body.depth) || 3; // get depth from POST, otherwise 3
+	dirSize(
+		req.file,
+		depth===0?Infinity:depth, // a depth of 0 means infinite depth
+		function(s){res.send(s.toString())}); // again to prevent a crazy HTTP status being sent
 };
 
 /**
  * Send current work directory
  * @param {Object} req Express request object
  * @param {Object} res Express response object
+ * @deprecated due to only use-case being removed (will likely be removed in full release)
  */
 exports.localbrowseCWD = function(req, res){
 	res.send(process.env.PWD);
 };
 
 /**
- * A way to access internals
+ * A way for other functions to access internals
  * @property {function} info         Internal {@link module:info~info info} function
  * @property {function} dirSize      Internal {@link module:info~dirSize dirSize} function
  * @property {function} fileListInfo Internal {@link module:info~fileListInfo fileListInfo} function
@@ -433,7 +439,7 @@ exports.funcs = {
 <br clear="both">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha2</a> on Tue Nov 26 2013 22:17:08 GMT+0200 (IST)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha2</a> on Tue Nov 26 2013 23:32:02 GMT+0200 (IST)
 </footer>
 
 <script> prettyPrint(); </script>

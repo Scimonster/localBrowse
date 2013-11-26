@@ -14,8 +14,8 @@ var fs = require('fs-extra');
  * @param {Object} res Express response object
  */
 exports.master = function(req, res) {
-	req.body.file = decodeURIComponent(req.body.file);
-	exports[req.body.action](req, res);
+	req.body.file = decodeURIComponent(req.body.file); // set up
+	exports[req.body.action](req, res); // and do it
 };
 
 /**
@@ -24,7 +24,7 @@ exports.master = function(req, res) {
  * @param {Object} res Express response object
  */
 exports.mkdir = function(req, res) {
-	fs.mkdirs(req.body.file,function(e){
+	fs.mkdirs(req.body.file, function(e) { // make parent dirs too, just in case
 		res.send(!!e);
 	});
 };
@@ -35,13 +35,13 @@ exports.mkdir = function(req, res) {
  * @param {Object} res Express response object
  */
 exports.mkfile = function(req, res) {
-	fs.open(req.body.file,'wx',function(e,fd){
-		if (fd && req.body.content) {
-			fs.write(fd, new Buffer(req.body.content), 0, req.body.content, null, function(err, written){
+	fs.open(req.body.file, 'wx', function(e, fd) { // open the file for writing if it doesn't exist
+		if (fd && req.body.content) { // write the content to it
+			fs.write(fd, new Buffer(req.body.content), 0, req.body.content, null, function(err, written) {
 				res.send(written);
 			});
 		} else {
-			res.send(!!e);
+			res.send(!!e); // send success
 		}
 	});
 };
@@ -52,7 +52,7 @@ exports.mkfile = function(req, res) {
  * @param {Object} res Express response object
  */
 exports.link = function(req, res) {
-	fs.link(req.body.src,req.body.dest,function(e){
+	fs.link(req.body.src, req.body.dest, function(e) {
 		res.send(!!e);
 	});
 };
@@ -61,29 +61,31 @@ exports.link = function(req, res) {
  * Save a file
  * @param {Object} req Express request object
  * @param {Object} res Express response object
+ * @todo Use a finish function
+ * @todo Force order
  */
 exports.save = function(req, res) {
-	if (req.body.content !== undefined) {
+	if (req.body.content !== undefined) { // content MUST be set
 		var info = require('./info').funcs;
-		fs.stat(req.body.file,function(e,stat){
+		fs.stat(req.body.file, function(e, stat) {
 			if (e) {
 				res.send({err:'could not stat'});
 				return;
 			}
-			info.perms(req.body.file,1,function(w){
-				if (w) {
-					var done = 1;
+			info.perms(stat, 1, function(w) {
+				if (w) { // if writable
+					var done = 1; // files written to (starts at one in case it is empty, in which case we don't backup)
 					if (stat.size) { // currently not an empty file
 						done--;
-						fs.readFile(req.body.file,function(e,oldcont){ // get old contents to write to backup
+						fs.readFile(req.body.file, function(e, oldcont) { // get old contents to write to backup
 							if (e) {
 								res.send({err:'could not read'});
 								return;
 							}
-							fs.writeFile(req.body.file+'~',oldcont,function(e){
+							fs.writeFile(req.body.file+'~', oldcont, function(e) { // write old content to backup, ignore errors
 								done++;
-								if (done===2) {
-									fs.stat(req.body.file,function(e,i){
+								if (done===2) { // both are done
+									fs.stat(req.body.file, function(e, i) {
 										if (e) {
 											res.send({err:'could not stat after saving'});
 											return;
@@ -94,7 +96,7 @@ exports.save = function(req, res) {
 							});
 						});
 					}
-					fs.writeFile(req.body.file,req.body.content,function(e){
+					fs.writeFile(req.body.file, req.body.content, function(e) { // write actual file
 						if (e) {
 							res.send({err:'could not write'});
 							return;
@@ -113,7 +115,7 @@ exports.save = function(req, res) {
 				} else {
 					res.send({err:'not writable'});
 				}
-			},stat);
+			});
 		});
 	} else {
 		res.send({err:'no content'});
@@ -127,17 +129,17 @@ exports.save = function(req, res) {
  * @param {boolean} copy Copy or move?
  */
 exports.move = function(req, res, copy) {
-	var pasted = [];
+	var pasted = []; // list of pasted files
 	for (f in req.body.files) {
 		f = decodeURIComponent(f);
-		fs[copy?'copy':'rename'](f,req.body.files[f],function(e){
-			pasted.push(e?null:req.body.files[f]);
+		fs[copy?'copy':'rename'](f, req.body.files[f], function(e) { // do correct operation on file
+			pasted.push(e?null:req.body.files[f]); // when done, add to list of pasted
 			done();
 		});
 	}
 	function done() {
 		if (pasted.length===req.body.files.length) {
-			res.send(pasted.filter(function(i){return i}));
+			res.send(pasted.filter(function(i){return i})); // remove null entries
 		}
 	}
 };
