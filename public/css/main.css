@@ -114,8 +114,6 @@ h2 {
 	word-wrap: break-word;}
 #file.dirlist div.file span.file-size, #file.dirlist div.file span.file-date, #file.dirlist div.file span.file-type {
 	display: inline-block;}
-#file.dirlist div.file span.file-perm {
-	display: none;}
 #name {width: 46%}
 #size {width: 10%}
 #date {width: 22%}

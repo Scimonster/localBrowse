@@ -7,7 +7,6 @@ each f in files
     span.file-name(title=f.name)
       = f.name.substr(0,25)
       != f.name.length<25?'':'&#x2026;'
-    span.file-size!= f.type=='directory'?f.size+' items':(f.readable?ops.filesizeFormatted(f.size):f.size)
-    span.file-date!= f.readable?ops.dateFormat(f.date,false):f.date
+    span.file-size(title=f.type=='directory'?f.size+' items':f.size+' B')!= f.type=='directory'?f.size+' items':(f.readable?ops.filesizeFormatted(f.size):f.size)
+    span.file-date(title=f.date.toLocaleString())!= f.readable?ops.dateFormat(f.date.getTime()/1000,false):f.date
     span.file-type!= f.type
-    span.file-perm!= ops.permsFormatted(f.perm)

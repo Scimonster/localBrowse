@@ -112,7 +112,7 @@ function info(file,cb,content,stat){
 				}
 				finished();
 			},s);
-			i.date = s.mtime.getTime()/1000;
+			i.date = s.mtime;
 			i.perm = parseInt(s.mode.toString(8),10).toString(10).substr(2);
 			finished();
 		});
