@@ -16,7 +16,7 @@ exports.search = function(req, res) {
 	var cwd = req.body.cwd?decodeURIComponent(req.body.cwd):process.env.HOME, // the cwd to search in
 	find = spawn('find', // UNIX `find` command
 		[
-			'-path', // path is
+			'-path', // path is:
 			'~/.local/share/Trash', // trash/...
 			'-prune', // ...is excluded
 			'-o', // OR

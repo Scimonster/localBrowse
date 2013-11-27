@@ -1,5 +1,7 @@
-var w = window, d= document, // this stuff is global just for the dev period
-	s = {
+var
+	w = window, // shortcuts
+	d= document,
+	s = { // settings
 		sortby: 'name',
 		asec: true,
 		dirFirst: 1,
@@ -8,16 +10,19 @@ var w = window, d= document, // this stuff is global just for the dev period
 		dirTiles: true,
 		expandHomeroot: false
 	},
-	file, type, bookmarks, iconset = [], toPaste = {},
-	homeroot = '/home/'+user;
-$.get('/info/localbrowseCWD',function(cwd){getDirContents(cwd+'/public/img/fatcow/16x16',{cont:false,simple:true},function(i){iconset = i().select('name')})});
+	file, // the filepath of the current file/dir
+	type, // dir, trash, search, file
+	bookmarks, // array of bookmarks
+	iconset = [], // deprecated, probably
+	toPaste = {}; // fromPath=>toPath
+$.get('/info/localbrowseCWD',function(cwd){getDirContents(cwd+'/public/img/fatcow/16x16',{cont:false,simple:true},function(i){iconset = i().select('name')})}); // deprecated
 
 function load() {
 	// This function runs when a new file/dir is loaded, and at startup.
 
 	// Start by identifying the file.
 	file = location.hash.substr(1);
-	if (file=='') { // nothing was specified, so use homedir, sorta
+	if (file=='') { // nothing was specified, so use homedir
 		file = homeroot+'/';
 		location.hash += file;
 		return;
@@ -85,6 +90,7 @@ function load() {
 function viewFile() {
 	// This function opens a file
 
+	// TODO: Completely redo file-opening (see /TODO.md)
 	var editable_types = {
 		'text\/.*': 'text',
 		'inode\/x-empty': 'text',
@@ -113,29 +119,29 @@ function viewFile() {
 			if (editors.indexOf(editor)+1) {
 				// We have an editor for this type.
 
-				if (editor == 'text') {
+				if (editor == 'text') { // load text editor
 					$('<textarea id="file" autofocus="autofocus">').val(f.cont).appendTo('#file-container').focus();
 				}
 				d.title = file + ' - editing - localBrowse';
 				
-				if (f.writable) {
+				if (f.writable) { // add save button
 					$('<button id="save"><!--<span class="ui-icon ui-icon-disk"></span>-->save</button>').appendTo('#toolbar-left');
 				} else {
 					d.title = file + ' - editing [read-only] - localBrowse';
 				}
-				$.get('info/writable'+getParentDir(file),function(d){
+				$.get('info/writable'+getParentDir(file),function(d){ // add save as button
 					if (parseInt(d)){
 						$('<button id="saveAs">save as</button>').appendTo('#toolbar-left');
 					}
 					$('#toolbar-left').buttonset();
 				});
 				$('#message').html('Editing with '+editor+' editor.'+(f.writable?'':' This file is read-only to localBrowse.')+(f.name.substr(-1)=='~'?' Warning: you are editing a backup file.':''));
-			} else {
+			} else { // no editors
 				// Load the browser's view of the file.
 				$('<iframe id="file">').attr('src','info/echo/'+file).appendTo('#file-container');
 			}
-			$('#file').data('modDate',f.date);
-		} else {
+			$('#file').data('modDate',f.date); // for checking if it was modified
+		} else { // doesn't exist
 			$('<div id="file" style="text-align:center">').appendTo('#file-container').html('The file "'+file+'" does not exist.');
 		}
 	});
@@ -146,14 +152,16 @@ function viewFile() {
 function listDir(files,afterLoad) {
 	// This function lists the contents of a directory
 	
-	afterLoad = afterLoad || $.noop;
-	if (files == 'perms') {
+	afterLoad = afterLoad || $.noop; // TODO: add beforeLoad also
+	if (files.err == 'perms') { // can't access
 		$('#file').remove();
 		$('<div id="file" style="text-align:center">').appendTo('#file-container').html(file+' is not readable to localBrowse.');
 		return;
 	}
+	// set message
 	$('#message').html(files({type:'directory'}).count()+' directories; '+files({type:{'!is':'directory'}}).count()+' files. <span id="dirSize">Approximately <span id="directorySize">'+($('#directorySize').text()||'...')+'</span> (<span id="dirSizeDepth">'+($('#dirSizeDepth').text()||3)+'</span> levels deep). <a id="fullDirSize" href="'+location.hash+'">More accurate calculation.</a></span>');
 	if (file.substr(0,6)!='search') {
+		// get dir size
 		$.post('info/dirSize','depth='+$('#dirSizeDepth').text()+'&file='+file,function(size){
 			$('#dirSize').html('Approximately <span id="directorySize">'+filesizeFormatted(size)+'</span> (<span id="dirSizeDepth">'+$('#dirSizeDepth').text()+'</span> levels deep). <a id="fullDirSize" href="'+location.hash+'">More accurate calculation.</a>');
 		});
@@ -161,26 +169,30 @@ function listDir(files,afterLoad) {
 	$('#toolbar-left').children().remove();
 	$('<span><input id="show_hide_hidden" type="checkbox" name="show_hide_hidden"'+(s.hidden?' checked="checked"':'')+' /><input id="show_hide_restricted" type="checkbox" name="show_hide_restricted"'+(s.restricted?' checked="checked"':'')+' /><label for="show_hide_hidden"><span>'+(s.hidden?'show':'hide')+'</span> hidden files</label><label for="show_hide_restricted"><span>'+(s.restricted?'show':'hide')+'</span> restricted files</label></span>').buttonset().appendTo('#toolbar-left');
 	$('<span><input id="dir_type_list" type="radio" name="dir_type" value="list"'+(s.dirTiles?'':' checked="checked"')+' /><input id="dir_type_tiles" type="radio" name="dir_type" value="tiles"'+(s.dirTiles?' checked="checked"':'')+' /><label for="dir_type_list">list</label><label for="dir_type_tiles">tiles</label></span>').buttonset().appendTo('#toolbar-left');
-	$.post('render/dir?type='+(s.dirTiles?'tiles':'list'),file.substr(0,6)=='search'?{
-		base:addSlashIfNeeded(cwd),
-		files:(s.dirFirst?files({type:'directory'}).order(s.sortby).get().concat(files({type:{'!is':'directory'}}).order(s.sortby).get()):files().order(s.sortby).get())
-	}:{
-		dir: addSlashIfNeeded(file),
-		s: s
-	},function(res){
-		if ($('#file').prop('tagName')!==(s.dirTiles?'div':'table')) {
-			$('#file').remove();
-			$('<'+(s.dirTiles?'div':'table')+' id="file" class="dirlist">').appendTo('#file-container');
-		}
-		$('#file').html(res);
-		$('#show_hide_hidden,#show_hide_restricted').change();
-		if (!s.dirTiles) {
-			if (!s.asec) {$('#file tr').reverse()}
-			$('#file th span.ui-icon').remove();
-			$('<span>').appendTo('#'+s.sortby).addClass('ui-icon ui-icon-triangle-1-'+(s.asec?'s':'n'));
-			$('#file').menu();
-		}
-		afterLoad();
+	$.post(
+		'render/dir?type='+(s.dirTiles?'tiles':'list'), // render listing
+		file.substr(0,6)=='search'?{ // so we need to pass the entire listing
+			base:addSlashIfNeeded(cwd),
+			files:(s.dirFirst?files({type:'directory'}).order(s.sortby).get().concat(files({type:{'!is':'directory'}}).order(s.sortby).get()):files().order(s.sortby).get())
+		}:{ // we can just give it the dirpath and it'll get the files
+			dir: addSlashIfNeeded(file),
+			s: s
+		},
+		function(res){
+			// add beforeLoad() here
+			if ($('#file').prop('tagName')!==(s.dirTiles?'div':'table')) { // only recreate #file if it's the wrong type
+				$('#file').remove();
+				$('<'+(s.dirTiles?'div':'table')+' id="file" class="dirlist">').appendTo('#file-container');
+			}
+			$('#file').html(res);
+			$('#show_hide_hidden,#show_hide_restricted').change();
+			if (!s.dirTiles) {
+				if (!s.asec) {$('#file tr').reverse()}
+				$('#file th span.ui-icon').remove();
+				$('<span>').appendTo('#'+s.sortby).addClass('ui-icon ui-icon-triangle-1-'+(s.asec?'s':'n'));
+				$('#file').menu();
+			}
+			afterLoad();
 	});
 	$('#file').data('files',files);
 }
@@ -188,7 +200,9 @@ function listDir(files,afterLoad) {
 function listTrash(files) {
 	// This function lists the contents of the trash
 	
-	if (files == 'perms') {
+	// TODO: make trash work more like regular dir
+	
+	if (files.err == 'perms') {
 		$('#file').remove();
 		$('<div id="file" style="text-align:center">').appendTo('#file-container').html('The trash is not readable to localBrowse! Did you forget to run the setup script?');
 		return;
@@ -240,6 +254,7 @@ function search(term) {
 function copy(files,cut) {
 	// Replaces the copy buffer with the specified files. Optionally removes them upon paste.
 	
+	// set up files as an array
 	if ($.isJQuery(files)) {
 		files = files.map(function(){return $(this).data('path')}).get();
 	} else if (typeof files==="string") {
@@ -252,21 +267,19 @@ function copy(files,cut) {
 }
 
 function paste(files,destination) {
-	// Reads files from the copy buffer and copies them here
-	
-	console.log(arguments)
+	// Reads files from the copy buffer and copies them to the CWD
 	
 	files = files || sessionStorage.getItem('copy').split('\n');
 	destination = destination || file;
-	function run(files,destination,cb) {
-		var recurse = 0;
+	function run(files,destination,cb) { // recursive function to paste all files and dirs
+		var recurse = 0; // recursion depth
 		$.each(files, function(i, srcFile){
 			$.get('info/info'+srcFile,function(src){
 				if (src.readable) {
 					$.get('info/info'+addSlashIfNeeded(destination)+getFileName(srcFile),function(dest){
 						// we now have info on the source and destination files
 						if (dest.exists) { // we'll need to overwrite/merge
-							recurse++;
+							recurse++; // starting an async operation
 							var dataForFile = function(f,replace){return f.type==='directory'?('<div class="fileOverwriteDialog-fileInfo"><img src="'+imageForFile(f,true)+'"/><p><b>'+(replace?'Replacement':'Existing')+' folder</b><br/>Size: '+src.size+' items<br/>Last modified: '+dateFormat(src.date)+'</p></div>'):('<div class="fileOverwriteDialog-fileInfo"><img src="'+imageForFile(f,true)+'"/><p><b>'+(replace?'Replacement':'Existing')+' file</b><br/>Size: '+filesizeFormatted(f.size)+' items<br/>Last modified: '+dateFormat(src.date)+'</p></div>')};
 							if (dest.type=='directory' && src.type=='directory') { // merge
 								$.post('info/dir','simple=true&file='+getParentDir(dest.name),function(otherfiles){ // other files in dest dir, to see if it will be overwritten
@@ -278,18 +291,18 @@ function paste(files,destination) {
 									},getFileName(srcFile),function(newname){
 										if (newname) { // will be null if skip was clicked
 											if (otherfiles.indexOf(newname)>-1) { // merge
-												recurse++;
+												recurse++; // more async
 												$.post('info/dir','simple=true&file='+srcFile,function(children){
 													run(children.map(function(item){return addSlashIfNeeded(srcFile)+item}),getParentDir(dest.name)+newname,function(){
-														recurse--;
-														done();
+														recurse--; // async finished
+														done(); // check for completeness
 													});
 												});
 											} else { // name changed
 												toPaste[srcFile] = getParentDir(dest.name)+newname;
 											}
 										}
-										recurse--;
+										recurse--; // async finished
 										done();
 									});
 								});
@@ -318,7 +331,6 @@ function paste(files,destination) {
 			});
 		});
 		function done(){
-			console.log(recurse);
 			if (recurse===0) {cb()}
 		}
 	}
@@ -382,7 +394,7 @@ function getDirContents(dir, opts, callback) {
 	});
 }
 
-function isReadable(f){return f.size!='N/A'}
+function isReadable(f){return f.size!='N/A'} // f is a File
 
 function parseTrashInfo(info) {
 	info = info.split('\n');
@@ -408,7 +420,7 @@ function imageForFile(f,big) {
 }
 
 $(w).on('hashchange',load);
-$(function(){
+$(function(){ // set up jqUI elements
 	$('#filepath').buttonset();
 	$('#back-and-forth').buttonset();
 	$('#back').click(history.back);
@@ -629,7 +641,7 @@ $(d).ajaxError(function(e, jqxhr, settings, exception){
 		if ($(message.dialog).find('.retrying_in span').text()==0) {message.buttons[0].click()}
 	},1000);
 });
-$(d).on('click','#filepath a:last',load);
+$(d).on('click','#filepath a:last',load); // because the browser won't usually load the hash if it's the same
 $(d).on('click','#fullDirSize',function() {
 	jqUI.prompt({text:'Calculate size how many levels? (Note that a higher number is a slower operation.)',title:'Depth'},(parseInt($('#dirSizeDepth').text())+1),function(depth){
 		if (depth) {
