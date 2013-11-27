@@ -61,8 +61,6 @@ exports.link = function(req, res) {
  * Save a file
  * @param {Object} req Express request object
  * @param {Object} res Express response object
- * @todo Use a finish function
- * @todo Force order
  */
 exports.save = function(req, res) {
 	if (req.body.content !== undefined) { // content MUST be set
@@ -82,25 +80,22 @@ exports.save = function(req, res) {
 								res.send({err:'could not read'});
 								return;
 							}
-							fs.writeFile(req.body.file+'~', oldcont, function(e) { // write old content to backup, ignore errors
-								done++;
-								if (done===2) { // both are done
-									fs.stat(req.body.file, function(e, i) {
-										if (e) {
-											res.send({err:'could not stat after saving'});
-											return;
-										}
-										res.send({date:(e?0:i.mtime.getTime()/1000).toString(10)});
-									});
-								}
-							});
+							write(); // only write after old contents are read
+							fs.writeFile(req.body.file+'~', oldcont, done); // write old content to backup, ignore errors
+						});
+					} else {
+						write();
+					}
+					function write() {
+						fs.writeFile(req.body.file, req.body.content, function(e) { // write actual file
+							if (e) {
+								res.send({err:'could not write'});
+								return;
+							}
+							done();
 						});
 					}
-					fs.writeFile(req.body.file, req.body.content, function(e) { // write actual file
-						if (e) {
-							res.send({err:'could not write'});
-							return;
-						}
+					function done() {
 						done++;
 						if (done===2) {
 							fs.stat(req.body.file,function(e,i){
@@ -111,7 +106,7 @@ exports.save = function(req, res) {
 								res.send({date:(e?0:i.mtime.getTime()/1000).toString(10)});
 							});
 						}
-					});
+					}
 				} else {
 					res.send({err:'not writable'});
 				}

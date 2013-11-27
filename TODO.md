@@ -7,9 +7,6 @@ On the Node side
 ### all
 * Use `path` module instead of `fileOps.js`
 
-### `mod.js`
-* Fix up `save()`
-
 ### `info.js`
 * Use CWD in `fileListInfo()` and `dir()`
 * Set up Info construct
