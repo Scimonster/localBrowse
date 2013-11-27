@@ -36,7 +36,7 @@ exports.index = function(req, res) {
  */
 var fs = require('fs'), iconset = fs.readdirSync('./public/img/fatcow/16x16'); // so that it's ready; ok to sync during setup
 exports.dir = function(req, res) {
-	var ops = require('./public/js/fileOps.js'), info = require('./info').funcs; // dependencies for file operations
+	var ops = require('./public/js/fileOps.js'), info = require('./info'); // dependencies for file operations
 	ops.imageForFile = function(f, big) { // get an image for a file
 		if (f.type=='directory') {return 'img/fatcow/'+(big?'32x32':'16x16')+'/folder.png'}
 		else {

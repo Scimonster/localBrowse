@@ -64,7 +64,7 @@ exports.link = function(req, res) {
  */
 exports.save = function(req, res) {
 	if (req.body.content !== undefined) { // content MUST be set
-		var info = require('./info').funcs;
+		var info = require('./info');
 		fs.stat(req.body.file, function(e, stat) {
 			if (e) {
 				res.send({err:'could not stat'});
