@@ -12,7 +12,7 @@ var fs = require('fs-extra'),
 	LBFile = require('./File.js');
 
 /** @var {object} info.master */
-exports.master = {
+exports.routes = {
 	/**
 	 * Intercepts GET requests
 	 * @param {Object} req Express request object

@@ -9,7 +9,7 @@ On the Node side
 
 ### `info.js`
 * Use CWD in `fileListInfo()` and `dir()`
-* Set up Info construct
+* Set up File construct
 
 ## Client side
 Client JS

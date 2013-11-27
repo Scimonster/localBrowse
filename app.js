@@ -34,9 +34,9 @@ if ('development' == app.get('env')) {
 app.get('/', routes.index);
 
 // info for parsing
-app.get('/info/:action/*', info.master.get);
+app.get('/info/:action/*', info.routes.get);
 app.get('/info/localbrowseCWD', info.localbrowseCWD);
-app.post('/info/:action', info.master.post);
+app.post('/info/:action', info.routes.post);
 app.post('/search', search.search);
 app.post('/mod', mod.master);
 
