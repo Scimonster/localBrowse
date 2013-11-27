@@ -8,7 +8,8 @@
  */
 
 var fs = require('fs-extra'),
-	fileOps = require('./public/js/fileOps.js');
+	fileOps = require('./public/js/fileOps.js'),
+	LBFile = require('./File.js');
 
 /** @var {object} info.master */
 exports.master = {
@@ -112,7 +113,7 @@ exports.readable = function(req, res) {
  * @param {fs.Stats} [stat=false] Add {@code stat} property to returned object with stat results
  */
 function info(file, cb, content, stat) {
-	var i = {name: file};
+	var i = {path: file};
 	fs.exists(file, function(e) { // check existence
 		i.exists = e;
 		if (!e) {
@@ -188,7 +189,7 @@ function info(file, cb, content, stat) {
 			typeof i.isLink !== 'undefined' && (!i.isLink || typeof i.link !== 'undefined') &&
 			(content && i.type!='directory'?typeof i.cont !== 'undefined':true) &&
 			(stat?typeof i.stat !== 'undefined':true)) {
-			cb(i);
+			cb(new LBFile(i));
 		}
 	}
 }
@@ -282,12 +283,7 @@ function dir(files, cb, cont) {
 		run();
 	}
 	function run() {
-		fileListInfo(files, function(files) {
-			files.forEach(function(i) {
-				i.name = fileOps.getFileName(i.name); // remove full path, only keep filename
-			});
-			cb(files);
-		}, cont);
+		fileListInfo(files, cb, cont);
 	}
 }
 
