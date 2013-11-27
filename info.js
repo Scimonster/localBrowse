@@ -11,7 +11,14 @@ var fs = require('fs-extra'),
 	fileOps = require('./public/js/fileOps.js'),
 	LBFile = require('./File.js');
 
-/** @var {object} info.master */
+/**
+ * @property {function} get
+ * Intercepts GET requests
+ * @property {function} post
+ * Intercepts POST requests
+ * @property {function} all
+ * Run action after pre-parsing
+ * */
 exports.routes = {
 	/**
 	 * Intercepts GET requests
@@ -20,7 +27,7 @@ exports.routes = {
 	 */
 	get: function(req, res) {
 		req.file = req.path.substr(req.path.indexOf('/', 6)); // the filename is everything after the first slash after /info/
-		exports.master.all(req, res);
+		exports.routes.all(req, res);
 	},
 	/**
 	 * Intercepts POST requests
@@ -29,7 +36,7 @@ exports.routes = {
 	 */
 	post: function(req, res) {
 		req.file = req.body.file;
-		exports.master.all(req, res);
+		exports.routes.all(req, res);
 	},
 	/**
 	 * Run action after pre-parsing
@@ -38,16 +45,21 @@ exports.routes = {
 	 */
 	all: function(req, res) {
 		req.file = decodeURIComponent(req.file); // fix it up
-		exports[req.params.action](req, res); // and do whatever we asked
+		actions[req.params.action](req, res); // and do whatever we asked
 	}
 };
+
+/**
+ * List of actions to run
+ */
+var actions = {};
 
 /**
  * Check if file exists
  * @param {Object} req Express request object
  * @param {Object} res Express response object
  */
-exports.exists = function(req, res) {
+actions.exists = function(req, res) {
 	fs.exists(req.file, function(e) {
 		res.send(e);
 	});
@@ -88,7 +100,7 @@ function perms(file, type, cb) {
  * @param {Object} req Express request object
  * @param {Object} res Express response object
  */
-exports.writable = function(req, res) {
+actions.writable = function(req, res) {
 	perms(req.file, 1, function(w) {
 		res.send(w);
 	});
@@ -99,7 +111,7 @@ exports.writable = function(req, res) {
  * @param {Object} req Express request object
  * @param {Object} res Express response object
  */
-exports.readable = function(req, res) {
+actions.readable = function(req, res) {
 	perms(req.file, 0, function(r) {
 		res.send(r);
 	});
@@ -199,7 +211,7 @@ function info(file, cb, content, stat) {
  * @param {Object} req Express request object
  * @param {Object} res Express response object
  */
-exports.info = function(req, res) {
+actions.info = function(req, res) {
 	var content = req.body && req.body.content, stat = req.body && req.body.stat;
 	info(
 		req.file,
@@ -214,19 +226,19 @@ exports.info = function(req, res) {
  * @param {Object} req Express request object
  * @param {Object} res Express response object
  */
-exports.infoDate = function(req, res) {
+actions.infoDate = function(req, res) {
 	fs.stat(req.file, function(e, s){
 		res.send((e?0:s.mtime.getTime()/1000).toString(10)); // UNIX epoch offset time in seconds as string, so as not to send some crazy status
 	});
 };
-exports['info.date'] = exports.infoDate;
+actions['info.date'] = actions.infoDate;
 
 /**
  * Send a file with correct headers
  * @param {Object} req Express request object
  * @param {Object} res Express response object
  */
-exports.echo = function(req, res) {
+actions.echo = function(req, res) {
 	res.sendfile(req.file);
 };
 
@@ -235,7 +247,7 @@ exports.echo = function(req, res) {
  * @param {Object} req Express request object
  * @param {Object} res Express response object
  */
-exports.isDir = function(req, res) {
+actions.isDir = function(req, res) {
 	fs.stat(req.file, function(e, s){
 		res.send(e?false:s.isDirectory());
 	});
@@ -292,7 +304,7 @@ function dir(files, cb, cont) {
  * @param {Object} req Express request object
  * @param {Object} res Express response object
  */
-exports.dir = function(req, res) {
+actions.dir = function(req, res) {
 	var content = req.body.cont=="true", simple = req.body.simple=="true";
 	fs.readdir(req.file, function(e, d) {
 		if (e) { // can't leave this up to dir() because then we'd have an unresolved error
@@ -359,7 +371,7 @@ function dirSize(dir, depth, cb) {
  * @param {Object} req Express request object
  * @param {Object} res Express response object
  */
-exports.dirSize = function(req, res) {
+actions.dirSize = function(req, res) {
 	var depth = (req.body && req.body.depth) || 3; // get depth from POST, otherwise 3
 	dirSize(
 		req.file,
@@ -379,6 +391,7 @@ exports.localbrowseCWD = function(req, res){
 
 /**
  * A way for other functions to access internals
+ * @deprecated
  * @property {function} info         Internal {@link module:info~info info} function
  * @property {function} dirSize      Internal {@link module:info~dirSize dirSize} function
  * @property {function} fileListInfo Internal {@link module:info~fileListInfo fileListInfo} function
@@ -392,3 +405,9 @@ exports.funcs = {
 	perms: perms,
 	dir: dir
 };
+
+exports.info = info;
+exports.dirSize = dirSize;
+exports.fileListInfo = fileListInfo;
+exports.perms = perms;
+exports.dir = dir;
