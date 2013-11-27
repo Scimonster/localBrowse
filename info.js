@@ -65,7 +65,7 @@ function perms(file, type, cb) {
 			run(stat);
 		});
 	} else { // stat
-		run(s);
+		run(file);
 	}
 	function pad(strNum, count) {
 		// pad a number to a specified length

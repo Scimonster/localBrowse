@@ -149,10 +149,11 @@ function viewFile() {
 	if (trash) {file = file.replace(homeroot+'/.local/share/Trash/files','trash')}
 }
 
-function listDir(files,afterLoad) {
+function listDir(files,beforeLoad,afterLoad) {
 	// This function lists the contents of a directory
-	
-	afterLoad = afterLoad || $.noop; // TODO: add beforeLoad also
+
+	beforeLoad = beforeLoad || $.noop;
+	afterLoad = afterLoad || $.noop;
 	if (files.err == 'perms') { // can't access
 		$('#file').remove();
 		$('<div id="file" style="text-align:center">').appendTo('#file-container').html(file+' is not readable to localBrowse.');
@@ -179,7 +180,7 @@ function listDir(files,afterLoad) {
 			s: s
 		},
 		function(res){
-			// add beforeLoad() here
+			beforeLoad();
 			if ($('#file').prop('tagName')!==(s.dirTiles?'div':'table')) { // only recreate #file if it's the wrong type
 				$('#file').remove();
 				$('<'+(s.dirTiles?'div':'table')+' id="file" class="dirlist">').appendTo('#file-container');
@@ -796,12 +797,14 @@ $(d).on('click','#contextMenu-folder-paste',function(){paste()}); // no event ob
 setInterval(function(){
 	if ($('#file.dirlist').length && file.substr(0,6)!='search') {
 		getDirContents(file,function(f){
-			var selList = $('.sel').map(function(){
-				return $(this).find('.file-name').text();
-			}).get();
-			var selLast = $('.sel.last .file-name').text();
-			var scroll = {top:$('#file').scrollTop(),left:$('#file').scrollLeft()};
+			var selList, selLast, scroll;
 			listDir(f,function(){
+				selList = $('.sel').map(function(){
+					return $(this).find('.file-name').text();
+				}).get();
+				selLast = $('.sel.last .file-name').text();
+				scroll = {top:$('#file').scrollTop(),left:$('#file').scrollLeft()};
+			},function(){
 				$('.file').filter(function(){return selList.indexOf($(this).find('.file-name').text())>-1}).addClass('sel');
 				$('.file').filter(function(){return $(this).find('.file-name').text()==selLast}).addClass('last');
 				$('#file').scrollTop(scroll.top).scrollLeft(scroll.left);

@@ -17,7 +17,6 @@ On the Node side
 ## Client side
 Client JS
 
-* Add `beforeLoad` param to `listDir()`
 * Create File construct
 * Add normalizing trash/home to `fileOps.js`
 * Keyboard shortcuts
