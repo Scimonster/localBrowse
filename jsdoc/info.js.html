@@ -77,7 +77,7 @@ exports.routes = {
 };
 
 /**
- * List of actions to run
+ * List of actions to run 
  */
 var actions = {};
 
@@ -98,7 +98,7 @@ actions.exists = function(req, res) {
  * @param {number} type 0 - read, 1 - write, 2 - exec
  * @param {function} cb Callback to execute upon finish. Takes 1 parameter: return value {boolean}
  */
-function perms(file, type, cb) {
+exports.perms = function(file, type, cb) {
 	if (typeof file === 'string') { // filename
 		fs.stat(file, function (err, stat) {
 			if (err) {cb(false)}
@@ -128,7 +128,7 @@ function perms(file, type, cb) {
  * @param {Object} res Express response object
  */
 actions.writable = function(req, res) {
-	perms(req.file, 1, function(w) {
+	exports.perms(req.file, 1, function(w) {
 		res.send(w);
 	});
 };
@@ -139,7 +139,7 @@ actions.writable = function(req, res) {
  * @param {Object} res Express response object
  */
 actions.readable = function(req, res) {
-	perms(req.file, 0, function(r) {
+	exports.perms(req.file, 0, function(r) {
 		res.send(r);
 	});
 };
@@ -151,7 +151,7 @@ actions.readable = function(req, res) {
  * @param {boolean} [content=false] Add {@code cont} property to returned object with file contents
  * @param {fs.Stats} [stat=false] Add {@code stat} property to returned object with stat results
  */
-function info(file, cb, content, stat) {
+exports.info = function(file, cb, content, stat) {
 	var i = {path: file};
 	fs.exists(file, function(e) { // check existence
 		i.exists = e;
@@ -163,11 +163,11 @@ function info(file, cb, content, stat) {
 			if (stat) {
 				i.stat = s; // add the stat in if we want it
 			}
-			perms(s, 1, function(w) { // writable?
+			exports.perms(s, 1, function(w) { // writable?
 				i.writable = w;
 				finished();
 			});
-			perms(s, 0, function(r) { // readable?
+			exports.perms(s, 0, function(r) { // readable?
 				i.readable = r;
 				fs.lstat(file, function(e, ls) { // check if it's a link
 					i.isLink = ls.isSymbolicLink();
@@ -240,7 +240,7 @@ function info(file, cb, content, stat) {
  */
 actions.info = function(req, res) {
 	var content = req.body &amp;&amp; req.body.content, stat = req.body &amp;&amp; req.body.stat;
-	info(
+	exports.info(
 		req.file,
 		function(i){res.send(i)},
 		content,
@@ -287,10 +287,10 @@ actions.isDir = function(req, res) {
  * @param {boolean} [content=false] Same as {@code cont} parameter to {@link module:info~info info}
  * @todo Add CWD option to avoid hacks like used in {@link module:info~dir dir}
  */
-function fileListInfo(files, cb, content) {
+exports.fileListInfo = function(files, cb, content) {
 	var fileList = []; // final list, will be passed to cb once populated
 	files.forEach(function(f) {
-		info(f, function(i) { // get info on current one
+		exports.info(f, function(i) { // get info on current one
 			fileList.push(i);
 			finished();
 		},content);
@@ -308,7 +308,7 @@ function fileListInfo(files, cb, content) {
  * @param {function} cb Callback function; takes 1 parameter: array of file infos
  * @param {boolean} [cont=false] Same as {@code cont} parameter to {@link module:info~info info}
  */
-function dir(files, cb, cont) {
+exports.dir = function(files, cb, cont) {
 	if (typeof files==='string') { // filepath
 		fs.readdir(files, function(e, d){
 			if (e) {
@@ -322,7 +322,7 @@ function dir(files, cb, cont) {
 		run();
 	}
 	function run() {
-		fileListInfo(files, cb, cont);
+		exports.fileListInfo(files, cb, cont);
 	}
 }
 
@@ -339,7 +339,7 @@ actions.dir = function(req, res) {
 		} else if (simple) {
 			res.send(d);
 		} else {
-			dir(
+			exports.dir(
 				d.map(function(f){return fileOps.addSlashIfNeeded(req.file)+f}),
 				function(files){res.send(files)}, // unfortunately, res.send doesn't like to be passed
 				content);
@@ -354,7 +354,7 @@ actions.dir = function(req, res) {
  * @param {number} depth Depth to search for
  * @param {function} cb Callback function, taking 1 parameter: size (in bytes) of the directory
  */
-function dirSize(dir, depth, cb) {
+exports.dirSize = function(dir, depth, cb) {
 	var async_running = 0, file_counter = 1, total = 0;
 	function again(current_dir, depth) {
 		return fs.lstat(current_dir, function(err, stat) {
@@ -394,13 +394,13 @@ function dirSize(dir, depth, cb) {
 };
 
 /**
- * Web abstraction of {@link module:info~dirSize dirSize}
+ * Web abstraction of {@link module:info.dirSize dirSize}
  * @param {Object} req Express request object
  * @param {Object} res Express response object
  */
 actions.dirSize = function(req, res) {
 	var depth = (req.body &amp;&amp; req.body.depth) || 3; // get depth from POST, otherwise 3
-	dirSize(
+	exports.dirSize(
 		req.file,
 		depth===0?Infinity:depth, // a depth of 0 means infinite depth
 		function(s){res.send(s.toString())}); // again to prevent a crazy HTTP status being sent
@@ -415,29 +415,7 @@ actions.dirSize = function(req, res) {
 exports.localbrowseCWD = function(req, res){
 	res.send(process.env.PWD);
 };
-
-/**
- * A way for other functions to access internals
- * @deprecated
- * @property {function} info         Internal {@link module:info~info info} function
- * @property {function} dirSize      Internal {@link module:info~dirSize dirSize} function
- * @property {function} fileListInfo Internal {@link module:info~fileListInfo fileListInfo} function
- * @property {function} perms        Internal {@link module:info~perms perms} function
- * @property {function} dir          Internal {@link module:info~dir dir} function
- */
-exports.funcs = {
-	info: info,
-	dirSize: dirSize,
-	fileListInfo: fileListInfo,
-	perms: perms,
-	dir: dir
-};
-
-exports.info = info;
-exports.dirSize = dirSize;
-exports.fileListInfo = fileListInfo;
-exports.perms = perms;
-exports.dir = dir;</code></pre>
+</code></pre>
         </article>
     </section>
 
@@ -453,7 +431,7 @@ exports.dir = dir;</code></pre>
 <br clear="both">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha2</a> on Wed Nov 27 2013 21:04:46 GMT+0200 (IST)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha2</a> on Thu Nov 28 2013 12:21:37 GMT+0200 (IST)
 </footer>
 
 <script> prettyPrint(); </script>

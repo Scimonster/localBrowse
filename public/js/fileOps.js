@@ -46,14 +46,15 @@ function dateFormat(d,table) {
 	return table?crit.dateGetFullMonthName(D)+' '+D.getDate()+' '+D.getFullYear()+' '+padNum(D.getHours())+':'+padNum(D.getMinutes())+':'+padNum(D.getSeconds()):padNum(D.getMonth()+1)+'-'+D.getDate()+'-'+D.getFullYear().toString(10).slice(2)+' '+padNum(D.getHours())+':'+padNum(D.getMinutes());
 }
 
-module = module||{}; // for the client
-module.exports = { // make it accessible to Node
-	getParentDir: getParentDir,
-	getFileName: getFileName,
-	addSlashIfNeeded: addSlashIfNeeded,
-	filesizeFormatted: filesizeFormatted,
-	numberFormat: numberFormat,
-	padNum: padNum,
-	permsFormatted: permsFormatted,
-	dateFormat: dateFormat
-};
+if (typeof window=='undefined') { // Node doesn't have window
+	module.exports = {
+		getParentDir: getParentDir,
+		getFileName: getFileName,
+		addSlashIfNeeded: addSlashIfNeeded,
+		filesizeFormatted: filesizeFormatted,
+		numberFormat: numberFormat,
+		padNum: padNum,
+		permsFormatted: permsFormatted,
+		dateFormat: dateFormat
+	};
+}

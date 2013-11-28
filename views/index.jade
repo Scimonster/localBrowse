@@ -4,12 +4,8 @@ html
 		meta(http-equiv='Content-Type', content='text/html; charset=UTF-8')
 		link(type='text/css', rel='stylesheet', href='css/jquery-ui.min.css')
 		link(type='text/css', rel='stylesheet', href='css/main.css')
-		script(type='text/javascript')!= 'var user = "'+username+'", homeroot = "'+homeroot+'";'
-		script(type='text/javascript', src='js/jquery.js')
-		script(type='text/javascript', src='js/jquery-ui.min.js')
-		script(type='text/javascript', src='js/plugins.js')
-		script(type='text/javascript', src='js/fileOps.js')
-		script(type='text/javascript', src='js/main.js')
+		script(type='text/javascript')!= 'var user = '+JSON.stringify(username)+', homeroot = '+JSON.stringify(homeroot)+';'
+		script(type='text/javascript', src='ugly.js')
 	body
 		a(href="https://github.com/Scimonster/localBrowse")
 			img(style="position: absolute; top: 0; right: 0; border: 0;",src="https://s3.amazonaws.com/github/ribbons/forkme_right_orange_ff7600.png",alt="Fork me on GitHub")

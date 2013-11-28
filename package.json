@@ -12,6 +12,8 @@
     "mmmagic": "*",
     "mime": "*",
     "fs-extra": "*",
-    "taffy": "*"
+    "taffy": "*",
+    "uglify-js": "*",
+    "browserify": "*"
   }
 }

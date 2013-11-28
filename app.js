@@ -33,6 +33,9 @@ if ('development' == app.get('env')) {
 // end user's page
 app.get('/', routes.index);
 
+// single JS file
+app.get('/ugly.js', routes.uglify);
+
 // info for parsing
 app.get('/info/:action/*', info.routes.get);
 app.get('/info/localbrowseCWD', info.localbrowseCWD);
