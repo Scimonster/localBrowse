@@ -4,11 +4,13 @@
  * @license {@link LICENSE} (MIT)
  * @require fs-extra
  * @require ./File.js
+ * @require path
  * @module info
  */
 
 var fs = require('fs-extra'),
-	LBFile = require('./File.js');
+	LBFile = require('./File.js'),
+	path = require('path');
 
 /**
  * @property {function} get
@@ -43,7 +45,7 @@ exports.routes = {
 	 * @param {Object} res Express response object
 	 */
 	all: function(req, res) {
-		req.file = decodeURIComponent(req.file); // fix it up
+		req.file = path.normalize(decodeURIComponent(req.file)); // fix it up
 		actions[req.params.action](req, res); // and do whatever we asked
 	}
 };
