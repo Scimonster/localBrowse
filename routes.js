@@ -56,8 +56,8 @@ var iconset = require('fs').readdirSync('./public/img/fatcow/16x16'); // so that
  * @require fs
  */
 exports.dir = function(req, res) {
-	var ops = require('./public/js/fileOps.js'), info = require('./info'); // dependencies for file operations
-	ops.imageForFile = function(f, big) { // get an image for a file
+	var LBFile = require('./File.js'), info = require('./info'); // dependencies for file operations
+	function imageForFile(f, big) { // get an image for a file
 		if (f.type=='directory') {return 'img/fatcow/'+(big?'32x32':'16x16')+'/folder.png'}
 		else {
 			var ext = f.name.split('.');
@@ -72,20 +72,20 @@ exports.dir = function(req, res) {
 		send(req.body.files);
 	} else { // just a dirname
 		info.dir(req.body.dir, function(files) {
-			var TAFFY = require('taffy');
-			files = TAFFY(files);
-			send(
-				req.body.s.dirFirst?
-				files({type:'directory'}).order(req.body.s.sortby).get().concat( // dirs
-					files({type:{'!is':'directory'}}).order(req.body.s.sortby).get() // non-dirs
-				):
-				files().order(req.body.s.sortby).get() // all together
-			);
+			if (req.body.s.dirFirst) {
+				var TAFFY = require('taffy');
+				files = TAFFY(files);
+				files = files({type:'directory'}).order(req.body.s.sortby).get(). // dirs
+					map(function(i){return new LBFile(i)}).concat( // turn back into LBFiles
+					files({type:{'!is':'directory'}}).order(req.body.s.sortby).get().map(function(i){return new LBFile(i)}) // non-dirs
+				);
+			}
+			send(files);
 		});
 	}
 	function send(files) { // send them
 		res.render('dir.'+req.query.type+'.jade', { // list or tiles
-			ops: ops,
+			imageForFile: imageForFile,
 			files: files,
 			base: req.body.base||req.body.dir
 		});

@@ -3,12 +3,11 @@
  * @author Scimonster
  * @license {@link LICENSE} (MIT)
  * @require fs-extra
- * @require public/js/fileOps.js
+ * @require ./File.js
  * @module info
  */
 
 var fs = require('fs-extra'),
-	fileOps = require('./public/js/fileOps.js'),
 	LBFile = require('./File.js');
 
 /**
@@ -287,7 +286,7 @@ exports.dir = function(files, cb, cont) {
 			if (e) {
 				cb({error: e.code==='EACCES'?'perms':'exist'}); // send correct error
 			} else {
-				files = d.map(function(f){return fileOps.addSlashIfNeeded(files)+f}); // because fs.readdir doesn't give full path
+				files = d.map(function(f){return LBFile.addSlashIfNeeded(files)+f}); // because fs.readdir doesn't give full path
 				run();
 			}
 		});
@@ -313,7 +312,7 @@ actions.dir = function(req, res) {
 			res.send(d);
 		} else {
 			exports.dir(
-				d.map(function(f){return fileOps.addSlashIfNeeded(req.file)+f}),
+				d.map(function(f){return LBFile.addSlashIfNeeded(req.file)+f}),
 				function(files){res.send(files)}, // unfortunately, res.send doesn't like to be passed
 				content);
 		}
@@ -351,7 +350,7 @@ exports.dirSize = function(dir, depth, cb) {
 					_results = [];
 					for (_i = 0, _len = files.length; _i < _len; _i++) {
 						file = files[_i];
-						_results.push(again(fileOps.addSlashIfNeeded(current_dir)+file,depth-1));
+						_results.push(again(LBFile.addSlashIfNeeded(current_dir)+file,depth-1));
 					}
 					return _results;
 				});
