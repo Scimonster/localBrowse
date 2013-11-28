@@ -11,4 +11,4 @@ Feel free to submit a pull request, or make some issues for me to fix.
 
 For list of things to be worked on, see [TODO.md](TODO.md).
 
-For documentation, see [tree/jsdoc](jsdoc branch).
+For documentation, see [jsdoc branch](https://github.com/Scimonster/localBrowse/tree/jsdoc).
