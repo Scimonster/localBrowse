@@ -41,14 +41,14 @@ exports.uglify = function(req, res) {
 	b.require('./File.js');
 	b.bundle(function(e,src){
 		res.header('Content-Type', 'text/javascript');
-		code = 'Uglified js/(jquery, jquery-ui.min, plugins, fileOps, main).js, and browserified File.js';
+		code = '/* Uglified js/(jquery, jquery-ui.min, plugins, fileOps, main).js, and browserified File.js */';
 		code += UglifyJS.minify(src,{fromString: true}).code;
 		code += UglifyJS.minify(['jquery','jquery-ui.min','plugins','fileOps','main'].map(function(f){return 'public/js/'+f+'.js'})).code;
 		res.send(code);
 	});
 };
 
-var fs = require('fs'), iconset = fs.readdirSync('./public/img/fatcow/16x16'); // so that it's ready; ok to sync during setup
+var iconset = require('fs').readdirSync('./public/img/fatcow/16x16'); // so that it's ready; ok to sync during setup
 /**
  * GET directory listing; pre-render list or tiles
  * @param {Object} req Express request object
