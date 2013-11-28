@@ -1,8 +1,0 @@
-mixin item(i)
-  if i===null
-    li
-  else
-    li(class=i.r=="true"?'ui-state-disabled':'',id='contextMenu-file-'+i.id)
-      a= i.text
-- each i in list
-  +item(i)
