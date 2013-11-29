@@ -81,7 +81,7 @@ exports.save = function(req, res) {
 								return;
 							}
 							write(); // only write after old contents are read
-							fs.writeFile(req.body.file+'~', oldcont, done); // write old content to backup, ignore errors
+							fs.writeFile(req.body.file+'~', oldcont, fin); // write old content to backup, ignore errors
 						});
 					} else {
 						write();
@@ -92,10 +92,10 @@ exports.save = function(req, res) {
 								res.send({err:'could not write'});
 								return;
 							}
-							done();
+							fin();
 						});
 					}
-					function done() {
+					function fin() {
 						done++;
 						if (done===2) {
 							fs.stat(req.body.file,function(e,i){
