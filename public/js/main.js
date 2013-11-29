@@ -14,8 +14,21 @@ var
 	type, // dir, trash, search, file
 	bookmarks, // array of bookmarks
 	iconset = [], // deprecated, probably
-	toPaste = {}; // fromPath=>toPath
+	toPaste = {}, // fromPath=>toPath
+	LBFile = require('./File.js'); // LBFile class, containing file methods
 $.get('/info/localbrowseCWD',function(cwd){getDirContents(cwd+'/public/img/fatcow/16x16',{cont:false,simple:true},function(i){iconset = i().select('name')})}); // deprecated
+
+LBFile.prototype.resolve = function() {
+	// Get a full absolute path from a URL-path
+	
+	return this.path.replace(/^trash/,'~/.local/share/Trash/files').replace(/^~/,homeroot);
+};
+
+LBFile.prototype.relative = function() {
+	// Get a URL-path from a full path
+	
+	return this.path.replace('/^~\/\.local\/share\/Trash\/files/','trash').replace(/^~/,homeroot);
+};
 
 function load() {
 	// This function runs when a new file/dir is loaded, and at startup.
@@ -34,7 +47,7 @@ function load() {
 	if (!type) { 
 		$.ajax({
 			dataType: "json",
-			url: 'info/info/'+file.replace(/^trash/,'~/.local/share/Trash/files').replace(/^~/,homeroot),
+			url: 'info/info/'+(new LBFile(file)).resolve(),
 			async: false,
 			success: function(d){type = d.type}
 		});
@@ -98,7 +111,7 @@ function viewFile() {
 	}, editors = ['text'], trash=false;
 	
 	if (file.match(/^trash/)) {
-		file = file.replace(/^trash/,homeroot+'/.local/share/Trash/files');
+		file = (new LBFile(file)).resolve();
 		trash=true;
 	}
 	// Check if the requested file exists
@@ -129,7 +142,7 @@ function viewFile() {
 				} else {
 					d.title = file + ' - editing [read-only] - localBrowse';
 				}
-				$.get('info/writable'+getParentDir(file),function(d){ // add save as button
+				$.get('info/writable'+(new LBFile(file)).dir,function(d){ // add save as button
 					if (parseInt(d)){
 						$('<button id="saveAs">save as</button>').appendTo('#toolbar-left');
 					}
@@ -146,7 +159,7 @@ function viewFile() {
 		}
 	});
 	sidebarTree(file);
-	if (trash) {file = file.replace(homeroot+'/.local/share/Trash/files','trash')}
+	if (trash) {file = (new LBFile(file)).relative()}
 }
 
 function listDir(files,beforeLoad,afterLoad) {
@@ -164,7 +177,7 @@ function listDir(files,beforeLoad,afterLoad) {
 	if (file.substr(0,6)!='search') {
 		// get dir size
 		$.post('info/dirSize','depth='+$('#dirSizeDepth').text()+'&file='+file,function(size){
-			$('#dirSize').html('Approximately <span id="directorySize">'+filesizeFormatted(size)+'</span> (<span id="dirSizeDepth">'+$('#dirSizeDepth').text()+'</span> levels deep). <a id="fullDirSize" href="'+location.hash+'">More accurate calculation.</a>');
+			$('#dirSize').html('Approximately <span id="directorySize">'+(new LBFile({path:file,size:size})).filesizeFormatted()+'</span> (<span id="dirSizeDepth">'+$('#dirSizeDepth').text()+'</span> levels deep). <a id="fullDirSize" href="'+location.hash+'">More accurate calculation.</a>');
 		});
 	}
 	$('#toolbar-left').children().remove();
@@ -173,10 +186,10 @@ function listDir(files,beforeLoad,afterLoad) {
 	$.post(
 		'render/dir?type='+(s.dirTiles?'tiles':'list'), // render listing
 		file.substr(0,6)=='search'?{ // so we need to pass the entire listing
-			base:addSlashIfNeeded(cwd),
+			base:LBFile.addSlashIfNeeded(cwd),
 			files:(s.dirFirst?files({type:'directory'}).order(s.sortby).get().concat(files({type:{'!is':'directory'}}).order(s.sortby).get()):files().order(s.sortby).get())
 		}:{ // we can just give it the dirpath and it'll get the files
-			dir: addSlashIfNeeded(file),
+			dir: LBFile.addSlashIfNeeded(file),
 			s: s
 		},
 		function(res){
@@ -213,15 +226,16 @@ function listTrash(files) {
 	$('<table id="file" class="trash">').appendTo('#file-container').html('<thead><tr><th id="name">Name</th><th id="size">Size</th><th id="date">Date Deleted</th><th id="orig">Original Location</th><th id="type">Type</th><th id="perm">Permissions</th></tr></thead><tbody></tbody>');
 	getDirContents('~/.local/share/Trash/info',{cont:true,simple:false},function(trashinfo){
 		function action(f){
+			f = new LBFile(f);
 			if (trashinfo({name:f.name+'.trashinfo'}).get().length) {
 				var i = parseTrashInfo(trashinfo({name:f.name+'.trashinfo'}).get()[0].cont), last = $('<tr class="file">').appendTo('#file tbody');
 				last.append('<td class="file-name"><img class="file-img" src="'+imageForFile(f,false)+'" /> '+f.name+'</td>');
-				last.append('<td class="file-size">'+(f.type=='directory'?f.size+' items':(isReadable(f)?filesizeFormatted(f.size):f.size))+'</td>');
-				last.append('<td class="file-date">'+(isReadable(f)?dateFormat(f.date,true):f.date)+'</td>');
-				last.append('<td>'+getParentDir(decodeURIComponent(i.Path))+'</td>');
+				last.append('<td class="file-size">'+(f.type=='directory'?f.size+' items':(f.readable?f.filesizeFormatted():f.size))+'</td>');
+				last.append('<td class="file-date">'+(f.readable?f.dateFormatted(true):f.date)+'</td>');
+				last.append('<td>'+(new LBFile(decodeURIComponent(i.Path))).dir+'</td>');
 				if (!s.expandHomeroot) {last.find('td:last').html(function(x,old){return old.replace(homeroot,'~')})}
-				last.append('<td class="file-perm">'+permsFormatted(f.perm)+'</td>');
-				last.append('<td>'+permsFormatted(f.perm)+'</td>');
+				last.append('<td class="file-perm">'+f.permsFormatted()+'</td>');
+				last.append('<td>'+f.permsFormatted()+'</td>');
 				if (!isReadable(f)) {last.addClass('restricted')}
 			}
 		}
@@ -276,31 +290,33 @@ function paste(files,destination) {
 		var recurse = 0; // recursion depth
 		$.each(files, function(i, srcFile){
 			$.get('info/info'+srcFile,function(src){
+				src = new LBFile(src);
 				if (src.readable) {
-					$.get('info/info'+addSlashIfNeeded(destination)+getFileName(srcFile),function(dest){
+					$.get('info/info'+LBFile.addSlashIfNeeded(destination)+src.name,function(dest){
+						dest = new LBFile(dest);
 						// we now have info on the source and destination files
 						if (dest.exists) { // we'll need to overwrite/merge
 							recurse++; // starting an async operation
-							var dataForFile = function(f,replace){return f.type==='directory'?('<div class="fileOverwriteDialog-fileInfo"><img src="'+imageForFile(f,true)+'"/><p><b>'+(replace?'Replacement':'Existing')+' folder</b><br/>Size: '+src.size+' items<br/>Last modified: '+dateFormat(src.date)+'</p></div>'):('<div class="fileOverwriteDialog-fileInfo"><img src="'+imageForFile(f,true)+'"/><p><b>'+(replace?'Replacement':'Existing')+' file</b><br/>Size: '+filesizeFormatted(f.size)+' items<br/>Last modified: '+dateFormat(src.date)+'</p></div>')};
+							var dataForFile = function(f,replace){return f.type==='directory'?('<div class="fileOverwriteDialog-fileInfo"><img src="'+imageForFile(f,true)+'"/><p><b>'+(replace?'Replacement':'Existing')+' folder</b><br/>Size: '+f.size+' items<br/>Last modified: '+f.dateFormatted()+'</p></div>'):('<div class="fileOverwriteDialog-fileInfo"><img src="'+imageForFile(f,true)+'"/><p><b>'+(replace?'Replacement':'Existing')+' file</b><br/>Size: '+f.filesizeFormatted()+' items<br/>Last modified: '+f.dateFormatted()+'</p></div>')};
 							if (dest.type=='directory' && src.type=='directory') { // merge
-								$.post('info/dir','simple=true&file='+getParentDir(dest.name),function(otherfiles){ // other files in dest dir, to see if it will be overwritten
+								$.post('info/dir','simple=true&file='+dest.dir,function(otherfiles){ // other files in dest dir, to see if it will be overwritten
 									var d = jqUI.prompt({
-										title:'Merge folder "'+getFileName(srcFile)+'"?',
-										text:'<div>A '+(src.date<dest.date?'newer':'older')+' folder with the same name already exists in "'+getFileName(getParentDir(dest.name))+'".<br/>Do you want to merge these folders? Merging will ask for confirmation in case of file conflicts.</div>'+dataForFile(src,true)+dataForFile(dest,false)+'<p>You can type in a new name for the folder. If it exists, the new folder will be merged with the old one.</p><p class="fileOverwriteDialog-exists">A file with the current name exists in the destination folder.</p>',
+										title:'Merge folder "'+src.name+'"?',
+										text:'<div>A '+(src.date<dest.date?'newer':'older')+' folder with the same name already exists in "'+(new LBFile(dest.dir)).name+'".<br/>Do you want to merge these folders? Merging will ask for confirmation in case of file conflicts.</div>'+dataForFile(src,true)+dataForFile(dest,false)+'<p>You can type in a new name for the folder. If it exists, the new folder will be merged with the old one.</p><p class="fileOverwriteDialog-exists">A file with the current name exists in the destination folder.</p>',
 										buttonLabel: ['Paste','Skip'],
 										width: 500
-									},getFileName(srcFile),function(newname){
+									},src.name,function(newname){
 										if (newname) { // will be null if skip was clicked
 											if (otherfiles.indexOf(newname)>-1) { // merge
 												recurse++; // more async
-												$.post('info/dir','simple=true&file='+srcFile,function(children){
-													run(children.map(function(item){return addSlashIfNeeded(srcFile)+item}),getParentDir(dest.name)+newname,function(){
+												$.post('info/dir','simple=true&file='+src.path,function(children){
+													run(children.map(function(item){return LBFile.addSlashIfNeeded(srcFile)+item}),dest.dir+newname,function(){
 														recurse--; // async finished
 														done(); // check for completeness
 													});
 												});
 											} else { // name changed
-												toPaste[srcFile] = getParentDir(dest.name)+newname;
+												toPaste[srcFile] = dest.dir+newname;
 											}
 										}
 										recurse--; // async finished
@@ -308,15 +324,15 @@ function paste(files,destination) {
 									});
 								});
 							} else { // overwrite
-								$.post('info/dir','simple=true&file='+getParentDir(dest.name),function(otherfiles){ // other files in dest dir, to see if it will be overwritten
+								$.post('info/dir','simple=true&file='+dest.dir,function(otherfiles){ // other files in dest dir, to see if it will be overwritten
 									var d = jqUI.prompt({
-										title:'Overwrite file "'+getFileName(srcFile)+'"?',
-										text:'<div>A '+(src.date<dest.date?'newer':'older')+' file with the same name already exists in "'+getFileName(getParentDir(dest.name))+'".<br/>Do you want to replace this file?</div>'+dataForFile(src,true)+dataForFile(dest,false)+'<p>You can type in a new name for the file. If it exists, the new file will replace the old one.</p><p class="fileOverwriteDialog-exists">A file with the current name exists in the destination folder.</p>',
+										title:'Overwrite file "'+src.name+'"?',
+										text:'<div>A '+(src.date<dest.date?'newer':'older')+' file with the same name already exists in "'+(new LBFile(dest.dir)).name+'".<br/>Do you want to replace this file?</div>'+dataForFile(src,true)+dataForFile(dest,false)+'<p>You can type in a new name for the file. If it exists, the new file will replace the old one.</p><p class="fileOverwriteDialog-exists">A file with the current name exists in the destination folder.</p>',
 										buttonLabel: ['Paste','Skip'],
 										width: 500
-									},getFileName(srcFile),function(newname){
+									},src.name,function(newname){
 										if (newname) { // will be null if skip was clicked
-											toPaste[srcFile] = getParentDir(dest.name)+newname;
+											toPaste[srcFile] = dest.dir+newname;
 										}
 										recurse--;
 										done();
@@ -324,7 +340,7 @@ function paste(files,destination) {
 								});
 							}
 						} else { // dest doesn't exist, everything's ok
-							toPaste[srcFile] = dest.name;
+							toPaste[srcFile] = dest.path;
 						}
 						done();
 					});
@@ -337,7 +353,7 @@ function paste(files,destination) {
 	}
 	run(files,destination,function(){
 		$.post('/mod',{action:(sessionStorage.getItem('cut')==="true"?'move':'copy'),files:toPaste},function(pasted){
-			pasted = pasted.filter(function(item){return getParentDir(item)===addSlashIfNeeded(file)}); // in this dir
+			pasted = pasted.filter(function(item){return (new LBFile(item)).dir===LBFile.addSlashIfNeeded(file)}); // in this dir
 			$('.file').removeClass('sel last').filter(function(){
 				return pasted.indexOf($(this).data('path'))>-1;
 			}).addClass('sel').last().addClass('last');
@@ -352,7 +368,7 @@ function loadBookmarks() {
 	else {localStorage.setItem('bookmarks','[]')}
 	$('#sidebar-bookmarks').html('');
 	$.each(bookmarks, function(i, b) {
-		$('#sidebar-bookmarks').append('<li><a href="#'+b[0]+'" title="'+b[0]+'"><span class="ui-icon ui-icon-'+(b[1]=='directory'?'folder-collapsed':'document')+'"></span>'+getFileName(b[0])+'</a><span class="ui-icon ui-icon-squaresmall-close" title="remove this bookmark" data-index="'+i+'"></span></li>');
+		$('#sidebar-bookmarks').append('<li><a href="#'+b[0]+'" title="'+b[0]+'"><span class="ui-icon ui-icon-'+(b[1]=='directory'?'folder-collapsed':'document')+'"></span>'+(new LBFile(b[0])).name+'</a><span class="ui-icon ui-icon-squaresmall-close" title="remove this bookmark" data-index="'+i+'"></span></li>');
 	});
 }
 
@@ -389,7 +405,7 @@ function getDirContents(dir, opts, callback) {
 		callback = opts;
 		opts = {cont:false,simple:false};
 	}
-	$.post('info/dir',$.extend(opts,{file:dir.replace(/^trash/,'~/.local/share/Trash/files').replace(/^~/,homeroot)}),function(r){
+	$.post('info/dir',$.extend(opts,{file:(new LBFile(dir)).resolve()}),function(r){
 		if (r.error) {callback(r.error)}
 		else {callback(TAFFY(r))}
 	});
@@ -445,8 +461,8 @@ $(function(){ // set up jqUI elements
 			},
 			function(filename){
 				$.post(
-					'/mod',{action:'mk'+$(me).attr('id').substr(4),file:addSlashIfNeeded(file)+filename},
-					function(){location.hash=addSlashIfNeeded(location.hash)+filename;}
+					'/mod',{action:'mk'+$(me).attr('id').substr(4),file:LBFile.addSlashIfNeeded(file)+filename},
+					function(){location.hash=LBFile.addSlashIfNeeded(location.hash)+filename;}
 				);
 			}
 		);
@@ -457,7 +473,7 @@ $(function(){ // set up jqUI elements
 			function(filename){if (filename) {
 				jqUI.prompt(
 					{text: 'File to link to',tilte: 'New link'},
-					function(linkto){$.post('/mod',{action:'link',dest:addSlashIfNeeded(file)+filename,src:linkto},load);}
+					function(linkto){$.post('/mod',{action:'link',dest:LBFile.addSlashIfNeeded(file)+filename,src:linkto},load);}
 				);
 			}}
 		);
@@ -717,9 +733,9 @@ $(d).on('click','#save',function(){
 $(d).on('click','#saveAs',function(){
 	jqUI.prompt({title:'Save as',text:'Name of new file:'},function(name){
 		if (name) {
-			$.post('/mod',{action:'mkfile',file:getParentDir()+name,content:$('#file').val()},function(){
-				$('#message').html('File saved to '+getParentDir()+name);
-				location.hash = "#"+getParentDir()+name;
+			$.post('/mod',{action:'mkfile',file:(new LBFile(file)).dir+name,content:$('#file').val()},function(){
+				$('#message').html('File saved to '+(new LBFile(file)).dir+name);
+				location.hash = "#"+(new LBFile(file)).dir+name;
 			});
 		}
 	});
@@ -744,7 +760,7 @@ $(d).on('click','#sidebar-tree span.ui-icon',function(e, iter) {
 				$('li[data-path="/'+$('#sidebar-tree').data('fileparts').slice(1,iter+1).join('/')+'/"]>span.ui-icon').trigger('click',[iter+1]);
 			}
 			if (iter) {
-				var curLocInTree = $('li[data-path="'+addSlashIfNeeded($('#sidebar-tree').data('file'))+'"]');
+				var curLocInTree = $('li[data-path="'+LBFile.addSlashIfNeeded($('#sidebar-tree').data('file'))+'"]');
 				function scroll(){$('#sidebar-tree').scrollTop(curLocInTree.position()?Math.floor(curLocInTree.position().top):0)}
 				scroll();
 				if (!$('#sidebar-tree').scrollTop()) {scroll()}
@@ -775,7 +791,6 @@ $(d).on('contextmenu','#file .file',function(e){
 	});
 });
 $(d).on('contextmenu','#file.dirlist',function(e){
-	console.log(e);
 	if ($(e.target).add($(e.target).parent()).hasClass('file')) {return}
 	$('#contextMenu').remove();
 	function open(d,id){return '<li'+(d?' class="ui-state-disabled"':'')+' id="contextMenu-folder-'+id+'"><a>'}
