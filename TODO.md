@@ -9,13 +9,11 @@ On the Node side
 
 ### `info.js`
 * Use CWD in `fileListInfo()` and `dir()`
-* Set up File construct
 
 ## Client side
 Client JS
 
-* Create File construct
-* Add normalizing trash/home to `fileOps.js`
+* Use File construct
 * Keyboard shortcuts
 * Properties item in ctx menu
 * View recent files
