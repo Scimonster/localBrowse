@@ -17,6 +17,7 @@ function LBFile(path) {
 	this.date = null;
 	this.exists = null;
 	this.isLink = null;
+	this.items = null;
 	this.link = null;
 	this.path = path; // except path
 	this.perm = null;
@@ -36,7 +37,7 @@ function LBFile(path) {
 	// some path info
 	this.path = pathMod.normalize(this.path);
 	this.name = pathMod.basename(this.path);
-	this.dir = pathMod.dirname(this.path);
+	this.dir = LBFile.addSlashIfNeeded(pathMod.dirname(this.path));
 	this.ext = pathMod.extname(this.path);
 	
 	// make this.date a proper Date object

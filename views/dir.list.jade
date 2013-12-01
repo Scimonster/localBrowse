@@ -15,7 +15,7 @@ thead
           img.file-img(src=imageForFile(f,false))
           = f.name.substr(0,35)
           != f.name.length<35?'':'&#x2026;'
-        td.file-size(title=f.type=='directory'?f.size+' items':f.size+' B')!= f.type=='directory'?f.size+' items':(f.readable?f.filesizeFormatted():f.size)
+        td.file-size(title=f.type=='directory'?f.items+' items':f.size+' B')!= f.type=='directory'?f.items+' items':(f.readable?f.filesizeFormatted():f.size)
         td.file-date(title=f.date.toLocaleString())!= f.readable?f.dateFormatted(false):f.date
         td.file-type!= f.type
         td.file-perm!= f.permsFormatted()

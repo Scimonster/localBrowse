@@ -173,8 +173,9 @@ exports.info = function(file, cb, content, stat) {
 					});
 					i.size = s.size;
 				} else if (r) { // is dir
+					i.size = s.size;
 					fs.readdir(file, function(d_e, d) {
-						i.size = d.length;
+						i.items = d.length;
 						finished();
 					});
 				} else {
@@ -196,6 +197,7 @@ exports.info = function(file, cb, content, stat) {
 			typeof i.readable !== 'undefined' &&
 			typeof i.date !== 'undefined' &&
 			typeof i.size !== 'undefined' &&
+			(i.type=='directory'?typeof i.items !== 'undefined':true) &&
 			typeof i.date !== 'undefined' &&
 			typeof i.perm !== 'undefined' &&
 			typeof i.type !== 'undefined' && i.type !== '' &&
