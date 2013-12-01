@@ -263,6 +263,7 @@ actions.isDir = function(req, res) {
  */
 exports.fileListInfo = function(files, cb, content) {
 	var fileList = []; // final list, will be passed to cb once populated
+	if (files.length==0) {finished()}
 	files.forEach(function(f) {
 		exports.info(f, function(i) { // get info on current one
 			fileList.push(i);
@@ -349,10 +350,13 @@ exports.dirSize = function(dir, depth, cb) {
 						return;
 					}
 					file_counter += files.length;
+					if (file_counter === 0 && async_running === 0) {
+						cb(total);
+					}
 					_results = [];
 					for (_i = 0, _len = files.length; _i < _len; _i++) {
 						file = files[_i];
-						_results.push(again(LBFile.addSlashIfNeeded(current_dir)+file,depth-1));
+						_results.push(again(path.join(current_dir,file),depth-1));
 					}
 					return _results;
 				});
@@ -363,7 +367,7 @@ exports.dirSize = function(dir, depth, cb) {
 				cb(total);
 			}
 		});
-	};
+	}
 	again(dir,depth);
 };
 
