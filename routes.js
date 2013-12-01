@@ -28,6 +28,15 @@ exports.index = function(req, res) {
 	});
 };
 
+// set it up. unfortunately you have to reset Node each time you change any of the JS files
+var UglifyJS = require("uglify-js"), browserify = require('browserify'), code;
+var b = browserify([]);
+b.require('./File.js');
+b.bundle(function(e,src){
+	code = '/* Uglified js/(jquery, jquery-ui.min, plugins, main).js, and browserified File.js */';
+	code += UglifyJS.minify(src,{fromString: true}).code;
+	code += UglifyJS.minify(['jquery','jquery-ui.min','plugins','main'].map(function(f){return 'public/js/'+f+'.js'})).code;
+});
 /**
  * GET single bundled JavaScript file
  * @param {Object} req Express request object
@@ -36,16 +45,8 @@ exports.index = function(req, res) {
  * @require browserify
  */
 exports.uglify = function(req, res) {
-	var UglifyJS = require("uglify-js"), browserify = require('browserify');
-	var b = browserify([]);
-	b.require('./File.js');
-	b.bundle(function(e,src){
-		res.header('Content-Type', 'text/javascript');
-		code = '/* Uglified js/(jquery, jquery-ui.min, plugins, main).js, and browserified File.js */';
-		code += UglifyJS.minify(src,{fromString: true}).code;
-		code += UglifyJS.minify(['jquery','jquery-ui.min','plugins','main'].map(function(f){return 'public/js/'+f+'.js'})).code;
-		res.send(code);
-	});
+	res.header('Content-Type', 'text/javascript');
+	res.send(code);
 };
 
 var iconset = require('fs').readdirSync('./public/img/fatcow/16x16'); // so that it's ready; ok to sync during setup
