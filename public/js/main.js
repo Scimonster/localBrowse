@@ -144,10 +144,10 @@ function viewFile() {
 				if (f.writable) { // add save button
 					$('<button id="save"><!--<span class="ui-icon ui-icon-disk"></span>-->save</button>').appendTo('#toolbar-left');
 				} else {
-					d.title = file + ' - editing [read-only] - localBrowse';
+					d.title = file.name + ' - editing [read-only] - localBrowse';
 				}
-				$.get('info/writable'+file.dir,function(d){ // add save as button
-					if (parseInt(d)){
+				$.getJSON('info/writable'+file.dir,function(d){ // add save as button
+					if (d) {
 						$('<button id="saveAs">save as</button>').appendTo('#toolbar-left');
 					}
 					$('#toolbar-left').buttonset();
