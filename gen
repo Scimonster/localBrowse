@@ -1,0 +1,1 @@
+cd .. && jsdoc *.js README.md -d ./jsdoc
