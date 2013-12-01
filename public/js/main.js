@@ -10,7 +10,7 @@ var
 		dirTiles: true,
 		expandHomeroot: false
 	},
-	file, // the filepath of the current file/dir
+	file, // an LBFile of the current file
 	type, // dir, trash, search, file
 	bookmarks, // array of bookmarks
 	iconset = [], // deprecated, probably
@@ -34,24 +34,29 @@ function load() {
 	// This function runs when a new file/dir is loaded, and at startup.
 
 	// Start by identifying the file.
-	file = location.hash.substr(1);
-	if (file=='') { // nothing was specified, so use homedir
-		file = homeroot+'/';
-		location.hash += file;
+	file = new LBFile(location.hash.substr(1));
+	if (file.path=='') { // nothing was specified, so use homedir
+		file = new LBFile(LBFile.addSlashIfNeeded(homeroot));
+		location.hash += file.path;
 		return;
 	}
-	d.title = file + ' - localBrowse';
+	console.log(file);
+	d.title = file.name + ' - localBrowse';
 
 	// Find out if it's a file or dir.
-	type = /^search/.test(file) ? 'search' : (file=='trash' ? file : ''); // first test if it's search, then trash, otherwise leave it for later
+	type = /^search/.test(file.path) ? 'search' : (file.path=='trash' ? file.path : ''); // first test if it's search, then trash, otherwise leave it for later
 	if (!type) { 
 		$.ajax({
 			dataType: "json",
-			url: 'info/info/'+(new LBFile(file)).resolve(),
+			url: 'info/info'+file.resolve(),
 			async: false,
-			success: function(d){type = d.type}
+			success: function(f){
+				file = new LBFile(f)
+				type = f.type;
+			}
 		});
 	}
+	console.log(file);
 
 	// Display AJAX loading circle
 	$('<div id="ajax-loader"><img src="img/ajax-loader.gif">').appendTo('#content');
@@ -70,7 +75,7 @@ function load() {
 		viewFile();
 	}
 	// Create the pathbar
-	var tmp = file.split('/'), tmp2 = [];
+	var tmp = file.path.split('/'), tmp2 = [];
 	if (tmp[tmp.length-1]=='') {tmp.pop()}
 	$('#filepath').buttonset('destroy');
 	$('#filepath').html('');
@@ -110,17 +115,17 @@ function viewFile() {
 		'image\/svg': 'text'
 	}, editors = ['text'], trash=false;
 	
-	if (file.match(/^trash/)) {
-		file = (new LBFile(file)).resolve();
-		trash=true;
+	if (file.path.match(/^trash/)) {
+		file.path = file.resolve();
+		trash = true;
 	}
 	// Check if the requested file exists
-	$.post('info/info','content=true&file='+file,function(f){
+	$.post('info/info','content=true&file='+file.path,function(f){
 		f = new LBFile(f);
 		$('#file').remove();
 		if (f.exists) {
 			if (f.type == 'directory') {
-				getDirContents(file,listDir);
+				getDirContents(file.path,listDir);
 				return;
 			}
 			var editor;
@@ -136,14 +141,14 @@ function viewFile() {
 				if (editor == 'text') { // load text editor
 					$('<textarea id="file" autofocus="autofocus">').val(f.cont).appendTo('#file-container').focus();
 				}
-				d.title = file + ' - editing - localBrowse';
+				d.title = file.name + ' - editing - localBrowse';
 				
 				if (f.writable) { // add save button
 					$('<button id="save"><!--<span class="ui-icon ui-icon-disk"></span>-->save</button>').appendTo('#toolbar-left');
 				} else {
 					d.title = file + ' - editing [read-only] - localBrowse';
 				}
-				$.get('info/writable'+(new LBFile(file)).dir,function(d){ // add save as button
+				$.get('info/writable'+file.dir,function(d){ // add save as button
 					if (parseInt(d)){
 						$('<button id="saveAs">save as</button>').appendTo('#toolbar-left');
 					}
@@ -156,11 +161,11 @@ function viewFile() {
 			}
 			$('#file').data('modDate',f.date.getTime()); // for checking if it was modified
 		} else { // doesn't exist
-			$('<div id="file" style="text-align:center">').appendTo('#file-container').html('The file "'+file+'" does not exist.');
+			$('<div id="file" style="text-align:center">').appendTo('#file-container').html('The file "'+file.path+'" does not exist.');
 		}
 	});
-	sidebarTree(file);
-	if (trash) {file = (new LBFile(file)).relative()}
+	sidebarTree(file.path);
+	if (trash) {file.path = file.relative()}
 }
 
 function listDir(files,beforeLoad,afterLoad) {
@@ -170,15 +175,16 @@ function listDir(files,beforeLoad,afterLoad) {
 	afterLoad = afterLoad || $.noop;
 	if (files.err == 'perms') { // can't access
 		$('#file').remove();
-		$('<div id="file" style="text-align:center">').appendTo('#file-container').html(file+' is not readable to localBrowse.');
+		$('<div id="file" style="text-align:center">').appendTo('#file-container').html(file.path+' is not readable to localBrowse.');
 		return;
 	}
 	// set message
 	$('#message').html(files({type:'directory'}).count()+' directories; '+files({type:{'!is':'directory'}}).count()+' files. <span id="dirSize">Approximately <span id="directorySize">'+($('#directorySize').text()||'...')+'</span> (<span id="dirSizeDepth">'+($('#dirSizeDepth').text()||3)+'</span> levels deep). <a id="fullDirSize" href="'+location.hash+'">More accurate calculation.</a></span>');
-	if (file.substr(0,6)!='search') {
+	if (type!='search') {
 		// get dir size
-		$.post('info/dirSize','depth='+$('#dirSizeDepth').text()+'&file='+file,function(size){
-			$('#dirSize').html('Approximately <span id="directorySize">'+(new LBFile({path:file,size:size})).filesizeFormatted()+'</span> (<span id="dirSizeDepth">'+$('#dirSizeDepth').text()+'</span> levels deep). <a id="fullDirSize" href="'+location.hash+'">More accurate calculation.</a>');
+		$.post('info/dirSize','depth='+$('#dirSizeDepth').text()+'&file='+file.path,function(size){
+			file.size = size;
+			$('#dirSize').html('Approximately <span id="directorySize">'+file.filesizeFormatted()+'</span> (<span id="dirSizeDepth">'+$('#dirSizeDepth').text()+'</span> levels deep). <a id="fullDirSize" href="'+location.hash+'">More accurate calculation.</a>');
 		});
 	}
 	$('#toolbar-left').children().remove();
@@ -186,11 +192,11 @@ function listDir(files,beforeLoad,afterLoad) {
 	$('<span><input id="dir_type_list" type="radio" name="dir_type" value="list"'+(s.dirTiles?'':' checked="checked"')+' /><input id="dir_type_tiles" type="radio" name="dir_type" value="tiles"'+(s.dirTiles?' checked="checked"':'')+' /><label for="dir_type_list">list</label><label for="dir_type_tiles">tiles</label></span>').buttonset().appendTo('#toolbar-left');
 	$.post(
 		'render/dir?type='+(s.dirTiles?'tiles':'list'), // render listing
-		file.substr(0,6)=='search'?{ // so we need to pass the entire listing
+		type=='search'?{ // so we need to pass the entire listing
 			base:LBFile.addSlashIfNeeded(cwd),
 			files:(s.dirFirst?files({type:'directory'}).order(s.sortby).get().concat(files({type:{'!is':'directory'}}).order(s.sortby).get()):files().order(s.sortby).get())
 		}:{ // we can just give it the dirpath and it'll get the files
-			dir: LBFile.addSlashIfNeeded(file),
+			dir: file.addSlashIfNeeded(),
 			s: s
 		},
 		function(res){
@@ -237,7 +243,7 @@ function listTrash(files) {
 				if (!s.expandHomeroot) {last.find('td:last').html(function(x,old){return old.replace(homeroot,'~')})}
 				last.append('<td class="file-perm">'+f.permsFormatted()+'</td>');
 				last.append('<td>'+f.permsFormatted()+'</td>');
-				if (!isReadable(f)) {last.addClass('restricted')}
+				if (!f.readable) {last.addClass('restricted')}
 			}
 		}
 		if (s.dirFirst) {
@@ -258,7 +264,7 @@ function listTrash(files) {
 
 function search(term) {
 	// This function loads and displays search results
-	
+
 	if (typeof cwd == "undefined") {cwd = homeroot}
 	$('<div id="ajax-loader"><img src="img/ajax-loader.gif">').appendTo('#content');
 	$.post('/search','term='+encodeURIComponent(term)+'&cwd='+encodeURIComponent(cwd),function(results){
@@ -269,7 +275,7 @@ function search(term) {
 
 function copy(files,cut) {
 	// Replaces the copy buffer with the specified files. Optionally removes them upon paste.
-	
+
 	// set up files as an array
 	if ($.isJQuery(files)) {
 		files = files.map(function(){return $(this).data('path')}).get();
@@ -284,9 +290,9 @@ function copy(files,cut) {
 
 function paste(files,destination) {
 	// Reads files from the copy buffer and copies them to the CWD
-	
+
 	files = files || sessionStorage.getItem('copy').split('\n');
-	destination = destination || file;
+	destination = destination || file.path;
 	function run(files,destination,cb) { // recursive function to paste all files and dirs
 		var recurse = 0; // recursion depth
 		$.each(files, function(i, srcFile){
@@ -311,7 +317,7 @@ function paste(files,destination) {
 											if (otherfiles.indexOf(newname)>-1) { // merge
 												recurse++; // more async
 												$.post('info/dir','simple=true&file='+src.path,function(children){
-													run(children.map(function(item){return LBFile.addSlashIfNeeded(srcFile)+item}),dest.dir+newname,function(){
+													run(children.map(function(item){return src.addSlashIfNeeded()+item}),dest.dir+newname,function(){
 														recurse--; // async finished
 														done(); // check for completeness
 													});
@@ -354,7 +360,7 @@ function paste(files,destination) {
 	}
 	run(files,destination,function(){
 		$.post('/mod',{action:(sessionStorage.getItem('cut')==="true"?'move':'copy'),files:toPaste},function(pasted){
-			pasted = pasted.filter(function(item){return (new LBFile(item)).dir===LBFile.addSlashIfNeeded(file)}); // in this dir
+			pasted = pasted.filter(function(item){return (new LBFile(item)).dir===file.addSlashIfNeeded()}); // in this dir
 			$('.file').removeClass('sel last').filter(function(){
 				return pasted.indexOf($(this).data('path'))>-1;
 			}).addClass('sel').last().addClass('last');
@@ -376,8 +382,8 @@ function loadBookmarks() {
 function addBookmark() {
 	// This function will add a bookmark to the list
 	
-	if (bookmarks.indexOf(file)+1) {return}
-	bookmarks.push([file,type]);
+	if (bookmarks.indexOf(file.path)+1) {return}
+	bookmarks.push([file.path,file.type]);
 	localStorage.setItem('bookmarks',JSON.stringify(bookmarks));
 	loadBookmarks();
 	$('#message').data('old',$('#message').html());
@@ -411,8 +417,6 @@ function getDirContents(dir, opts, callback) {
 		else {callback(TAFFY(r))}
 	});
 }
-
-function isReadable(f){return f.size!='N/A'} // f is a File
 
 function parseTrashInfo(info) {
 	info = info.split('\n');
@@ -449,7 +453,7 @@ $(function(){ // set up jqUI elements
 				if (c) {run()}
 			});
 		} else {run()}
-		function run(){jqUI.prompt({text: 'Search for this in file names', title: 'Search'},function(term){w.cwd=file;location.hash='#search/'+term;})}
+		function run(){jqUI.prompt({text: 'Search for this in file names', title: 'Search'},function(term){w.cwd=file.path;location.hash='#search/'+term;})}
 	}).button();
 	$('#new').click(function(e){if ($('#new-menu').is(':visible')) {$('html').click()} else {$('#new-menu').show(); $('#file').css('opacity',0.5); e.stopPropagation();}}).button();
 	$('#new-menu').menu().css({position:'absolute',zIndex:100}).offset({top:$('#new').offset().top+$('#new').height()+3,left:$('#new').offset().left-$('#new').width()+15}).hide();
@@ -462,7 +466,7 @@ $(function(){ // set up jqUI elements
 			},
 			function(filename){
 				$.post(
-					'/mod',{action:'mk'+$(me).attr('id').substr(4),file:LBFile.addSlashIfNeeded(file)+filename},
+					'/mod',{action:'mk'+$(me).attr('id').substr(4),file:file.addSlashIfNeeded()+filename},
 					function(){location.hash=LBFile.addSlashIfNeeded(location.hash)+filename;}
 				);
 			}
@@ -474,7 +478,7 @@ $(function(){ // set up jqUI elements
 			function(filename){if (filename) {
 				jqUI.prompt(
 					{text: 'File to link to',tilte: 'New link'},
-					function(linkto){$.post('/mod',{action:'link',dest:LBFile.addSlashIfNeeded(file)+filename,src:linkto},load);}
+					function(linkto){$.post('/mod',{action:'link',dest:file.addSlashIfNeeded()+filename,src:linkto},load);}
 				);
 			}}
 		);
@@ -724,7 +728,7 @@ $(d).on('click','#file .file',function(e){
 	}
 });
 $(d).on('click','#save',function(){
-	$.post('/mod',{action:'save',file:file,content:$('#file').val()},function(info){
+	$.post('/mod',{action:'save',file:file.path,content:$('#file').val()},function(info){
 		$('#file').data('modDate',info.date);
 		var oldMessage = $('#message').html();
 		$('#message').html('File saved.');
@@ -734,9 +738,9 @@ $(d).on('click','#save',function(){
 $(d).on('click','#saveAs',function(){
 	jqUI.prompt({title:'Save as',text:'Name of new file:'},function(name){
 		if (name) {
-			$.post('/mod',{action:'mkfile',file:(new LBFile(file)).dir+name,content:$('#file').val()},function(){
-				$('#message').html('File saved to '+(new LBFile(file)).dir+name);
-				location.hash = "#"+(new LBFile(file)).dir+name;
+			$.post('/mod',{action:'mkfile',file:file.dir+name,content:$('#file').val()},function(){
+				$('#message').html('File saved to '+file.dir+name);
+				location.hash = "#"+file.dir+name;
 			});
 		}
 	});
@@ -796,7 +800,7 @@ $(d).on('contextmenu','#file.dirlist',function(e){
 	$('#contextMenu').remove();
 	function open(d,id){return '<li'+(d?' class="ui-state-disabled"':'')+' id="contextMenu-folder-'+id+'"><a>'}
 	var close = '</a></li>', line = '<li></li>';
-	$.get('info/writable/'+file,function(r){
+	$.get('info/writable'+file.path,function(r){
 		//console.log(!!r);
 		$('<ul id="contextMenu">').append(
 			open(!r,'newFolder')+'New folder'+close,
@@ -811,8 +815,8 @@ $(d).on('click','#contextMenu-file-open',function(){
 });
 $(d).on('click','#contextMenu-folder-paste',function(){paste()}); // no event object
 setInterval(function(){
-	if ($('#file.dirlist').length && file.substr(0,6)!='search') {
-		getDirContents(file,function(f){
+	if ($('#file.dirlist').length && type!='search') {
+		getDirContents(file.path,function(f){
 			var selList, selLast, scroll;
 			listDir(f,function(){
 				selList = $('.sel').map(function(){
@@ -827,7 +831,7 @@ setInterval(function(){
 			});
 		})
 	} else if ($('textarea#file').length) {
-		$.getJSON('info/info.date'+file,function(d){
+		$.getJSON('info/info.date'+file.path,function(d){
 			if (d!=$('#file').data('modDate')) {
 				jqUI.confirm({title:'Changed on disk',text:'The file has been changed on disk. Do you want to reload it?',buttonLabel:['Reload','Cancel']},function(reload){
 					if (reload) {
