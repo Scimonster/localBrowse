@@ -229,7 +229,7 @@ actions.info = function(req, res) {
  */
 actions.infoDate = function(req, res) {
 	fs.stat(req.file, function(e, s){
-		res.send((e?0:s.mtime.getTime()/1000).toString(10)); // UNIX epoch offset time in seconds as string, so as not to send some crazy status
+		res.send((e?0:s.mtime.getTime()).toString(10)); // UNIX epoch offset time in ms as string, so as not to send some crazy status
 	});
 };
 actions['info.date'] = actions.infoDate;

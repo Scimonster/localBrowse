@@ -116,6 +116,7 @@ function viewFile() {
 	}
 	// Check if the requested file exists
 	$.post('info/info','content=true&file='+file,function(f){
+		f = new LBFile(f);
 		$('#file').remove();
 		if (f.exists) {
 			if (f.type == 'directory') {
@@ -153,7 +154,7 @@ function viewFile() {
 				// Load the browser's view of the file.
 				$('<iframe id="file">').attr('src','info/echo/'+file).appendTo('#file-container');
 			}
-			$('#file').data('modDate',f.date); // for checking if it was modified
+			$('#file').data('modDate',f.date.getTime()); // for checking if it was modified
 		} else { // doesn't exist
 			$('<div id="file" style="text-align:center">').appendTo('#file-container').html('The file "'+file+'" does not exist.');
 		}
