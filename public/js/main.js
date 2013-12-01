@@ -40,69 +40,67 @@ function load() {
 		location.hash += file.path;
 		return;
 	}
-	console.log(file);
 	d.title = file.name + ' - localBrowse';
 
 	// Find out if it's a file or dir.
 	type = /^search/.test(file.path) ? 'search' : (file.path=='trash' ? file.path : ''); // first test if it's search, then trash, otherwise leave it for later
 	if (!type) { 
-		$.ajax({
-			dataType: "json",
-			url: 'info/info'+file.resolve(),
-			async: false,
-			success: function(f){
-				file = new LBFile(f)
-				type = f.type;
-			}
+		$.getJSON('info/info'+file.resolve(),function(f){
+			file = new LBFile(f)
+			type = f.type;
+			finishLoading();
 		});
-	}
-	console.log(file);
-
-	// Display AJAX loading circle
-	$('<div id="ajax-loader"><img src="img/ajax-loader.gif">').appendTo('#content');
-	$('table').menu('destroy');
-	$('#file').removeData().remove();
-	$('#toolbar-left').html('');
-	$('#new').show();
-	if (type=='trash') {
-		// If it's the trash, load it
-		getDirContents('~/.local/share/Trash/files',function(f){listTrash(f)});
-	} else if (type=='search') {
-		// Load search
-		search(file.substr(7));
 	} else {
-		// If it's a file or dir, load it
-		viewFile();
+		finishLoading();
 	}
-	// Create the pathbar
-	var tmp = file.path.split('/'), tmp2 = [];
-	if (tmp[tmp.length-1]=='') {tmp.pop()}
-	$('#filepath').buttonset('destroy');
-	$('#filepath').html('');
-	if (!tmp[0]) {
-		$('#filepath').append('<a href="#/">/</a>');
-		tmp = tmp.slice(1);
-	}
-	$.each(tmp,function(tmp3,par) {
-		tmp2[tmp2.length] = par;
-		$('#filepath').append('<a href="#/'+tmp2.join('/')+'/">'+par+'</a>');
-	});
-	$('#filepath').buttonset();
-	var tmp3=0;
-	while ($('#filepath').height()>53) {
-		tmp2=tmp.slice(0,tmp3+1);
-		tmp3++;
+
+	function finishLoading() {
+		// Display AJAX loading circle
+		$('<div id="ajax-loader"><img src="img/ajax-loader.gif">').appendTo('#content');
+		$('table').menu('destroy');
+		$('#file').removeData().remove();
+		$('#toolbar-left').html('');
+		$('#new').show();
+		if (type=='trash') {
+			// If it's the trash, load it
+			getDirContents('~/.local/share/Trash/files',function(f){listTrash(f)});
+		} else if (type=='search') {
+			// Load search
+			search(file.substr(7));
+		} else {
+			// If it's a file or dir, load it
+			viewFile();
+		}
+		// Create the pathbar
+		var tmp = file.path.split('/'), tmp2 = [];
+		if (tmp[tmp.length-1]=='') {tmp.pop()}
 		$('#filepath').buttonset('destroy');
 		$('#filepath').html('');
-		$('#filepath').append('<a>...</a>');
-		$.each(tmp.slice(tmp3),function(tmp4,par) {
+		if (!tmp[0]) {
+			$('#filepath').append('<a href="#/">/</a>');
+			tmp = tmp.slice(1);
+		}
+		$.each(tmp,function(tmp3,par) {
 			tmp2[tmp2.length] = par;
 			$('#filepath').append('<a href="#/'+tmp2.join('/')+'/">'+par+'</a>');
 		});
-		$('#filepath a:last').attr('href',function(i,old){return old.slice(0,-1)});
 		$('#filepath').buttonset();
+		var tmp3=0;
+		while ($('#filepath').height()>53) {
+			tmp2=tmp.slice(0,tmp3+1);
+			tmp3++;
+			$('#filepath').buttonset('destroy');
+			$('#filepath').html('');
+			$('#filepath').append('<a>...</a>');
+			$.each(tmp.slice(tmp3),function(tmp4,par) {
+				tmp2[tmp2.length] = par;
+				$('#filepath').append('<a href="#/'+tmp2.join('/')+'/">'+par+'</a>');
+			});
+			$('#filepath a:last').attr('href',function(i,old){return old.slice(0,-1)});
+			$('#filepath').buttonset();
+		}
+		$('#ajax-loader').remove();
 	}
-	$('#ajax-loader').remove();
 }
 
 function viewFile() {
