@@ -35,7 +35,7 @@ function load() {
 
 	// Start by identifying the file.
 	file = new LBFile(location.hash.substr(1));
-	if (file.path=='') { // nothing was specified, so use homedir
+	if (location.hash.substr(1)=='') { // nothing was specified, so use homedir
 		file = new LBFile(LBFile.addSlashIfNeeded(homeroot));
 		location.hash += file.path;
 		return;
