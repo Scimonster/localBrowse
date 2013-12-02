@@ -2,13 +2,13 @@ var
 	w = window, // shortcuts
 	d= document,
 	s = { // settings
-		sortby: 'name',
-		asec: true,
-		dirFirst: 1,
-		hidden: true,
-		restricted: true,
-		dirTiles: true,
-		expandHomeroot: false
+		sortby: 'name', // in directory list view, sort by this
+		asec: true, // show in ascending order
+		dirFirst: true, // show directories first
+		hidden: true, // hide hidden files
+		restricted: true, // hide restricted files
+		dirTiles: true, // show directories as tiles
+		expandHomeroot: false // in trash and search view, replace ~ with the home directory's path
 	},
 	file, // an LBFile of the current file
 	type, // dir, trash, search, file
