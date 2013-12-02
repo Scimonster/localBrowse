@@ -264,11 +264,12 @@ actions.isDir = function(req, res) {
  * @param {boolean} [content=false] Same as {@code cont} parameter to {@link module:info~info info}
  * @todo Add CWD option to avoid hacks like used in {@link module:info~dir dir}
  */
-exports.fileListInfo = function(files, cb, content) {
+exports.fileListInfo = function(files, cb, content, cwd) {
+	cwd = cwd.toString();
 	var fileList = []; // final list, will be passed to cb once populated
 	if (files.length==0) {finished()}
 	files.forEach(function(f) {
-		exports.info(f, function(i) { // get info on current one
+		exports.info(path.join(cwd, f), function(i) { // get info on current one
 			fileList.push(i);
 			finished();
 		},content);
@@ -286,13 +287,14 @@ exports.fileListInfo = function(files, cb, content) {
  * @param {function} cb Callback function; takes 1 parameter: array of file infos
  * @param {boolean} [cont=false] Same as {@code cont} parameter to {@link module:info~info info}
  */
-exports.dir = function(files, cb, cont) {
+exports.dir = function(files, cb, cont, cwd) {
 	if (typeof files==='string') { // filepath
-		fs.readdir(files, function(e, d){
+		cwd = files;
+		fs.readdir(cwd, function(e, d){
 			if (e) {
 				cb({error: e.code==='EACCES'?'perms':'exist'}); // send correct error
 			} else {
-				files = d.map(function(f){return LBFile.addSlashIfNeeded(files)+f}); // because fs.readdir doesn't give full path
+				files = d;
 				run();
 			}
 		});
@@ -300,7 +302,7 @@ exports.dir = function(files, cb, cont) {
 		run();
 	}
 	function run() {
-		exports.fileListInfo(files, cb, cont);
+		exports.fileListInfo(files, cb, cont, cwd);
 	}
 }
 
@@ -318,9 +320,10 @@ actions.dir = function(req, res) {
 			res.send(d);
 		} else {
 			exports.dir(
-				d.map(function(f){return LBFile.addSlashIfNeeded(req.file)+f}),
+				d,
 				function(files){res.send(files)}, // unfortunately, res.send doesn't like to be passed
-				content);
+				content,
+				req.file);
 		}
 	});
 };
