@@ -13,7 +13,6 @@ On the Node side
 ## Client side
 Client JS
 
-* Use File construct
 * Keyboard shortcuts
 * Properties item in ctx menu
 * View recent files
@@ -42,3 +41,4 @@ About the trash
 * Move files to trash
 * Pre-parse trash
 * Show tiles
+* Move files out of trash
