@@ -49,7 +49,8 @@ exports.uglify = function(req, res) {
 	res.send(code);
 };
 
-var iconset = require('fs').readdirSync('./public/img/fatcow/16x16'); // so that it's ready; ok to sync during setup
+var iconset = require('fs').readdirSync('./public/img/fatcow/16x16'), // so that it's ready; ok to sync during setup
+LBFile = require('./File.js'), info = require('./info'); // dependencies for file operations
 /**
  * GET directory listing; pre-render list or tiles
  * @param {Object} req Express request object
@@ -57,7 +58,6 @@ var iconset = require('fs').readdirSync('./public/img/fatcow/16x16'); // so that
  * @require fs
  */
 exports.dir = function(req, res) {
-	var LBFile = require('./File.js'), info = require('./info'); // dependencies for file operations
 	function imageForFile(f, big) { // get an image for a file
 		if (f.type=='directory') {return 'img/fatcow/'+(big?'32x32':'16x16')+'/folder.png'}
 		else {

@@ -4,8 +4,7 @@ List of tasks to be done
 ## Server side
 On the Node side
 
-### all
-* Use `path` module instead of `fileOps.js`
+_Nothing here_
 
 ## Client side
 Client JS
