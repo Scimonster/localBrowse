@@ -173,13 +173,14 @@ exports.info = function(file, cb, content, stat) {
 					});
 					i.size = s.size;
 				} else if (r) { // is dir
-					i.size = s.size;
 					fs.readdir(file, function(d_e, d) {
+						i.size = s.size;
 						i.items = d.length;
 						finished();
 					});
 				} else {
 					i.size = null;
+					i.items = null;
 				}
 				finished();
 			});
@@ -198,12 +199,12 @@ exports.info = function(file, cb, content, stat) {
 			typeof i.date !== 'undefined' &&
 			typeof i.size !== 'undefined' &&
 			(i.type=='directory'?typeof i.items !== 'undefined':true) &&
-			typeof i.date !== 'undefined' &&
 			typeof i.perm !== 'undefined' &&
 			typeof i.type !== 'undefined' && i.type !== '' &&
 			typeof i.isLink !== 'undefined' && (!i.isLink || typeof i.link !== 'undefined') &&
 			(content && i.type!='directory'?typeof i.cont !== 'undefined':true) &&
-			(stat?typeof i.stat !== 'undefined':true)) {
+			(stat?typeof i.stat !== 'undefined':true)
+		) {
 			cb(new LBFile(i));
 		}
 	}
