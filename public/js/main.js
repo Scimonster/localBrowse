@@ -436,9 +436,9 @@ function parseTrashInfo(info) {
 function imageForFile(f,big) {
 	if (f.type=='directory') {return 'img/fatcow/'+(big?'32x32':'16x16')+'/folder.png'}
 	else {
-		var ext = f.name.split('.');
-		ext = ext.length?ext[ext.length-1]:'';
-		if (iconset.indexOf('file_extension_'+ext+'.png')>-1) {return 'img/fatcow/'+(big?'32x32':'16x16')+'/file_extension_'+ext+'.png'}
+		if (iconset.indexOf('file_extension_'+f.ext+'.png')>-1) {
+			return 'img/fatcow/'+(big?'32x32':'16x16')+'/file_extension_'+f.ext+'.png';
+		}
 		else {return 'img/fatcow/'+(big?'32x32':'16x16')+'/document_empty.png'}
 	}
 }

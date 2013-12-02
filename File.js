@@ -38,7 +38,7 @@ function LBFile(path) {
 	this.path = pathMod.normalize(this.path);
 	this.name = pathMod.basename(this.path);
 	this.dir = LBFile.addSlashIfNeeded(pathMod.dirname(this.path));
-	this.ext = pathMod.extname(this.path);
+	this.ext = pathMod.extname(this.path).substr(1);
 	
 	// make this.date a proper Date object
 	this.date = new Date(this.date);
