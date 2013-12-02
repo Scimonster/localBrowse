@@ -44,6 +44,13 @@ function LBFile(path) {
 	this.date = new Date(this.date);
 }
 
+LBFile.prototype.update = function(path) {
+	this.path = pathMod.normalize(path);
+	this.name = pathMod.basename(this.path);
+	this.dir = LBFile.addSlashIfNeeded(pathMod.dirname(this.path));
+	this.ext = pathMod.extname(this.path);
+};
+
 /**
  * Return the full path with a slash at the end
  * @return {string}

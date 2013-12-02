@@ -40,10 +40,14 @@ function load() {
 		location.hash += file.path;
 		return;
 	}
+	if (file.path !== location.hash.substr(1)) { // it was normalized
+		location.hash = file.path;
+		return;
+	}
 	d.title = file.name + ' - localBrowse';
 
 	// Find out if it's a file or dir.
-	type = /^search/.test(file.path) ? 'search' : (file.path=='trash' ? file.path : ''); // first test if it's search, then trash, otherwise leave it for later
+	type = /^search/.test(location.hash.substr(1)) ? 'search' : (location.hash.substr(1)=='trash' ? 'trash' : ''); // first test if it's search, then trash, otherwise leave it for later
 	if (!type) { 
 		$.getJSON('info/info'+file.resolve(),function(f){
 			file = new LBFile(f)
@@ -114,7 +118,7 @@ function viewFile() {
 	}, editors = ['text'], trash=false;
 	
 	if (file.path.match(/^trash/)) {
-		file.path = file.resolve();
+		file.update(file.resolve());
 		trash = true;
 	}
 	// Check if the requested file exists
@@ -163,7 +167,7 @@ function viewFile() {
 		}
 	});
 	sidebarTree(file.path);
-	if (trash) {file.path = file.relative()}
+	if (trash) {file.update(file.relative())}
 }
 
 function listDir(files,beforeLoad,afterLoad) {
@@ -687,7 +691,7 @@ $(d).on('change','#show_hide_restricted',function(){
 		$('.file.restricted').hide();
 		$('label[for="show_hide_restricted"] span:last').text('show');
 	} else {
-		$('.file.hidden').show();
+		$('.file.restricted').show();
 		$('label[for="show_hide_restricted"] span:last').text('hide');
 	}
 	if (s.hidden) {$('.file.hidden').hide()}
