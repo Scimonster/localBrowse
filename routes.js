@@ -11,7 +11,7 @@
  * @param {Object} res Express response object
  */
 exports.index = function(req, res) {
-	var scripts = ['jquery','jquery-ui.min','plugins','main'].map(function(f){return 'js/'+f+'.js'});
+	var scripts = ['jquery','jquery-ui.min','plugins','main','viewfile','trash','keypress'].map(function(f){return 'js/'+f+'.js'});
 	scripts.unshift('browserify/File.js');
 	res.render('index', {
 		sidebar: [ // for convenience
