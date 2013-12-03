@@ -1,6 +1,10 @@
 # Outstanding tasks
 List of tasks to be done
 
+## Coding
+
+* Stop procrastinating on the rest of this list!
+
 ## Server side
 On the Node side
 
