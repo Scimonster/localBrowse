@@ -11,6 +11,8 @@
  * @param {Object} res Express response object
  */
 exports.index = function(req, res) {
+	var scripts = ['jquery','jquery-ui.min','plugins','main'].map(function(f){return 'js/'+f+'.js'});
+	scripts.unshift('browserify/File.js');
 	res.render('index', {
 		sidebar: [ // for convenience
 			{name:'Home', icon:'home', url:'~/'},
@@ -23,6 +25,7 @@ exports.index = function(req, res) {
 			{name:'Recent', icon:'clock', url:'~/.local/share/recently-used.xbel'},
 			{name:'Trash', icon:'trash', url:'trash'}
 		],
+		scripts: scripts,
 		username: process.env.USERNAME,
 		homeroot: process.env.HOME,
 	});
@@ -47,6 +50,20 @@ b.bundle(function(e,src){
 exports.uglify = function(req, res) {
 	res.header('Content-Type', 'text/javascript');
 	res.send(code);
+};
+
+exports.browserify  =  {};
+/**
+ * GET browserified File.js
+ * @param {Object} req Express request object
+ * @param {Object} res Express response object
+ * @require browserify
+ */
+exports.browserify.File = function(req, res) {
+	b.bundle(function(e,src){
+		res.header('Content-Type', 'text/javascript');
+		res.send(src);
+	});
 };
 
 var iconset = require('fs').readdirSync('./public/img/fatcow/16x16'), // so that it's ready; ok to sync during setup

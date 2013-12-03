@@ -35,6 +35,7 @@ app.get('/', routes.index);
 
 // single JS file
 app.get('/ugly.js', routes.uglify);
+app.get('/browserify/File.js', routes.browserify.File);
 
 // info for parsing
 app.get('/info/:action/*', info.routes.get);
