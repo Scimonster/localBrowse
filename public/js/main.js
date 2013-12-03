@@ -239,7 +239,7 @@ function listTrash(files) {
 			if (trashinfo({name:f.name+'.trashinfo'}).get().length) {
 				var i = parseTrashInfo(trashinfo({name:f.name+'.trashinfo'}).get()[0].cont), last = $('<tr class="file">').appendTo('#file tbody');
 				last.append('<td class="file-name"><img class="file-img" src="'+imageForFile(f,false)+'" /> '+f.name+'</td>');
-				last.append('<td class="file-size">'+(f.type=='directory'?f.size+' items':(f.readable?f.filesizeFormatted():f.size))+'</td>');
+				last.append('<td class="file-size">'+(f.type=='directory'?f.items+' items':(f.readable?f.filesizeFormatted():f.size))+'</td>');
 				last.append('<td class="file-date">'+(f.readable?f.dateFormatted(true):f.date)+'</td>');
 				last.append('<td>'+(new LBFile(decodeURIComponent(i.Path))).dir+'</td>');
 				if (!s.expandHomeroot) {last.find('td:last').html(function(x,old){return old.replace(homeroot,'~')})}

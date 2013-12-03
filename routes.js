@@ -21,7 +21,7 @@ exports.index = function(req, res) {
 			{name:'Videos', icon:'video', url:'~/Videos/'},
 			{name:'Root', icon:'disk', url:'/'},
 			{name:'Recent', icon:'clock', url:'~/.local/share/recently-used.xbel'},
-			{name:'Trash', icon:'trash', url:'~/Trash/'}
+			{name:'Trash', icon:'trash', url:'trash'}
 		],
 		username: process.env.USERNAME,
 		homeroot: process.env.HOME,
