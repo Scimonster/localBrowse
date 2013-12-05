@@ -4,8 +4,9 @@
  * @license {@link LICENSE} (MIT)
  * @module text
  */
-
-require('./Object.js')(); // extend Object (and Array)
+try { // can only run once without errors
+	require('./Object.js')(); // extend Object (and Array)
+} catch (e) {}
 /**
  * Create a function to get system messages
  * @param {string} lang A language code to get for
@@ -20,7 +21,7 @@ module.exports = function gettext(lang) {
 				fallbacks.push.apply(fallbacks, messages[lang].fallbacks);
 				messages[lang] = messages[lang].messages;
 			} catch (e) { // no langlist
-				fallbacks.splice(fallbacks.indexOf(lang),1); // remove it
+				fallbacks.splice(fallbacks.indexOf(lang), 1); // remove it
 				return getlang('en'); // default to English
 			}
 			return false;
@@ -34,19 +35,25 @@ module.exports = function gettext(lang) {
 	fallbacks = fallbacks.unique();
 	console.log(messages);
 	console.log(fallbacks);
-	return function(message) {
+	return function _(message) {
+		var args = [].slice.call(arguments, 1);
 		for (lang in fallbacks) { // loop through fallbacks
 			if (messages[fallbacks[lang]].hasOwnProperty(message)) { // the language has our message
-				return messages[fallbacks[lang]][message];
+				return replace(messages[fallbacks[lang]][message], args);
 			}
 		}
 		return message; // nowhere, so return the original message
 	};
 };
 
+function replace(str, params) {
+	// takes a str in format of "replacement 1: $1, replacement 2: $2"
+	return str.replace(/\$(\d)/g, function(match, num){return params[num-1]});
+
+}
+
 // just for testing period
 function _require(lang) {
-	console.log(lang)
 	var m = {
 		'en': {
 			fallbacks: ['en'],
@@ -55,7 +62,10 @@ function _require(lang) {
 				'b': 'b',
 				'c': 'c',
 				'd': 'd',
-				'e': 'e'
+				'e': 'e',
+				
+				'dirlist-file-size-items': '$1 items',
+				'paste-merge-folder': 'A $1 folder already exists in "$2".<br/>Do you want to merge these folders? Merging will ask for confirmation in case of file conflicts.'
 			}
 		},
 		'fr': {
