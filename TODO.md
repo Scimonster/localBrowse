@@ -17,11 +17,6 @@ Client JS
 * Properties item in ctx menu
 * View recent files
 
-## Files
-Stuff about file organization
-
-* Separate main.js into several module files; maybe concatenate and minify them with Node
-
 ## Editors/viewers
 Opening files
 
