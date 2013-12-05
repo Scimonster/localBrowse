@@ -1,0 +1,152 @@
+/**
+ * @file Extensions to Object.prototype
+ * @author Scimonster
+ * @license {@link LICENSE} (MIT)
+ */
+
+module.exports = function() {
+
+	Object.defineProperty(Object.prototype, 'foreach', {
+		value: function(fun, thisp) {
+			if (this == null || typeof fun != 'function') {
+				throw new TypeError();
+			}
+			var t = Object(this);
+			for (var i in t) {
+				if (t.hasOwnProperty(i)) {
+					if (fun.call(thisp, t[i], i, t) === false) {
+						break; // return false from inside the foreach function is analagous to a break
+					}
+				}
+			}
+			return t;
+		}
+	});
+
+	Object.defineProperty(Object.prototype, 'map', {
+		value: function(fun, thisp, sameprops) {
+			if (this == null || typeof fun != 'function') {
+				throw new TypeError();
+			}
+			var t = Object(this);
+			var res = {};
+			for (var i in t) {
+				if (t.hasOwnProperty(i)) {
+					var val = fun.call(thisp, t[i], i, t);
+					if (sameprops) {
+						// the new property should have the same enumerate/write/etc as the original
+						var props = Object.getOwnPropertyDescriptor(t, i);
+						props.value = val;
+						Object.defineProperty(res, i, props);
+					} else {
+						res[i] = val;
+					}
+				}
+			}
+			return res;
+		}
+	});
+
+	Object.defineProperty(Object.prototype, 'filter', {
+		value: function(fun, thisp) {
+			if (this == null || typeof fun != 'function') {
+				throw new TypeError();
+			}
+			var res = {};
+			var t = Object(this);
+			for (var i in t) {
+				if (t.hasOwnProperty(i)) {
+					var val = t[i]; // in case fun mutates it
+					console.log(i)
+					console.log(val)
+					if (fun.call(thisp, val, i, t)) {
+						console.log(true)
+						// define property on res in the same manner as it was originally defined
+						var props = Object.getOwnPropertyDescriptor(t, i);
+						props.value = val;
+						Object.defineProperty(res, i, props);
+					}
+				}
+			}
+			return res;
+		}
+	});
+
+	Object.defineProperty(Object.prototype, 'some', {
+		value: function(fun, thisp) {
+			if (this == null || typeof fun != 'function') {
+				throw new TypeError();
+			}
+			var t = Object(this);
+			for (var i in t) {
+				if (t.hasOwnProperty(i) && fun.call(thisp, t[i], i, t)) {
+					return true;
+				}
+			}
+			return false;
+		}
+	});
+
+	Object.defineProperty(Object.prototype, 'every', {
+		value: function(fun, thisp) {
+			if (this == null || typeof fun != 'function') {
+				throw new TypeError();
+			}
+			var t = Object(this);
+			for (var i in t) {
+				if (t.hasOwnProperty(i) && fun.call(thisp, t[i], i, t)) {
+					return false;
+				}
+			}
+			return true;
+		}
+	});
+
+	Object.defineProperty(Object.prototype, 'indexOf', {
+		value: function(searchElement, loose) {
+			// searchElement: what to search for (if a function, pass val, index, and obj; evaluate response)
+			// loose {bool=false}: if true: if an array or object, JSON.stringify, then compare
+			// loose, if searchElement is function: object to be passed as this
+			// return index or null, if not found
+			if (this == null) {
+				throw new TypeError();
+			}
+			if (loose && typeof searchElement == 'object') {
+				searchElement = JSON.stringify(searchElement);
+			}
+			var t = Object(this);
+			for (var i in t) {
+				if (t.hasOwnProperty(i)) {
+					if (typeof searchElement == 'function') { // if function returns true, so we're at it
+						if(searchElement.call(loose, t[i], i, t)) {
+							return i;
+						}
+					} else { // check for a match
+						var value = t[i];
+						if (loose) {
+							value = JSON.stringify(value);
+						}
+						if (searchElement === value) {
+							return i;
+						}
+					}
+					
+				}
+			}
+			return null;
+		}
+	});
+
+	Object.defineProperty(Array.prototype, 'unique', {
+		value: function() {
+			if (this == null) {
+				throw new TypeError();
+			}
+			return Array.prototype.filter.call(this, function(val, i, arr) {
+				// force using Array's filter even for strings or other array-likes
+				return arr.valueOf().indexOf(val) == i; // only keep first occurrence of anything
+			});
+		}
+	});
+
+};
