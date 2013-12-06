@@ -4,6 +4,7 @@
  * @license {@link LICENSE} (MIT)
  * @module routes
  */
+var _ = require('./text')(require('./lang').code)
 
 /**
  * GET homepage
@@ -103,7 +104,8 @@ exports.dir = function(req, res) {
 		res.render('dir.'+req.query.type+'.jade', { // list or tiles
 			imageForFile: imageForFile,
 			files: files,
-			base: req.body.base||req.body.dir
+			base: req.body.base||req.body.dir,
+			'_': _
 		});
 	}
 };

@@ -1,10 +1,10 @@
 thead
   tr
-    th#name Name
-    th#size Size
-    th#date Last Modified
-    th#type Type
-    th#perm Permissions
+    th#name= _('dirlist-header-name')
+    th#size= _('dirlist-header-size')
+    th#date= _('dirlist-header-date')
+    th#type= _('dirlist-header-type')
+    th#perm= _('dirlist-header-perm')
   tbody
     each f in files
       - var classes = ['file']
@@ -15,7 +15,7 @@ thead
           img.file-img(src=imageForFile(f,false))
           = f.name.substr(0,35)
           != f.name.length<35?'':'&#x2026;'
-        td.file-size(title=f.type=='directory'?f.items+' items':f.size+' B')!= f.type=='directory'?f.items+' items':(f.readable?f.filesizeFormatted():f.size)
+        td.file-size(title=f.type=='directory'?_('dirlist-filesize-items',f.items):f.size+' B')!= f.type=='directory'?_('dirlist-filesize-items',f.items):(f.readable?f.filesizeFormatted():f.size)
         td.file-date(title=f.date.toLocaleString())!= f.readable?f.dateFormatted(false):f.date
         td.file-type!= f.type
         td.file-perm!= f.permsFormatted()
