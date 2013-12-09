@@ -8,6 +8,18 @@ var en = {
 	fallbacks: [ 'en' ],
 	messages: {
 
+		// index-*: items on index
+		"index-new": "new",
+		"index-new-dir": "directory",
+		"index-new-file": "file",
+		"index-new-link": "link",
+		"index-search": "search",
+		// index-loc-*: items in location sidebar
+		"index-loc-tree": "Tree",
+		"index-loc-places": "Places",
+		"index-loc-bookmarks": "Bookmarks",
+		"index-loc-bookmarks-add": "bookmark here",
+
 		// dirlist-header-*: items in thead in views/dir.list.jade
 		"dirlist-header-name": "Name",
 		"dirlist-header-size": "Size",

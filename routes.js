@@ -29,6 +29,7 @@ exports.index = function(req, res) {
 		scripts: scripts,
 		username: process.env.USERNAME,
 		homeroot: process.env.HOME,
+		'_': _
 	});
 };
 

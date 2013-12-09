@@ -17,33 +17,31 @@ html
 				h2#back-and-forth
 					button#back
 						span.ui-icon.ui-icon-arrowthick-1-w
-						| back
 					button#next
 						span.ui-icon.ui-icon-arrowthick-1-e
-						| next
 				h2#filepath
 			#toolbar
 				#toolbar-left
 				#toolbar-right
-					button#new new
+					button#new= _('index-new')
 					ul#new-menu
 						li#new-dir
-							a directory
+							a= _('index-new-dir')
 						li#new-file
-							a file
+							a= _('index-new-file')
 						li#new-link
-							a link
-					button#search-bttn search
+							a= _('index-new-link')
+					button#search-bttn= _('index-search')
 			#locations-container
 				nav#locations
 					h3
 						span.ui-icon.ui-icon-folder-open
-						| Tree
+						= _('index-loc-tree')
 					#sidebar-tree
 						ul
 					h3
 						span.ui-icon.ui-icon-flag
-						| Places
+						= _('index-loc-places')
 					div
 						ul
 							each obj in sidebar
@@ -56,9 +54,9 @@ html
 										= obj.name
 					h3
 						span.ui-icon.ui-icon-tag
-						| Bookmarks
+						= _('index-loc-bookmarks')
 					div
-						button#new-bookmark bookmark here
+						button#new-bookmark= _('index-loc-bookmarks-add')
 						ul#sidebar-bookmarks
 			#file-container
 			p#message
