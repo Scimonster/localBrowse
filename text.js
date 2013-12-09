@@ -4,7 +4,7 @@
  * @license {@link LICENSE} (MIT)
  * @module text
  */
-obj = require('./Object.js');
+var obj = require('./Object.js'), extend = require('extend');
 /**
  * Create a function to get system messages
  * @param {string} lang A language code to get for
@@ -31,14 +31,17 @@ module.exports = function gettext(lang) {
 	// resolve fallbacks
 	while (!fallbacks.every(function(fb){return getlang(fb)})) {}
 	fallbacks = obj.unique(fallbacks);
+	messages = extend.apply(null, [true, {}].concat(fallbacks.reverse().map(function(fb){return messages[fb]})));
 	return function _(message) {
-		var args = [].slice.call(arguments, 1);
-		for (lang in fallbacks) { // loop through fallbacks
-			if (messages[fallbacks[lang]].hasOwnProperty(message)) { // the language has our message
-				return replace(messages[fallbacks[lang]][message], args);
+		if (message) { // if we have a message
+			var args = [].slice.call(arguments, 1);
+			if (messages.hasOwnProperty(message)) { // we have a message in one of our fallbacks
+				return replace(messages[message], args);
 			}
+			return message; // nowhere, so return the original message
+		} else { // return them all
+			return messages;
 		}
-		return message; // nowhere, so return the original message
 	};
 };
 
