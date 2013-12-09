@@ -31,8 +31,6 @@ module.exports = function gettext(lang) {
 	// resolve fallbacks
 	while (!fallbacks.every(function(fb){return getlang(fb)})) {}
 	fallbacks = obj.unique(fallbacks);
-	console.log(messages);
-	console.log(fallbacks);
 	return function _(message) {
 		var args = [].slice.call(arguments, 1);
 		for (lang in fallbacks) { // loop through fallbacks
