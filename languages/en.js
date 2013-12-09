@@ -38,6 +38,7 @@ var en = {
 		"dirlist-header-perm": "Permissions",
 		// dirlist-*: other items in views/dir.(list/tiles).jade
 		"dirlist-filesize-items": "$1 items",
+		"dirlist-filetype-directory": "directory",
 
 	}
 };
