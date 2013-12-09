@@ -36,9 +36,10 @@ exports.index = function(req, res) {
 
 // set it up. unfortunately you have to reset Node each time you change any of the JS files
 var UglifyJS = require("uglify-js"), browserify = require('browserify'), code;
-var b = browserify([]);
-b.require('./File.js');
-b.bundle(function(e,src){
+var b = {};
+b.File = browserify([]);
+b.File.require('./File.js');
+b.File.bundle(function(e,src){
 	code = '/* Uglified js/(jquery, jquery-ui.min, plugins, main).js, and browserified File.js */';
 	code += UglifyJS.minify(src,{fromString: true}).code;
 	code += UglifyJS.minify(['jquery','jquery-ui.min','plugins','main'].map(function(f){return 'public/js/'+f+'.js'})).code;
@@ -55,7 +56,7 @@ exports.uglify = function(req, res) {
 	res.send(code);
 };
 
-exports.browserify  =  {};
+exports.browserify = {};
 /**
  * GET browserified File.js
  * @param {Object} req Express request object
@@ -63,10 +64,20 @@ exports.browserify  =  {};
  * @require browserify
  */
 exports.browserify.File = function(req, res) {
-	b.bundle(function(e,src){
+	b.File.bundle(function(e,src){
 		res.header('Content-Type', 'text/javascript');
 		res.send(src);
 	});
+};
+
+/**
+ * GET list of messages
+ * @param {Object} req Express request object
+ * @param {Object} res Express response object
+ * @require browserify
+ */
+exports.messages = function(req, res) {
+	res.send(_()); // the list of messages
 };
 
 var iconset = require('fs').readdirSync('./public/img/fatcow/16x16'), // so that it's ready; ok to sync during setup

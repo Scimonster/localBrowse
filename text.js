@@ -33,6 +33,11 @@ module.exports = function gettext(lang) {
 	fallbacks = obj.unique(fallbacks);
 	messages = extend.apply(null, [true, {}].concat(fallbacks.reverse().map(function(fb){return messages[fb]})));
 	return function _(message) {
+		function replace(str, params) {
+			// takes a str in format of "replacement 1: $1, replacement 2: $2"
+			return str.replace(/\$(\d)/g, function(match, num){return params[num-1]});
+		}
+
 		if (message) { // if we have a message
 			var args = [].slice.call(arguments, 1);
 			if (messages.hasOwnProperty(message)) { // we have a message in one of our fallbacks
@@ -44,9 +49,3 @@ module.exports = function gettext(lang) {
 		}
 	};
 };
-
-function replace(str, params) {
-	// takes a str in format of "replacement 1: $1, replacement 2: $2"
-	return str.replace(/\$(\d)/g, function(match, num){return params[num-1]});
-
-}

@@ -15,8 +15,27 @@ var
 	bookmarks, // array of bookmarks
 	iconset = [], // deprecated, probably
 	toPaste = {}, // fromPath=>toPath
+	messages, // object of system messages
 	LBFile = require('./File.js'); // LBFile class, containing file methods
 $.get('/info/localbrowseCWD',function(cwd){getDirContents(cwd+'/public/img/fatcow/16x16',{cont:false,simple:true},function(i){iconset = i().select('name')})}); // deprecated
+
+$.get('/messages.json', function(m){messages = m});
+function _(message) {
+	function replace(str, params) {
+		// takes a str in format of "replacement 1: $1, replacement 2: $2"
+		return str.replace(/\$(\d)/g, function(match, num){return params[num-1]});
+	}
+
+	if (message) { // if we have a message
+		var args = [].slice.call(arguments, 1);
+		if (messages.hasOwnProperty(message)) { // we have a message in one of our fallbacks
+			return replace(messages[message], args);
+		}
+		return message; // nowhere, so return the original message
+	} else { // return them all
+		return messages;
+	}
+}
 
 LBFile.prototype.resolve = function() {
 	// Get a full absolute path from a URL-path

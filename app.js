@@ -33,9 +33,10 @@ if ('development' == app.get('env')) {
 // end user's page
 app.get('/', routes.index);
 
-// single JS file
+// JS files
 app.get('/ugly.js', routes.uglify);
 app.get('/browserify/File.js', routes.browserify.File);
+app.get('/messages.json', routes.messages);
 
 // info for parsing
 app.get('/info/:action/*', info.routes.get);
