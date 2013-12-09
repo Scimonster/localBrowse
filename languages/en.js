@@ -40,6 +40,18 @@ var en = {
 		"dirlist-filesize-items": "$1 items",
 		"dirlist-filetype-directory": "directory",
 
+		// ctxm-*: Context menu
+		// ctxm-selfile-*: ... for selected files
+		"ctxm-selfile-open": "Open",
+		"ctxm-selfile-cut": "Cut",
+		"ctxm-selfile-copy": "Copy",
+		"ctxm-selfile-moveTo": "Move to&hellip;",
+		"ctxm-selfile-copyTo": "Copy to&hellip;",
+		"ctxm-selfile-makeLink": "Make link$1&hellip;",
+		"ctxm-selfile-rename": "Rename",
+		"ctxm-selfile-trash": "Move to trash",
+		"ctxm-selfile-props": "Properties",
+		"ctxm-selfile-newFolder": "New folder with selection",
 	}
 };
 

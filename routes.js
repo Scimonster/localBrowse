@@ -121,34 +121,35 @@ exports.ctxMenu = function(req, res) {
 	switch (req.query.type) {
 		case 'seledFiles': // some files were selected
 			res.render('ctxMenu.seledFiles.jade', {
-				list: req.body.l?[ // just one
-					{r:req.body.r,id:'open',text:'Open'},
+				list: req.body.l=="true"?[ // just one
+					{r:req.body.r,id:'open'},
 					null,
-					{r:req.body.r,id:'cut',text:'Cut'},
-					{r:req.body.r,id:'copy',text:'Copy'},
+					{r:req.body.r,id:'cut'},
+					{r:req.body.r,id:'copy'},
 					null,
-					{r:req.body.r,id:'moveTo',text:'Move to...'},
-					{r:req.body.r,id:'copyTo',text:'Copy to...'},
-					{r:false,id:'makeLink',text:'Make link...'},
-					{r:req.body.r,id:'rename',text:'Rename'},
+					{r:req.body.r,id:'moveTo'},
+					{r:req.body.r,id:'copyTo'},
+					{r:false,id:'makeLink',params:['']},
+					{r:req.body.r,id:'rename'},
 					null,
-					{r:req.body.r,id:'trash',text:'Move to Trash'},
+					{r:req.body.r,id:'trash'},
 					null,
-					{r:false,id:'props',text:'Properties'},
+					{r:false,id:'props'},
 				]:[ // more than one
-					{r:req.body.r,id:'newFolder',text:'New folder with selection'},
+					{r:req.body.r,id:'newFolder'},
 					null,
-					{r:req.body.r,id:'cut',text:'Cut'},
-					{r:req.body.r,id:'copy',text:'Copy'},
+					{r:req.body.r,id:'cut'},
+					{r:req.body.r,id:'copy'},
 					null,
-					{r:req.body.r,id:'moveTo',text:'Move to...'},
-					{r:req.body.r,id:'copyTo',text:'Copy to...'},
-					{r:false,id:'makeLink',text:'Make links...'},
+					{r:req.body.r,id:'moveTo'},
+					{r:req.body.r,id:'copyTo'},
+					{r:false,id:'makeLink',params:['s']},
 					null,
-					{r:req.body.r,id:'trash',text:'Move to Trash'},
+					{r:req.body.r,id:'trash'},
 					null,
-					{r:false,id:'props',text:'Properties'},
-				]
+					{r:false,id:'props'},
+				],
+				'_': _
 			});
 			break;
 		default:

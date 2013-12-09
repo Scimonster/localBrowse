@@ -1,8 +1,11 @@
 mixin item(i)
-  if i===null
-    li
-  else
-    li(class=i.r=="true"?'ui-state-disabled':'',id='contextMenu-file-'+i.id)
-      a= i.text
+	if i===null
+		li
+	else
+		li(class=i.r=="true"?'ui-state-disabled':'',id='contextMenu-file-'+i.id)
+			if i.params
+				a!= _.apply(null,['ctxm-selfile-'+i.id].concat(i.params))
+			else
+				a!= _('ctxm-selfile-'+i.id)
 - each i in list
-  +item(i)
+	+item(i)
