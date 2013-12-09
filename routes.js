@@ -14,18 +14,19 @@ var _ = require('./text')(require('./lang').code)
 exports.index = function(req, res) {
 	var scripts = ['jquery','jquery-ui.min','plugins','main','viewfile','trash','keypress'].map(function(f){return 'js/'+f+'.js'});
 	scripts.unshift('browserify/File.js');
+	var sidebar = [
+		{name:_('places-home'), icon:'home', url:'~/'},
+		{name:_('places-docs'), icon:'document', url:'~/Document/'},
+		{name:_('places-downloads'), icon:'arrowthick-1-s', url:'~/Downloads/'},
+		{name:_('places-music'), icon:null, url:'~/Music/', span:'<span style="display: inline-block;">♫</span>'},
+		{name:_('places-pix'), icon:'image', url:'~/Pictures/'},
+		{name:_('places-vids'), icon:'video', url:'~/Videos/'},
+		{name:_('places-root'), icon:'disk', url:'/'},
+		{name:_('places-recent'), icon:'clock', url:'~/.local/share/recently-used.xbel'},
+		{name:_('places-trash'), icon:'trash', url:'trash'}
+	];
 	res.render('index', {
-		sidebar: [ // for convenience
-			{name:'Home', icon:'home', url:'~/'},
-			{name:'Documents', icon:'document', url:'~/Document/'},
-			{name:'Downloads', icon:'arrowthick-1-s', url:'~/Downloads/'},
-			{name:'Music', icon:null, url:'~/Music/', span:'<span style="display: inline-block;">♫</span>'},
-			{name:'Pictures', icon:'image', url:'~/Pictures/'},
-			{name:'Videos', icon:'video', url:'~/Videos/'},
-			{name:'Root', icon:'disk', url:'/'},
-			{name:'Recent', icon:'clock', url:'~/.local/share/recently-used.xbel'},
-			{name:'Trash', icon:'trash', url:'trash'}
-		],
+		sidebar: sidebar,
 		scripts: scripts,
 		username: process.env.USERNAME,
 		homeroot: process.env.HOME,

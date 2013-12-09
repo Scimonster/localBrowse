@@ -14,11 +14,21 @@ var en = {
 		"index-new-file": "file",
 		"index-new-link": "link",
 		"index-search": "search",
-		// index-loc-*: items in location sidebar
+		// index-loc-*: headers in location sidebar
 		"index-loc-tree": "Tree",
 		"index-loc-places": "Places",
 		"index-loc-bookmarks": "Bookmarks",
 		"index-loc-bookmarks-add": "bookmark here",
+		// places-*: items in places sidebar
+		"places-home": "Home",
+		"places-docs": "Documents",
+		"places-downloads": "Downloads",
+		"places-music": "Music",
+		"places-pix": "Pictures",
+		"places-vids": "Videos",
+		"places-root": "Root",
+		"places-recent": "Recent",
+		"places-trash": "Trash",
 
 		// dirlist-header-*: items in thead in views/dir.list.jade
 		"dirlist-header-name": "Name",
