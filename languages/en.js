@@ -8,7 +8,10 @@ var en = {
 	fallbacks: [ 'en' ],
 	messages: {
 
-		"title": "$1 - localBrowse", // page title
+		// title-*: page titles in different circumstances (all are given as $1 in `title`)
+		"title": "$1 - localBrowse",
+		"title-editing": "$1 - editing",
+		"title-editing-read": "$1 - editing [read-only]",
 
 		// index-*: items on index
 		"index-new": "new",
@@ -43,6 +46,15 @@ var en = {
 		"dirlist-filesize-items": "$1 items",
 		"dirlist-filetype-directory": "directory",
 
+		// fileview-*: when editing a file
+		"fileview-button-save": "save",
+		"fileview-button-saveas": "save as",
+		"fileview-noexist": "The file \"$1\" does not exist.",
+		"fileview-noaccess": "$1 is not readable to localBrowse.",
+
+		// editor-*: editor names
+		"editor-text": "text",
+
 		// ctxm-*: Context menu
 		// ctxm-selfile-*: ... for selected files
 		"ctxm-selfile-open": "Open",
@@ -58,6 +70,9 @@ var en = {
 
 		// messages-*: messages displayed at the bottom of the page
 		"messages-bookmarkadded": "Bookmark added.",
+		"messages-file-editingwith": "Editing with $1 editor.",
+		"messages-file-readonly": " This file is read-only to localBrowse.", // keep the space
+		"messages-file-backup": " Warning: you are editing a backup file.", // keep the space
 
 		// paste-*: text displayed when pasting files
 		"paste-fileinfo-rfolder": "Replacement folder",

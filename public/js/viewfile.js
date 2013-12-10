@@ -34,27 +34,27 @@ function viewFile() {
 				if (editor == 'text') { // load text editor
 					$('<textarea id="file" autofocus="autofocus">').val(f.cont).appendTo('#file-container').focus();
 				}
-				d.title = file.name + ' - editing - localBrowse';
+				d.title = _('title',_('title-editing',file.name));
 				
 				if (f.writable) { // add save button
-					$('<button id="save"><!--<span class="ui-icon ui-icon-disk"></span>-->save</button>').appendTo('#toolbar-left');
+					$('<button id="save"><!--<span class="ui-icon ui-icon-disk"></span>-->'+_('fileview-button-save')+'</button>').appendTo('#toolbar-left');
 				} else {
-					d.title = file.name + ' - editing [read-only] - localBrowse';
+					d.title = _('title',_('title-editing-read',file.name));
 				}
 				$.getJSON('info/writable'+file.dir,function(d){ // add save as button
 					if (d) {
-						$('<button id="saveAs">save as</button>').appendTo('#toolbar-left');
+						$('<button id="saveAs">'+_('fileview-button-saveas')+'</button>').appendTo('#toolbar-left');
 					}
 					$('#toolbar-left').buttonset();
 				});
-				$('#message').html('Editing with '+editor+' editor.'+(f.writable?'':' This file is read-only to localBrowse.')+(f.name.substr(-1)=='~'?' Warning: you are editing a backup file.':''));
+				$('#message').html(_('messages-file-editingwith',_('editor-'+editor))+(f.writable?'':_('messages-file-readonly'))+(f.name.substr(-1)=='~'?_('messages-file-readonly'):''));
 			} else { // no editors
 				// Load the browser's view of the file.
-				$('<iframe id="file">').attr('src','info/echo/'+file).appendTo('#file-container');
+				$('<iframe id="file">').attr('src','info/echo/'+file.path).appendTo('#file-container');
 			}
 			$('#file').data('modDate',f.date.getTime()); // for checking if it was modified
 		} else { // doesn't exist
-			$('<div id="file" style="text-align:center">').appendTo('#file-container').html('The file "'+file.path+'" does not exist.');
+			$('<div id="file" style="text-align:center">').appendTo('#file-container').html(_('fileview-noexist',file.path));
 		}
 	});
 	sidebarTree(file.path);
@@ -66,9 +66,9 @@ function listDir(files,beforeLoad,afterLoad) {
 
 	beforeLoad = beforeLoad || $.noop;
 	afterLoad = afterLoad || $.noop;
-	if (files.err == 'perms') { // can't access
+	if (files == 'perms') { // can't access
 		$('#file').remove();
-		$('<div id="file" style="text-align:center">').appendTo('#file-container').html(file.path+' is not readable to localBrowse.');
+		$('<div id="file" style="text-align:center">').appendTo('#file-container').html(_('fileview-noaccess',file.path));
 		return;
 	}
 	// set message
