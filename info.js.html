@@ -28,7 +28,7 @@
             <pre class="prettyprint source"><code>/**
  * @file Exports info functions
  * @author Scimonster
- * @license {@link LICENSE} (MIT)
+ * @license {@link LICENSE} (AGPL)
  * @require fs-extra
  * @require ./File.js
  * @require path
@@ -157,7 +157,7 @@ exports.info = function(file, cb, content, stat) {
 	fs.exists(file, function(e) { // check existence
 		i.exists = e;
 		if (!e) {
-			cb(i);
+			cb(new LBFile(i));
 			return; // doesn't exist, so quit
 		}
 		fs.stat(file, function(e, s) { // get stat
@@ -185,13 +185,13 @@ exports.info = function(file, cb, content, stat) {
 				if (!i.type) { // is file
 					if (r &amp;&amp; !s.isDirectory() &amp;&amp; content) {
 						fs.readFile(file,'utf8',function(f_e, f){
-							i.cont = e?null:f;
+							i.cont = f_e?null:f;
 							finished();
 						});
 					}
 					var mmm = require('mmmagic'), magic = new mmm.Magic(mmm.MAGIC_MIME_TYPE); // MIME checking dependencies
 					magic.detectFile(file, function(m_e, m_type) {
-						if (m_e) { // Magic error, use lazy checking
+						if (m_e || m_type=='regular file, no read permission') { // Magic error, use lazy checking
 							i.type = require('mime').lookup(file);
 						} else {
 							i.type = m_type;
@@ -200,13 +200,18 @@ exports.info = function(file, cb, content, stat) {
 					});
 					i.size = s.size;
 				} else if (r) { // is dir
-					i.size = s.size;
 					fs.readdir(file, function(d_e, d) {
+						i.size = s.size;
 						i.items = d.length;
 						finished();
 					});
 				} else {
 					i.size = null;
+					i.items = null;
+					if (content) {
+						i.cont = null;
+					}
+					finished();
 				}
 				finished();
 			});
@@ -225,12 +230,12 @@ exports.info = function(file, cb, content, stat) {
 			typeof i.date !== 'undefined' &amp;&amp;
 			typeof i.size !== 'undefined' &amp;&amp;
 			(i.type=='directory'?typeof i.items !== 'undefined':true) &amp;&amp;
-			typeof i.date !== 'undefined' &amp;&amp;
 			typeof i.perm !== 'undefined' &amp;&amp;
 			typeof i.type !== 'undefined' &amp;&amp; i.type !== '' &amp;&amp;
 			typeof i.isLink !== 'undefined' &amp;&amp; (!i.isLink || typeof i.link !== 'undefined') &amp;&amp;
 			(content &amp;&amp; i.type!='directory'?typeof i.cont !== 'undefined':true) &amp;&amp;
-			(stat?typeof i.stat !== 'undefined':true)) {
+			(stat?typeof i.stat !== 'undefined':true)
+		) {
 			cb(new LBFile(i));
 		}
 	}
@@ -290,11 +295,13 @@ actions.isDir = function(req, res) {
  * @param {boolean} [content=false] Same as {@code cont} parameter to {@link module:info~info info}
  * @todo Add CWD option to avoid hacks like used in {@link module:info~dir dir}
  */
-exports.fileListInfo = function(files, cb, content) {
+exports.fileListInfo = function(files, cb, content, cwd) {
+	cwd = cwd||'/';
+	cwd = cwd.toString();
 	var fileList = []; // final list, will be passed to cb once populated
 	if (files.length==0) {finished()}
 	files.forEach(function(f) {
-		exports.info(f, function(i) { // get info on current one
+		exports.info(path.join(cwd, f), function(i) { // get info on current one
 			fileList.push(i);
 			finished();
 		},content);
@@ -312,13 +319,14 @@ exports.fileListInfo = function(files, cb, content) {
  * @param {function} cb Callback function; takes 1 parameter: array of file infos
  * @param {boolean} [cont=false] Same as {@code cont} parameter to {@link module:info~info info}
  */
-exports.dir = function(files, cb, cont) {
+exports.dir = function(files, cb, cont, cwd) {
 	if (typeof files==='string') { // filepath
-		fs.readdir(files, function(e, d){
+		cwd = files;
+		fs.readdir(cwd, function(e, d){
 			if (e) {
 				cb({error: e.code==='EACCES'?'perms':'exist'}); // send correct error
 			} else {
-				files = d.map(function(f){return LBFile.addSlashIfNeeded(files)+f}); // because fs.readdir doesn't give full path
+				files = d;
 				run();
 			}
 		});
@@ -326,7 +334,7 @@ exports.dir = function(files, cb, cont) {
 		run();
 	}
 	function run() {
-		exports.fileListInfo(files, cb, cont);
+		exports.fileListInfo(files, cb, cont, cwd);
 	}
 }
 
@@ -344,9 +352,10 @@ actions.dir = function(req, res) {
 			res.send(d);
 		} else {
 			exports.dir(
-				d.map(function(f){return LBFile.addSlashIfNeeded(req.file)+f}),
+				d,
 				function(files){res.send(files)}, // unfortunately, res.send doesn't like to be passed
-				content);
+				content,
+				req.file);
 		}
 	});
 };
@@ -432,13 +441,13 @@ exports.localbrowseCWD = function(req, res){
 </div>
 
 <nav>
-    <h2><a href="index.html">Index</a></h2><h3>Modules</h3><ul><li><a href="module-info.html">info</a></li><li><a href="module-mod.html">mod</a></li><li><a href="module-routes.html">routes</a></li><li><a href="module-search.html">search</a></li></ul><h3>Classes</h3><ul><li><a href="LBFile.html">LBFile</a></li></ul><h3>Global</h3><ul><li><a href="global.html#express">express</a></li></ul>
+    <h2><a href="index.html">Index</a></h2><h3>Modules</h3><ul><li><a href="module-info.html">info</a></li><li><a href="module-mod.html">mod</a></li><li><a href="module-routes.html">routes</a></li><li><a href="module-search.html">search</a></li><li><a href="module-text.html">text</a></li></ul><h3>Classes</h3><ul><li><a href="LBFile.html">LBFile</a></li></ul>
 </nav>
 
 <br clear="both">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha2</a> on Sun Dec 01 2013 21:45:11 GMT+0200 (IST)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha2</a> on Tue Dec 10 2013 18:42:47 GMT+0200 (IST)
 </footer>
 
 <script> prettyPrint(); </script>

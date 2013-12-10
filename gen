@@ -1,1 +1,2 @@
-cd .. && jsdoc *.js README.md -d ./jsdoc
+cd ..
+jsdoc *.js README.md -d ./jsdoc

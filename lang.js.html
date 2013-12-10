@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Source: search.js</title>
+    <title>JSDoc: Source: lang.js</title>
     
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
     
-    <h1 class="page-title">Source: search.js</h1>
+    <h1 class="page-title">Source: lang.js</h1>
     
     
 
@@ -26,44 +26,13 @@
     <section>
         <article>
             <pre class="prettyprint source"><code>/**
- * @file Search for a term
+ * @file Settings for current language
  * @author Scimonster
  * @license {@link LICENSE} (AGPL)
- * @module search
- * @requre child_process
- * @require ./info
  */
-var spawn = require('child_process').spawn, info = require('./info');
-/**
- * Run the requests
- * @param {Object} req Express request object
- * @param {Object} res Express response object
- */
-exports.search = function(req, res) {
-	var cwd = req.body.cwd?decodeURIComponent(req.body.cwd):process.env.HOME, // the cwd to search in
-	find = spawn('find', // UNIX `find` command
-		[
-			'-path', // path is:
-			'~/.local/share/Trash', // trash/...
-			'-prune', // ...is excluded
-			'-o', // OR
-			'-iname', // check for case insensitive filename...
-			'*'+req.body.term+'*' // ...like the term
-		],
-		{cwd: cwd}); // in the current directory
-	function onfind(found){
-		info.fileListInfo( // get info on the...
-			found.toString().split('\n').filter(function(f){return f}), // ...non-blank items of the list, which has been split by newline from stdout...
-			function(i){ // ...and...
-				i.forEach(function(f){
-					f.name = f.name.substr(2); // ...remove leading `./`
-				});
-				res.send(i);
-			},
-		false,
-		cwd);
-	}
-	find.stdout.on('data', onfind);
+module.exports = {
+	name: "English",
+	code: "en"
 };
 </code></pre>
         </article>

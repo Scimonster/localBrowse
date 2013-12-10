@@ -28,9 +28,10 @@
             <pre class="prettyprint source"><code>/**
  * @file HTML responses
  * @author Scimonster
- * @license {@link LICENSE} (MIT)
+ * @license {@link LICENSE} (AGPL)
  * @module routes
  */
+var _ = require('./text')(require('./lang').code)
 
 /**
  * GET homepage
@@ -38,28 +39,34 @@
  * @param {Object} res Express response object
  */
 exports.index = function(req, res) {
+	var scripts = ['jquery','jquery-ui.min','plugins','main','viewfile','trash','keypress'].map(function(f){return 'js/'+f+'.js'});
+	scripts.unshift('browserify/File.js','browserify/text.js');
+	var sidebar = [
+		{name:_('places-home'), icon:'home', url:'~/'},
+		{name:_('places-docs'), icon:'document', url:'~/Document/'},
+		{name:_('places-downloads'), icon:'arrowthick-1-s', url:'~/Downloads/'},
+		{name:_('places-music'), icon:null, url:'~/Music/', span:'&lt;span style="display: inline-block;">♫&lt;/span>'},
+		{name:_('places-pix'), icon:'image', url:'~/Pictures/'},
+		{name:_('places-vids'), icon:'video', url:'~/Videos/'},
+		{name:_('places-root'), icon:'disk', url:'/'},
+		{name:_('places-recent'), icon:'clock', url:'~/.local/share/recently-used.xbel'},
+		{name:_('places-trash'), icon:'trash', url:'trash'}
+	];
 	res.render('index', {
-		sidebar: [ // for convenience
-			{name:'Home', icon:'home', url:'~/'},
-			{name:'Documents', icon:'document', url:'~/Document/'},
-			{name:'Downloads', icon:'arrowthick-1-s', url:'~/Downloads/'},
-			{name:'Music', icon:null, url:'~/Music/', span:'&lt;span style="display: inline-block;">♫&lt;/span>'},
-			{name:'Pictures', icon:'image', url:'~/Pictures/'},
-			{name:'Videos', icon:'video', url:'~/Videos/'},
-			{name:'Root', icon:'disk', url:'/'},
-			{name:'Recent', icon:'clock', url:'~/.local/share/recently-used.xbel'},
-			{name:'Trash', icon:'trash', url:'~/Trash/'}
-		],
+		sidebar: sidebar,
+		scripts: scripts,
 		username: process.env.USERNAME,
 		homeroot: process.env.HOME,
+		'_': _
 	});
 };
 
 // set it up. unfortunately you have to reset Node each time you change any of the JS files
 var UglifyJS = require("uglify-js"), browserify = require('browserify'), code;
-var b = browserify([]);
-b.require('./File.js');
-b.bundle(function(e,src){
+var b = {};
+b.File = browserify([]);
+b.File.require('./File.js');
+b.File.bundle(function(e,src){
 	code = '/* Uglified js/(jquery, jquery-ui.min, plugins, main).js, and browserified File.js */';
 	code += UglifyJS.minify(src,{fromString: true}).code;
 	code += UglifyJS.minify(['jquery','jquery-ui.min','plugins','main'].map(function(f){return 'public/js/'+f+'.js'})).code;
@@ -76,7 +83,35 @@ exports.uglify = function(req, res) {
 	res.send(code);
 };
 
-var iconset = require('fs').readdirSync('./public/img/fatcow/16x16'); // so that it's ready; ok to sync during setup
+exports.browserify = {};
+/**
+ * GET browserified File.js
+ * @param {Object} req Express request object
+ * @param {Object} res Express response object
+ * @require browserify
+ */
+exports.browserify.File = function(req, res) {
+	b.File.bundle(function(e, src){
+		res.header('Content-Type', 'text/javascript');
+		res.send(src);
+	});
+};
+
+/**
+ * GET list of messages
+ * @param {Object} req Express request object
+ * @param {Object} res Express response object
+ * @require browserify
+ */
+exports.browserify.text = function(req, res) {
+	res.header('Content-Type', 'text/javascript');
+	var text = 'var messages = ' + JSON.stringify(_(), null, '\t') + ';\n\n';
+	text += 'f' + _.toString().split('\n').map(function(line,i,str){return line.substr(str[1].lastIndexOf('\t'))}).join('\n'); // normalize lines
+	res.send(text);
+};
+
+var iconset = require('fs').readdirSync('./public/img/fatcow/16x16'), // so that it's ready; ok to sync during setup
+LBFile = require('./File.js'), info = require('./info'); // dependencies for file operations
 /**
  * GET directory listing; pre-render list or tiles
  * @param {Object} req Express request object
@@ -84,20 +119,17 @@ var iconset = require('fs').readdirSync('./public/img/fatcow/16x16'); // so that
  * @require fs
  */
 exports.dir = function(req, res) {
-	var LBFile = require('./File.js'), info = require('./info'); // dependencies for file operations
 	function imageForFile(f, big) { // get an image for a file
 		if (f.type=='directory') {return 'img/fatcow/'+(big?'32x32':'16x16')+'/folder.png'}
 		else {
-			var ext = f.name.split('.');
-			ext = ext.length?ext[ext.length-1]:'';
-			if (iconset.indexOf('file_extension_'+ext+'.png')>-1) { // there is an icon
-				return 'img/fatcow/'+(big?'32x32':'16x16')+'/file_extension_'+ext+'.png';
+			if (iconset.indexOf('file_extension_'+f.ext+'.png')>-1) { // there is an icon
+				return 'img/fatcow/'+(big?'32x32':'16x16')+'/file_extension_'+f.ext+'.png';
 			}
 			else {return 'img/fatcow/'+(big?'32x32':'16x16')+'/document_empty.png'} // no icon
 		}
 	};
 	if (req.body.files) { // we have a list of files through POST
-		send(req.body.files);
+		send(req.body.files.map(function(i){return new LBFile(i)}));
 	} else { // just a dirname
 		info.dir(req.body.dir, function(files) {
 			if (req.body.s.dirFirst) {
@@ -115,7 +147,8 @@ exports.dir = function(req, res) {
 		res.render('dir.'+req.query.type+'.jade', { // list or tiles
 			imageForFile: imageForFile,
 			files: files,
-			base: req.body.base||req.body.dir
+			base: req.body.base||req.body.dir,
+			'_': _
 		});
 	}
 };
@@ -129,34 +162,35 @@ exports.ctxMenu = function(req, res) {
 	switch (req.query.type) {
 		case 'seledFiles': // some files were selected
 			res.render('ctxMenu.seledFiles.jade', {
-				list: req.body.l?[ // just one
-					{r:req.body.r,id:'open',text:'Open'},
+				list: req.body.l=="true"?[ // just one
+					{r:req.body.r,id:'open'},
 					null,
-					{r:req.body.r,id:'cut',text:'Cut'},
-					{r:req.body.r,id:'copy',text:'Copy'},
+					{r:req.body.r,id:'cut'},
+					{r:req.body.r,id:'copy'},
 					null,
-					{r:req.body.r,id:'moveTo',text:'Move to...'},
-					{r:req.body.r,id:'copyTo',text:'Copy to...'},
-					{r:false,id:'makeLink',text:'Make link...'},
-					{r:req.body.r,id:'rename',text:'Rename'},
+					{r:req.body.r,id:'moveTo'},
+					{r:req.body.r,id:'copyTo'},
+					{r:false,id:'makeLink',params:['']},
+					{r:req.body.r,id:'rename'},
 					null,
-					{r:req.body.r,id:'trash',text:'Move to Trash'},
+					{r:req.body.r,id:'trash'},
 					null,
-					{r:false,id:'props',text:'Properties'},
+					{r:false,id:'props'},
 				]:[ // more than one
-					{r:req.body.r,id:'newFolder',text:'New folder with selection'},
+					{r:req.body.r,id:'newFolder'},
 					null,
-					{r:req.body.r,id:'cut',text:'Cut'},
-					{r:req.body.r,id:'copy',text:'Copy'},
+					{r:req.body.r,id:'cut'},
+					{r:req.body.r,id:'copy'},
 					null,
-					{r:req.body.r,id:'moveTo',text:'Move to...'},
-					{r:req.body.r,id:'copyTo',text:'Copy to...'},
-					{r:false,id:'makeLink',text:'Make links...'},
+					{r:req.body.r,id:'moveTo'},
+					{r:req.body.r,id:'copyTo'},
+					{r:false,id:'makeLink',params:['s']},
 					null,
-					{r:req.body.r,id:'trash',text:'Move to Trash'},
+					{r:req.body.r,id:'trash'},
 					null,
-					{r:false,id:'props',text:'Properties'},
-				]
+					{r:false,id:'props'},
+				],
+				'_': _
 			});
 			break;
 		default:
@@ -173,13 +207,13 @@ exports.ctxMenu = function(req, res) {
 </div>
 
 <nav>
-    <h2><a href="index.html">Index</a></h2><h3>Modules</h3><ul><li><a href="module-info.html">info</a></li><li><a href="module-mod.html">mod</a></li><li><a href="module-routes.html">routes</a></li><li><a href="module-search.html">search</a></li></ul><h3>Classes</h3><ul><li><a href="LBFile.html">LBFile</a></li></ul><h3>Global</h3><ul><li><a href="global.html#express">express</a></li></ul>
+    <h2><a href="index.html">Index</a></h2><h3>Modules</h3><ul><li><a href="module-info.html">info</a></li><li><a href="module-mod.html">mod</a></li><li><a href="module-routes.html">routes</a></li><li><a href="module-search.html">search</a></li><li><a href="module-text.html">text</a></li></ul><h3>Classes</h3><ul><li><a href="LBFile.html">LBFile</a></li></ul>
 </nav>
 
 <br clear="both">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha2</a> on Sun Dec 01 2013 21:45:11 GMT+0200 (IST)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha2</a> on Tue Dec 10 2013 18:42:47 GMT+0200 (IST)
 </footer>
 
 <script> prettyPrint(); </script>
