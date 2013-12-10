@@ -158,13 +158,13 @@ exports.info = function(file, cb, content, stat) {
 				if (!i.type) { // is file
 					if (r && !s.isDirectory() && content) {
 						fs.readFile(file,'utf8',function(f_e, f){
-							i.cont = e?null:f;
+							i.cont = f_e?null:f;
 							finished();
 						});
 					}
 					var mmm = require('mmmagic'), magic = new mmm.Magic(mmm.MAGIC_MIME_TYPE); // MIME checking dependencies
 					magic.detectFile(file, function(m_e, m_type) {
-						if (m_e) { // Magic error, use lazy checking
+						if (m_e || m_type=='regular file, no read permission') { // Magic error, use lazy checking
 							i.type = require('mime').lookup(file);
 						} else {
 							i.type = m_type;
@@ -181,6 +181,10 @@ exports.info = function(file, cb, content, stat) {
 				} else {
 					i.size = null;
 					i.items = null;
+					if (content) {
+						i.cont = null;
+					}
+					finished();
 				}
 				finished();
 			});
