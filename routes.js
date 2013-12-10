@@ -102,7 +102,7 @@ exports.dir = function(req, res) {
 		}
 	};
 	if (req.body.files) { // we have a list of files through POST
-		send(req.body.files);
+		send(req.body.files.map(function(i){return new LBFile(i)}));
 	} else { // just a dirname
 		info.dir(req.body.dir, function(files) {
 			if (req.body.s.dirFirst) {

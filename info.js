@@ -130,7 +130,7 @@ exports.info = function(file, cb, content, stat) {
 	fs.exists(file, function(e) { // check existence
 		i.exists = e;
 		if (!e) {
-			cb(i);
+			cb(new LBFile(i));
 			return; // doesn't exist, so quit
 		}
 		fs.stat(file, function(e, s) { // get stat
@@ -265,6 +265,7 @@ actions.isDir = function(req, res) {
  * @todo Add CWD option to avoid hacks like used in {@link module:info~dir dir}
  */
 exports.fileListInfo = function(files, cb, content, cwd) {
+	cwd = cwd||'/';
 	cwd = cwd.toString();
 	var fileList = []; // final list, will be passed to cb once populated
 	if (files.length==0) {finished()}

@@ -33,7 +33,8 @@ exports.search = function(req, res) {
 				});
 				res.send(i);
 			},
-		false);
+		false,
+		cwd);
 	}
 	find.stdout.on('data', onfind);
 };
