@@ -42,15 +42,26 @@ var en = {
 		"dirlist-header-date": "Last Modified",
 		"dirlist-header-type": "Type",
 		"dirlist-header-perm": "Permissions",
-		// dirlist-*: other items in views/dir.(list/tiles).jade
+		// dirlist-*: other items when listing directory
 		"dirlist-filesize-items": "$1 items",
 		"dirlist-filetype-directory": "directory",
+		"dirlist-show-hidden": "show hidden files",
+		"dirlist-hide-hidden": "hide hidden files",
+		"dirlist-show-restricted": "show restricted files",
+		"dirlist-hide-restricted": "hide restricted files",
+		"dirlist-type-list": "list",
+		"dirlist-type-tiles": "tiles",
+		"dirlist-depth-title": "Depth",
+		"dirlist-depth-body": "Calculate size how many levels? (Note that a higher number is a slower operation.)",
+		"dirlist-size-placeholder": "&hellip;",
 
 		// fileview-*: when editing a file
 		"fileview-button-save": "save",
 		"fileview-button-saveas": "save as",
 		"fileview-noexist": "The file \"$1\" does not exist.",
 		"fileview-noaccess": "$1 is not readable to localBrowse.",
+		"fileview-saveas-title": "Save as",
+		"fileview-saveas-body": "Name of new file:",
 
 		// editor-*: editor names
 		"editor-text": "text",
@@ -67,12 +78,20 @@ var en = {
 		"ctxm-selfile-trash": "Move to trash",
 		"ctxm-selfile-props": "Properties",
 		"ctxm-selfile-newFolder": "New folder with selection",
+		// ctxm-dirlist-*: ... for a directory
+		"ctxm-dirlist-new": "New folder",
+		"ctxm-dirlist-paste": "Paste",
+		"ctxm-dirlist-props": "Properties",
 
 		// messages-*: messages displayed at the bottom of the page
 		"messages-bookmarkadded": "Bookmark added.",
 		"messages-file-editingwith": "Editing with $1 editor.",
 		"messages-file-readonly": " This file is read-only to localBrowse.", // keep the space
 		"messages-file-backup": " Warning: you are editing a backup file.", // keep the space
+		"messages-file-saved": "File saved.",
+		"messages-file-saved-as": "File saved to $1",
+		"messages-dir-count": "$1 directories; $2 files.",
+		"messages-dir-size": "Approximately <span id=\"directorySize\">$1</span> (<span id=\"dirSizeDepth\">$2</span> levels deep). <a id=\"fullDirSize\" href=\"$3\">More accurate calculation.</a>",
 
 		// paste-*: text displayed when pasting files
 		"paste-fileinfo-rfolder": "Replacement folder",
