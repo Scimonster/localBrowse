@@ -77,6 +77,44 @@ var en = {
 		"paste-merge-body-newname-exists": "A file with the current name exists in the destination folder.",
 		"paste-buttons": ["Paste","Skip"],
 
+		// search-*: in search dialog
+		"search-large-title": "Searching in a Large Directory",
+		"search-large-body": "The selected directory is over 200MB, and searches may be slow. Click OK to search anyways, or cancel to choose a more specific directory.",
+		"search-title": "Search",
+		"search-body": "Search for this in file names:",
+
+		// new-*: when creating something new
+		"new-dir": "New directory",
+		"new-file": "New file",
+		"new-link": "New link",
+		"new-dir-name": "Name of new directory",
+		"new-file-name": "Name of new file",
+		"new-link-name": "Name of new link",
+		"new-link-file": "File to link to",
+
+		// ajaxerror-*: if we have an error
+		"ajaxerror": "Connection Error",
+		"ajaxerror-e-mod": "Could not modify filesystem",
+		"ajaxerror-e-search": "Could not search for $1",
+		"ajaxerror-e-echo": "Could not echo content of $1",
+		"ajaxerror-e-exists": "Could not determine existence of $1",
+		"ajaxerror-e-readable": "Could not determine readability of $1",
+		"ajaxerror-e-writable": "Could not determine writability of $1",
+		"ajaxerror-e-info": "Could not get information for $1",
+		"ajaxerror-e-dir": "Could not get directory listing for $1",
+		"ajaxerror-e-dirSize": "Could not calculate size of directory $1",
+		"ajaxerror-e-cwd": "Could not access localBrowse source directory",
+		"ajaxerror-e-dir-rend": "Could not render contents of directory $1",
+		"ajaxerror-e-ctxmenu": "Could not render context menu",
+		"ajaxerror-exception": "<br/>Response from the server: $1",
+		"ajaxerror-retry": "Retrying in <span>$1</span> seconds",
+		"ajaxerror-button": "Retry now",
+
+		// filechanged-*: the current file was changed, do we want to update?
+		"filechanged": "Changed on disk",
+		"filechanged-body": "The file has been changed on disk. Do you want to reload it?",
+		"filechanged-buttons": ["Reload","Cancel"],
+
 	}
 };
 

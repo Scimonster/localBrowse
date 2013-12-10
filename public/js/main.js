@@ -71,7 +71,7 @@ function load() {
 			getDirContents('~/.local/share/Trash/files',function(f){listTrash(f)});
 		} else if (type=='search') {
 			// Load search
-			search(file.substr(7));
+			search(location.hash.substr(8));
 		} else {
 			// If it's a file or dir, load it
 			viewFile();
@@ -277,25 +277,32 @@ $(function(){ // set up jqUI elements
 	$('#back').click(history.back);
 	$('#next').click(history.forward);
 	$('#search-bttn').click(function(){
-		if (parseInt($('#directorySize').text()) > 209715200) { // 200MB
-			jqUI.confirm({text: 'The selected directory is over 200MB, and searches may be slow. Click OK to search anyways, or cancel to choose a more specific directory.', title: 'Searching in a Large Directory', width: 400}, function(c){
+		if (file.size > 209715200) { // 200MB
+			jqUI.confirm({text: _('search-large-body'), title: _('search-large-title'), width: 400}, function(c){
 				if (c) {run()}
 			});
 		} else {run()}
-		function run(){jqUI.prompt({text: 'Search for this in file names', title: 'Search'},function(term){w.cwd=file.path;location.hash='#search/'+term;})}
+		function run(){
+			jqUI.prompt({text: _('search-body'), title: _('search-title')},function(term){
+				if (term) {
+					w.cwd = file.path;
+					location.hash = '#search/'+term;
+				}
+			});
+		}
 	}).button();
 	$('#new').click(function(e){if ($('#new-menu').is(':visible')) {$('html').click()} else {$('#new-menu').show(); $('#file').css('opacity',0.5); e.stopPropagation();}}).button();
 	$('#new-menu').menu().css({position:'absolute',zIndex:100}).offset({top:$('#new').offset().top+$('#new').height()+3,left:$('#new').offset().left-$('#new').width()+15}).hide();
 	$('#new-dir, #new-file').click(function() {
-		var newType = ['directory','file'][$(this).index()], me=this;
+		var newType = $(this).attr('id').substr(4), me=this;
 		jqUI.prompt(
 			{
-				text: 'Name of new '+newType,
-				tilte: 'New '+newType
+				text: _(newType=='dir'?'new-dir-name':'new-file-name'),
+				title: _(newType=='dir'?'new-dir':'new-file')
 			},
 			function(filename){
 				$.post(
-					'/mod',{action:'mk'+$(me).attr('id').substr(4),file:file.addSlashIfNeeded()+filename},
+					'/mod',{action:'mk'+newType,file:file.addSlashIfNeeded()+filename},
 					function(){location.hash=LBFile.addSlashIfNeeded(location.hash)+filename;}
 				);
 			}
@@ -303,10 +310,10 @@ $(function(){ // set up jqUI elements
 	});
 	$('#new-link').click(function() {
 		jqUI.prompt(
-			{text: 'Name of new link',tilte: 'New link'},
+			{text: _('new-link-name'),title: _('new-link')},
 			function(filename){if (filename) {
 				jqUI.prompt(
-					{text: 'File to link to',tilte: 'New link'},
+					{text: _('new-link-file'),title: _('new-link')},
 					function(linkto){$.post('/mod',{action:'link',dest:file.addSlashIfNeeded()+filename,src:linkto},load);}
 				);
 			}}
@@ -331,27 +338,26 @@ $(w).click(function(){
 	$('#contextMenu').remove();
 });
 $(d).ajaxError(function(e, jqxhr, settings, exception){
-	var message = jqUI.alert({
+	var url = settings.url.split('?')[0], message = jqUI.alert({
 		text:
-			({
-				'/mod': "Could not modify filesystem",
-				'search': "Could not search for",
-				'info/echo': "Could not echo content of",
-				'info/exists': "Could not determine existence of",
-				'info/readable': "Could not determine readability of",
-				'info/writable': "Could not determine writability of",
-				'info/info': "Could not get information for",
-				'info/dir': "Could not get directory listing for",
-				'info/dirSize': "Could not calculate size of directory",
-				'info/localbrowseCWD': "Could not access localBrowse source directory",
-				'render/dir': "Could not render contents of directory",
-				'render/ctxMenu': "Could not render context menu",
-			})[settings.url.split('?')[0]] +
-			(settings.url.split('?')[0]=="info/localbrowseCWD"||settings.url.split('?')[0]=="render/ctxMenu"||settings.url.split('?')[0]=="/mod"?'':' '+decodeURIComponent(getUrlVars('i?'+settings.data).file)) +
-			(exception?"<br/>Response from the server: "+exception:'') +
-			'<div class="retrying_in">Retrying in <span>5</span> seconds</div>',
-		title: 'Connection Error',
-		buttonLabel: 'Retry now'
+			_('ajaxerror-e-' + ({
+				'/mod': "mod",
+				'search': "search",
+				'info/echo': "echo",
+				'info/exists': "exists",
+				'info/readable': "readable",
+				'info/writable': "writable",
+				'info/info': "info",
+				'info/dir': "dir",
+				'info/dirSize': "dirSize",
+				'info/localbrowseCWD': "cwd",
+				'render/dir': "dir-rend",
+				'render/ctxMenu': "ctxmenu",
+			})[url], (url=="info/localbrowseCWD"||url=="render/ctxMenu"||url=="/mod"?'':' '+decodeURIComponent(getUrlVars('i?'+settings.data).file))) +
+			(exception?_('ajaxerror-exception',exception):'') +
+			'<div class="retrying_in">'+_('ajaxerror-retry',5)+'</div>',
+		title: _('ajaxerror'),
+		buttonLabel: _('ajaxerror-button')
 	},function(e){
 		if (!e.currentTarget) { // button pressed, or timed out
 			$.ajax(settings);
@@ -359,7 +365,7 @@ $(d).ajaxError(function(e, jqxhr, settings, exception){
 		}
 	}),
 	retryCountdown = setInterval(function(){
-		$(message.dialog).find('.retrying_in span').text(function(i,old){return parseInt(old)-1});
+		$(message.dialog).find('.retrying_in').text(function(){return _('ajaxerror-retry',parseInt($('span',this).text())-1)});
 		if ($(message.dialog).find('.retrying_in span').text()==0) {message.buttons[0].click()}
 	},1000);
 });
@@ -413,7 +419,7 @@ setInterval(function(){
 	} else if ($('textarea#file').length) {
 		$.getJSON('info/info.date'+file.path,function(d){
 			if (d!=$('#file').data('modDate')) {
-				jqUI.confirm({title:'Changed on disk',text:'The file has been changed on disk. Do you want to reload it?',buttonLabel:['Reload','Cancel']},function(reload){
+				jqUI.confirm({title:_('filechanged'),text:_('filechanged-body'),buttonLabel:_('filechanged-buttons')},function(reload){
 					if (reload) {
 						var scroll = {top:$('#file').scrollTop(),left:$('#file').scrollLeft()};
 						load();
