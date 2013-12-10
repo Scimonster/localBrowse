@@ -25,11 +25,6 @@ Opening files
 * Way to pick an editor when there are multiple ones
 * Open with system program
 
-## Text
-Text-related items
-
-* Use message system instead of hard-coded text
-
 ## Trash
 About the trash
 
