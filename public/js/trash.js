@@ -2,22 +2,25 @@ function listTrash(files) {
 	// This function lists the contents of the trash
 	
 	// TODO: make trash work more like regular dir
-	
-	if (files.err == 'perms') {
-		$('#file').remove();
-		$('<div id="file" style="text-align:center">').appendTo('#file-container').html('The trash is not readable to localBrowse! Did you forget to run the setup script?');
-		return;
-	}
-	$('#toolbar-left').html('<input id="show_hide_restricted" type="checkbox" name="show_hide_restricted" checked="checked" /><label for="show_hide_restricted"><span>show</span> restricted files</label>').buttonset();
+
+	$('#toolbar-left').html('<input id="show_hide_restricted" type="checkbox" name="show_hide_restricted" checked="checked" />'+
+	'<label for="show_hide_hidden">'+_(s.hidden?'dirlist-show-hidden':'dirlist-hide-hidden')+'</label>').buttonset();
 	$('#file').remove();
-	$('<table id="file" class="trash">').appendTo('#file-container').html('<thead><tr><th id="name">Name</th><th id="size">Size</th><th id="date">Date Deleted</th><th id="orig">Original Location</th><th id="type">Type</th><th id="perm">Permissions</th></tr></thead><tbody></tbody>');
+	$('<table id="file" class="trash">').appendTo('#file-container').html('<thead><tr>'+
+		'<th id="name">'+_('trash-header-name')+'</th>'+
+		'<th id="size">'+_('trash-header-size')+'</th>'+
+		'<th id="date">'+_('trash-header-date')+'</th>'+
+		'<th id="orig">'+_('trash-header-orig')+'</th>'+
+		'<th id="type">'+_('trash-header-type')+'</th>'+
+		'<th id="perm">'+_('trash-header-perm')+'</th>'+
+		'</tr></thead><tbody></tbody>');
 	getDirContents('~/.local/share/Trash/info',{cont:true,simple:false},function(trashinfo){
 		function action(f){
 			f = new LBFile(f);
 			if (trashinfo({name:f.name+'.trashinfo'}).get().length) {
 				var i = parseTrashInfo(trashinfo({name:f.name+'.trashinfo'}).get()[0].cont), last = $('<tr class="file">').appendTo('#file tbody');
 				last.append('<td class="file-name"><img class="file-img" src="'+imageForFile(f,false)+'" /> '+f.name+'</td>');
-				last.append('<td class="file-size">'+(f.type=='directory'?f.items+' items':(f.readable?f.filesizeFormatted():f.size))+'</td>');
+				last.append('<td class="file-size">'+(f.type=='directory'?_('dirlist-filesize-items',f.items):(f.readable?f.filesizeFormatted():f.size))+'</td>');
 				last.append('<td class="file-date">'+(f.readable?f.dateFormatted(true):f.date)+'</td>');
 				last.append('<td>'+(new LBFile(decodeURIComponent(i.Path))).dir+'</td>');
 				if (!s.expandHomeroot) {last.find('td:last').html(function(x,old){return old.replace(homeroot,'~')})}

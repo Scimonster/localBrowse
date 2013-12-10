@@ -55,6 +55,14 @@ var en = {
 		"dirlist-depth-body": "Calculate size how many levels? (Note that a higher number is a slower operation.)",
 		"dirlist-size-placeholder": "&hellip;",
 
+		// trash-*: items for trash
+		"trash-header-name": "Name",
+		"trash-header-size": "Size",
+		"trash-header-date": "Date Deleted",
+		"trash-header-orig": "Original Location",
+		"trash-header-type": "Type",
+		"trash-header-perm": "Permissions",
+
 		// fileview-*: when editing a file
 		"fileview-button-save": "save",
 		"fileview-button-saveas": "save as",

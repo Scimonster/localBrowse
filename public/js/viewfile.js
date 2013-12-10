@@ -84,8 +84,8 @@ function listDir(files,beforeLoad,afterLoad) {
 	$('<span>'+
 		'<input id="show_hide_hidden" type="checkbox" name="show_hide_hidden"'+(s.hidden?' checked="checked"':'')+' />'+
 		'<input id="show_hide_restricted" type="checkbox" name="show_hide_restricted"'+(s.restricted?' checked="checked"':'')+' />'+
-		'<label for="show_hide_hidden">'+(s.hidden?'dirlist-show-hidden':'dirlist-hide-hidden')+'</label>'+
-		'<label for="show_hide_restricted">'+(s.restricted?'dirlist-show-restricted':'dirlist-hide-restricted')+'</label>'+
+		'<label for="show_hide_hidden">'+_(s.hidden?'dirlist-show-hidden':'dirlist-hide-hidden')+'</label>'+
+		'<label for="show_hide_restricted">'+_(s.restricted?'dirlist-show-restricted':'dirlist-hide-restricted')+'</label>'+
 		'</span>').buttonset().appendTo('#toolbar-left');
 	$('<span>'+
 		'<input id="dir_type_list" type="radio" name="dir_type" value="list"'+(s.dirTiles?'':' checked="checked"')+' />'+
