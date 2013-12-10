@@ -36,7 +36,7 @@ app.get('/', routes.index);
 // JS files
 app.get('/ugly.js', routes.uglify);
 app.get('/browserify/File.js', routes.browserify.File);
-app.get('/messages.json', routes.messages);
+app.get('/browserify/text.js', routes.browserify.text);
 
 // info for parsing
 app.get('/info/:action/*', info.routes.get);

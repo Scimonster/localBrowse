@@ -13,7 +13,7 @@ var _ = require('./text')(require('./lang').code)
  */
 exports.index = function(req, res) {
 	var scripts = ['jquery','jquery-ui.min','plugins','main','viewfile','trash','keypress'].map(function(f){return 'js/'+f+'.js'});
-	scripts.unshift('browserify/File.js');
+	scripts.unshift('browserify/File.js','browserify/text.js');
 	var sidebar = [
 		{name:_('places-home'), icon:'home', url:'~/'},
 		{name:_('places-docs'), icon:'document', url:'~/Document/'},
@@ -64,7 +64,7 @@ exports.browserify = {};
  * @require browserify
  */
 exports.browserify.File = function(req, res) {
-	b.File.bundle(function(e,src){
+	b.File.bundle(function(e, src){
 		res.header('Content-Type', 'text/javascript');
 		res.send(src);
 	});
@@ -76,8 +76,11 @@ exports.browserify.File = function(req, res) {
  * @param {Object} res Express response object
  * @require browserify
  */
-exports.messages = function(req, res) {
-	res.send(_()); // the list of messages
+exports.browserify.text = function(req, res) {
+	res.header('Content-Type', 'text/javascript');
+	var text = 'var messages = ' + JSON.stringify(_(), null, '\t') + ';\n\n';
+	text += 'f' + _.toString().split('\n').map(function(line,i,str){return line.substr(str[1].lastIndexOf('\t'))}).join('\n'); // normalize lines
+	res.send(text);
 };
 
 var iconset = require('fs').readdirSync('./public/img/fatcow/16x16'), // so that it's ready; ok to sync during setup

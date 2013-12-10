@@ -15,27 +15,8 @@ var
 	bookmarks, // array of bookmarks
 	iconset = [], // deprecated, probably
 	toPaste = {}, // fromPath=>toPath
-	messages, // object of system messages
 	LBFile = require('./File.js'); // LBFile class, containing file methods
 $.get('/info/localbrowseCWD',function(cwd){getDirContents(cwd+'/public/img/fatcow/16x16',{cont:false,simple:true},function(i){iconset = i().select('name')})}); // deprecated
-
-$.get('/messages.json', function(m){messages = m});
-function _(message) {
-	function replace(str, params) {
-		// takes a str in format of "replacement 1: $1, replacement 2: $2"
-		return str.replace(/\$(\d)/g, function(match, num){return params[num-1]});
-	}
-
-	if (message) { // if we have a message
-		var args = [].slice.call(arguments, 1);
-		if (messages.hasOwnProperty(message)) { // we have a message in one of our fallbacks
-			return replace(messages[message], args);
-		}
-		return message; // nowhere, so return the original message
-	} else { // return them all
-		return messages;
-	}
-}
 
 LBFile.prototype.resolve = function() {
 	// Get a full absolute path from a URL-path
@@ -63,10 +44,11 @@ function load() {
 		location.hash = file.path;
 		return;
 	}
-	d.title = file.name + ' - localBrowse';
+	d.title = _('title',file.name);
 
 	// Find out if it's a file or dir.
-	type = /^search/.test(location.hash.substr(1)) ? 'search' : (location.hash.substr(1)=='trash' ? 'trash' : ''); // first test if it's search, then trash, otherwise leave it for later
+	type = /^search/.test(location.hash.substr(1)) ? 'search' : (location.hash.substr(1)=='trash' ? 'trash' : '');
+	// first test if it's search, then trash, otherwise leave it for later
 	if (!type) { 
 		$.getJSON('info/info'+file.resolve(),function(f){
 			file = new LBFile(f)
@@ -168,13 +150,19 @@ function paste(files,destination) {
 						// we now have info on the source and destination files
 						if (dest.exists) { // we'll need to overwrite/merge
 							recurse++; // starting an async operation
-							var dataForFile = function(f,replace){return f.type==='directory'?('<div class="fileOverwriteDialog-fileInfo"><img src="'+imageForFile(f,true)+'"/><p><b>'+(replace?'Replacement':'Existing')+' folder</b><br/>Size: '+f.size+' items<br/>Last modified: '+f.dateFormatted()+'</p></div>'):('<div class="fileOverwriteDialog-fileInfo"><img src="'+imageForFile(f,true)+'"/><p><b>'+(replace?'Replacement':'Existing')+' file</b><br/>Size: '+f.filesizeFormatted()+' items<br/>Last modified: '+f.dateFormatted()+'</p></div>')};
+							function dataForFile(f,replace){
+								return '<div class="fileOverwriteDialog-fileInfo"><img src="'+imageForFile(f,true)+'"/><p>' +
+									(f.type==='directory'?
+										('<b>'+_(replace?'paste-fileinfo-rfolder':'paste-fileinfo-efolder')+'</b><br/>'+_('paste-fileinfo-size',_('dirlist-filesize-items',f.items))):
+										('<b>'+_(replace?'paste-fileinfo-rfile':'paste-fileinfo-efile')+'</b><br/>'+_('paste-fileinfo-size',f.filesizeFormatted()))) +
+									'<br/>'+_('paste-fileinfo-date',f.dateFormatted())+'</p></div>';
+							};
 							if (dest.type=='directory' && src.type=='directory') { // merge
 								$.post('info/dir','simple=true&file='+dest.dir,function(otherfiles){ // other files in dest dir, to see if it will be overwritten
 									var d = jqUI.prompt({
-										title:'Merge folder "'+src.name+'"?',
-										text:'<div>A '+(src.date<dest.date?'newer':'older')+' folder with the same name already exists in "'+(new LBFile(dest.dir)).name+'".<br/>Do you want to merge these folders? Merging will ask for confirmation in case of file conflicts.</div>'+dataForFile(src,true)+dataForFile(dest,false)+'<p>You can type in a new name for the folder. If it exists, the new folder will be merged with the old one.</p><p class="fileOverwriteDialog-exists">A file with the current name exists in the destination folder.</p>',
-										buttonLabel: ['Paste','Skip'],
+										title:_('paste-merge-title',src.name),
+										text:'<div>'+_(src.date<dest.date?'paste-merge-body-newer':'paste-merge-body-older',(new LBFile(dest.dir)).name)+'</div>'+dataForFile(src,true)+dataForFile(dest,false)+'<p>'+_('paste-merge-body-newname')+'</p><p class="fileOverwriteDialog-exists">'+_('paste-merge-body-newname-exists')+'</p>',
+										buttonLabel: _('paste-buttons'),
 										width: 500
 									},src.name,function(newname){
 										if (newname) { // will be null if skip was clicked
@@ -197,9 +185,9 @@ function paste(files,destination) {
 							} else { // overwrite
 								$.post('info/dir','simple=true&file='+dest.dir,function(otherfiles){ // other files in dest dir, to see if it will be overwritten
 									var d = jqUI.prompt({
-										title:'Overwrite file "'+src.name+'"?',
-										text:'<div>A '+(src.date<dest.date?'newer':'older')+' file with the same name already exists in "'+(new LBFile(dest.dir)).name+'".<br/>Do you want to replace this file?</div>'+dataForFile(src,true)+dataForFile(dest,false)+'<p>You can type in a new name for the file. If it exists, the new file will replace the old one.</p><p class="fileOverwriteDialog-exists">A file with the current name exists in the destination folder.</p>',
-										buttonLabel: ['Paste','Skip'],
+										title:_('paste-oberwrite-title',s.name),
+										text:'<div>'+_(src.date<dest.date?'paste-overwrite-body-newer':'paste-overwrite-body-older',(new LBFile(dest.dir)).name)+'</div>'+dataForFile(src,true)+dataForFile(dest,false)+'<p>'+_('paste-overwrite-body-newname')+'</p><p class="fileOverwriteDialog-exists">'+_('paste-merge-body-newname-exists')+'</p>',
+										buttonLabel: _('paste-buttons'),
 										width: 500
 									},src.name,function(newname){
 										if (newname) { // will be null if skip was clicked
@@ -239,7 +227,7 @@ function loadBookmarks() {
 	else {localStorage.setItem('bookmarks','[]')}
 	$('#sidebar-bookmarks').html('');
 	$.each(bookmarks, function(i, b) {
-		$('#sidebar-bookmarks').append('<li><a href="#'+b[0]+'" title="'+b[0]+'"><span class="ui-icon ui-icon-'+(b[1]=='directory'?'folder-collapsed':'document')+'"></span>'+(new LBFile(b[0])).name+'</a><span class="ui-icon ui-icon-squaresmall-close" title="remove this bookmark" data-index="'+i+'"></span></li>');
+		$('#sidebar-bookmarks').append('<li><a href="#'+b[0]+'" title="'+b[0]+'"><span class="ui-icon ui-icon-'+(b[1]=='directory'?'folder-collapsed':'document')+'"></span>'+(new LBFile(b[0])).name+'</a><span class="ui-icon ui-icon-squaresmall-close" title="'+_('index-loc-bookmarks-remove')+'" data-index="'+i+'"></span></li>');
 	});
 }
 
@@ -251,7 +239,7 @@ function addBookmark() {
 	localStorage.setItem('bookmarks',JSON.stringify(bookmarks));
 	loadBookmarks();
 	$('#message').data('old',$('#message').html());
-	$('#message').html('Bookmark added.');
+	$('#message').html(_('messages-bookmarkadded'));
 	setTimeout(function(){
 		$('#message').html($('#message').data('old'));
 		$('#message').removeData('old');

@@ -35,6 +35,9 @@ module.exports = function gettext(lang) {
 	return function _(message) {
 		function replace(str, params) {
 			// takes a str in format of "replacement 1: $1, replacement 2: $2"
+			if (typeof str != 'string') {
+				return str;
+			}
 			return str.replace(/\$(\d)/g, function(match, num){return params[num-1]});
 		}
 
