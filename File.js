@@ -1,7 +1,7 @@
 /**
  * @file The LBFile class, containing information and methods about a localBrowse file
  * @author Scimonster
- * @license {@link LICENSE} (MIT)
+ * @license {@link LICENSE} (AGPL)
  * @require path
  */
 

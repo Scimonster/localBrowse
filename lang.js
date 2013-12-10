@@ -1,7 +1,7 @@
 /**
  * @file Settings for current language
  * @author Scimonster
- * @license {@link LICENSE} (MIT)
+ * @license {@link LICENSE} (AGPL)
  */
 module.exports = {
 	name: "English",

@@ -1,7 +1,7 @@
 /**
  * @file Message interface
  * @author Scimonster
- * @license {@link LICENSE} (MIT)
+ * @license {@link LICENSE} (AGPL)
  * @module text
  */
 var obj = require('./Object.js'), extend = require('extend');

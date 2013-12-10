@@ -1,7 +1,7 @@
 /**
  * @file Modify the file system
  * @author Scimonster
- * @license {@link LICENSE} (MIT)
+ * @license {@link LICENSE} (AGPL)
  * @module mod
  * @requre fs-extra
  */

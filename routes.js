@@ -1,7 +1,7 @@
 /**
  * @file HTML responses
  * @author Scimonster
- * @license {@link LICENSE} (MIT)
+ * @license {@link LICENSE} (AGPL)
  * @module routes
  */
 var _ = require('./text')(require('./lang').code)

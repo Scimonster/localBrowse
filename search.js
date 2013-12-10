@@ -1,7 +1,7 @@
 /**
  * @file Search for a term
  * @author Scimonster
- * @license {@link LICENSE} (MIT)
+ * @license {@link LICENSE} (AGPL)
  * @module search
  * @requre child_process
  * @require ./info

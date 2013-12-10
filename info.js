@@ -1,7 +1,7 @@
 /**
  * @file Exports info functions
  * @author Scimonster
- * @license {@link LICENSE} (MIT)
+ * @license {@link LICENSE} (AGPL)
  * @require fs-extra
  * @require ./File.js
  * @require path

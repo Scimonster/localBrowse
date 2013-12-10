@@ -1,7 +1,7 @@
 /**
  * @file Extensions to Object.prototype
  * @author Scimonster
- * @license {@link LICENSE} (MIT)
+ * @license {@link LICENSE} (AGPL)
  */
 
 module.exports = {

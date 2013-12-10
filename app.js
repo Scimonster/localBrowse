@@ -1,5 +1,7 @@
 /**
- * Module dependencies.
+ * @file Entrypoint to localBrowse
+ * @author Scimonster
+ * @license {@link LICENSE} (AGPL)
  */
 
 var express = require('express'),
