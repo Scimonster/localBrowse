@@ -126,7 +126,7 @@ actions.readable = function(req, res) {
  * @param {fs.Stats} [stat=false] Add {@code stat} property to returned object with stat results
  */
 exports.info = function(file, cb, content, stat) {
-	var i = {path: file};
+	var i = {path: path.resolve(file)};
 	fs.exists(file, function(e) { // check existence
 		i.exists = e;
 		if (!e) {
