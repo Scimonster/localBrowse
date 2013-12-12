@@ -15,6 +15,7 @@
     "taffy": "*",
     "uglify-js": "*",
     "browserify": "*",
-    "extend": "*"
+    "extend": "*",
+    "escape-html": "*"
   }
 }
