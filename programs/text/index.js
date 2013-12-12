@@ -22,11 +22,11 @@ exports.routes = {};
 exports.buttons = function(f, cb) {
 	var buttons = [[]], done = false;
 	if (f.writable) {
-		buttons[0].push({elem: 'button#save', message: 'fileview-button-save'});
+		buttons[0].push({elem: '#save', message: 'fileview-button-save'});
 	}
 	info.perms(f.dir, 1, function(pw) { // can we write in parent directory
 		if (pw) {
-			buttons[0].push({elem: 'button#saveAs', message: 'fileview-button-saveas'});
+			buttons[0].push({elem: '#saveAs', message: 'fileview-button-saveas'});
 		}
 		cb(buttons);
 	});
