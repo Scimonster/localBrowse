@@ -9,7 +9,8 @@ exports.html = function(file, cb) {
 	cb('<iframe id="file" src="/programs/'+name+'/file?file='+file.path+'"></iframe>');
 };
 
-exports.messages = {en: {"editor-browser": "default browser viewing"}};
+exports.messages = {en: {}};
+exports.messages.en["editor-"+name] = "default browser viewing";
 
 exports.mimetypes = [/.*/];
 

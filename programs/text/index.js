@@ -9,7 +9,8 @@ exports.html = function(file, cb) {
 	cb('<textarea id="file" autofocus="autofocus">' + escHTML(file.cont) + '</textarea>');
 };
 
-exports.messages = {en: {"editor-text": "text editor"}};
+exports.messages = {en: {}};
+exports.messages.en["editor-"+name] = "text editor";
 
 exports.mimetypes = [/text\/.*/,/inode\/x-empty/,/image\/svg/,/application\/json/];
 
