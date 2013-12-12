@@ -41,6 +41,8 @@ A short description of your program that will be displayed in a tooltip for the 
 ### `routes` - Object of Functions
 Your program can provide a web interface besides the plain HTML from `html`. This is done through the `routes` object. Each key in the object is used as the request function for `/programs/YOUR PROGRAM NAME/KEY IN OBJECT`. The functions are passed two arguments: `req` and `res`. These are the same as any Express `req`/`res` objects. Only GET requests are supported right now, with POST coming soon.
 
+The route `/programs/YOUR PROGRAM NAME/html` is reserved for outputting the callback value of `html`, and `/programs/YOUR PROGRAM NAME/buttons` for generating the buttons.
+
 ### `buttons` - Functions
 This function creates the barebones for the buttons in `#toolbar-left`. It is passed to parameters:
 * `file`: an instance of `LBFile` (from `./File.js`)
@@ -56,7 +58,7 @@ A button object should contain the following properties:
 
 Note that either `message` or `icons` **must** be defined -- both, only `message`, or only `icons` can be set, but not neither.
 
-An element describer is a string either formatted as an actual HTML element (`<input type="checkbox" name="my_box" checked="checked" />`) or a CSS selector string (`button`, `button#save`, `#save`, `input[type="checkbox"][name="my_box"]:checked`). If a selector string is given without an element name, it defaults to `button`. Therefore, the second and third examples produce the same thing.
+An element describer is a string either formatted as an HTML element creatable by jQuery (`<input type="checkbox" name="my_box" checked="checked" />`, `<button>`) or a CSS selector string passable to [put-selector](https://npmjs.org/package/put-selector) (`button`, `button#save`, `#save`, `input[type="checkbox"][name="my_box"][checked="checked"]`). If a selector string is given without an element name, it defaults to `button`. Therefore, the second and third examples produce the same thing. It detects if it's an element by checking if the first non-whitespace character is a "<" sign.
 
 ## JavaScript
 After loading the HTML, localBrowse will attempt to run the script at `/programs/YOUR PROGRAM NAME/index.js` with `jQuery.getScript()`. If you want to make a script available, this is where to do it. You can expose this script with code like this (assuming your script is located in `./scripts/index.js`):

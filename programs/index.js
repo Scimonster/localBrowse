@@ -3,8 +3,12 @@
  * @author Scimonster
  * @license {@link LICENSE} (AGPL)
  */
-var fs = require('fs'), path = require('path'), extend = require('extend'), all = {};
-var programs = fs.readdirSync(__dirname);
+var fs       = require('fs'),
+    path     = require('path'),
+    extend   = require('extend'),
+    put      = require('put-selector'),
+    all      = {},
+    programs = fs.readdirSync(__dirname);
 programs.forEach(function(p) {
 	if (fs.statSync(path.join(__dirname,p)).isDirectory()) { // find subdirectories of here
 		all[p] = require(path.join(__dirname,p));
@@ -31,4 +35,34 @@ exports.editorsForFile = function(file) {
 		}
 	}
 	return editors.map(function(ed){return {modName: all[ed].modName, name: all[ed].name, desc: all[ed].desc}});
+};
+
+exports.generateButtons = function(buttonFunction, file, cb) {
+	var _ = require('../text')(require('../lang').code);
+	put.defaultTag = 'button';
+	buttonFunction(file, function(buttons) {
+		cb(buttons.map(function(b){
+			if (b instanceof Array) { // a buttonset
+				return b.map(function(bsetB){return buttonFromObject(bsetB)});
+			}
+			return buttonFromObject(b);
+		}));
+	});
+	function buttonFromObject(button) {
+		var b = {elem: '', icons: {}};
+		if (button.elem[0] == '<') { // button.elem is an HTML string
+			b.elem = button.elem;
+		} else {
+			if (button.message) {
+				b.elem = put(button.elem, _(button.message));
+			} else {
+				b.elem = put(button.elem);
+			}
+			if (button.icons) {
+				b.icons = button.icons;
+			}
+		}
+		b.elem = b.elem.toString();
+		return b;
+	}
 };
