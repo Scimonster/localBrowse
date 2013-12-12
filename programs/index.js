@@ -50,7 +50,7 @@ exports.generateButtons = function(buttonFunction, file, cb) {
 	});
 	function buttonFromObject(button) {
 		var b = {elem: '', icons: {}};
-		if (button.elem[0] == '<') { // button.elem is an HTML string
+		if (button.elem.trim()[0] == '<') { // button.elem is an HTML string
 			b.elem = button.elem;
 		} else {
 			if (button.message) {
@@ -62,7 +62,7 @@ exports.generateButtons = function(buttonFunction, file, cb) {
 				b.icons = button.icons;
 			}
 		}
-		b.elem = b.elem.toString();
+		b.elem = b.elem.toString().trim();
 		return b;
 	}
 };

@@ -4,7 +4,7 @@
  * @license {@link LICENSE} (AGPL)
  * @module routes
  */
-var _ = require('./text')(require('./lang').code), programs = require('./programs').routes;
+var _ = require('./text')(require('./lang').code), programs = require('./programs'), info = require('./info');
 
 /**
  * GET homepage
@@ -172,9 +172,26 @@ exports.ctxMenu = function(req, res) {
 };
 
 exports.programs = function(req, res) {
-	if (typeof programs[req.params.program][req.params.action] == 'function') {
-		programs[req.params.program][req.params.action](req, res);
-	} else {
-		res.send(404);
+	switch(req.params.action) {
+		case 'html':
+			info.info(req.query.file, function(i) {
+				programs.all[req.params.program].html(i, function(html) {
+					res.send(html);
+				});
+			}, true, true);
+			break;
+		case 'buttons':
+			info.info(req.query.file, function(i) {
+				programs.generateButtons(programs.all[req.params.program].buttons, i, function(buttons) {
+					res.send(buttons);
+				});
+			}, true, true);
+			break;
+		default:
+			if (typeof programs.all[req.params.program].routes[req.params.action] == 'function') {
+				programs.all[req.params.program].routes[req.params.action](req, res);
+			} else {
+				res.send(404);
+			}
 	}
 };
