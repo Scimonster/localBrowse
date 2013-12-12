@@ -32,11 +32,3 @@ exports.editorsForFile = function(file) {
 	}
 	return editors;
 };
-
-/*
-programs = require('./programs'); info = require('./info');
-var i; info.info('/home/eyal/u', function(inf){i=inf}, true);
-
-i;
-programs.editorsForFile(i);
-*/

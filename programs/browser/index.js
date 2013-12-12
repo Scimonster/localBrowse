@@ -10,7 +10,7 @@ exports.html = function(file, cb) {
 };
 
 exports.messages = {en: {}};
-exports.messages.en["editor-"+name] = "default browser viewing";
+exports.messages.en["program-"+name] = "default browser viewing";
 
 exports.mimetypes = [/.*/];
 

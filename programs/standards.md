@@ -23,9 +23,11 @@ The string passed to the callback will be inserted into `#file-container`.
 ### `messages` - Object
 The `messages` objects from all programs are compiled and added to the native messaging interface. Your program's `messages` object should look something like this:
 ```json
-{ "en": { "editor-text": "text editor" } }
+{ "en": { "program-text": "text editor" } }
 ```
-The only required message is `"editor-"+name` in English.
+The only required message is `"program-"+name` in English.
+
+Program-specific messages should be namespaced.
 
 ### `mimetypes` - Array
 This should be an array of regular expressions (as instances of `RegExp`) to match the MIMEType of a file against. If any match, your program can open the file.

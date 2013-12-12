@@ -3,6 +3,7 @@
  * @author Scimonster
  * @license {@link LICENSE} (MIT)
  */
+var extend = require('extend');
 var en = {
 
 	fallbacks: [ 'en' ],
@@ -93,7 +94,7 @@ var en = {
 
 		// messages-*: messages displayed at the bottom of the page
 		"messages-bookmarkadded": "Bookmark added.",
-		"messages-file-editingwith": "Editing with $1 editor.",
+		"messages-file-editingwith": "Opened with $1 editor.",
 		"messages-file-readonly": " This file is read-only to localBrowse.", // keep the space
 		"messages-file-backup": " Warning: you are editing a backup file.", // keep the space
 		"messages-file-saved": "File saved.",
@@ -159,5 +160,7 @@ var en = {
 
 	}
 };
+
+extend(true, en.messages, require('../programs').messages.en);
 
 module.exports = en;

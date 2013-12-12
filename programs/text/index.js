@@ -10,7 +10,7 @@ exports.html = function(file, cb) {
 };
 
 exports.messages = {en: {}};
-exports.messages.en["editor-"+name] = "text editor";
+exports.messages.en["program-"+name] = "text editor";
 
 exports.mimetypes = [/text\/.*/,/inode\/x-empty/,/image\/svg/,/application\/json/];
 
