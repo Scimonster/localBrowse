@@ -37,6 +37,8 @@ exports.editorsForFile = function(file) {
 	return editors.map(function(ed){return {modName: all[ed].modName, name: all[ed].name, desc: all[ed].desc}});
 };
 
+exports.allEditors = Object.keys(all).map(function(ed){return {modName: all[ed].modName, name: all[ed].name, desc: all[ed].desc}});
+
 exports.generateButtons = function(buttonFunction, file, cb) {
 	var _ = require('../text')(require('../lang').code);
 	put.defaultTag = 'button';

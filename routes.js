@@ -176,9 +176,13 @@ exports.programs = function(req, res) {
 		case undefined: // a base program URL
 			switch(req.path) {
 				case '/programs/editors': // programs available to open the file
-					info.info(req.query.file, function(i) {
-						res.send(programs.editorsForFile(i));
-					});
+					if (req.query.file) {
+						info.info(req.query.file, function(i) {
+							res.send(programs.editorsForFile(i));
+						});
+					} else { // all editors
+						res.send(programs.allEditors)
+					}
 					break;
 				default:
 					res.send(404);
