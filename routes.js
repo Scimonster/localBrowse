@@ -167,12 +167,24 @@ exports.ctxMenu = function(req, res) {
 			});
 			break;
 		default:
-			res.send('<h2>Improper "type" GET variable set.</h2>');
+			res.send(404);
 	}
 };
 
 exports.programs = function(req, res) {
 	switch(req.params.action) {
+		case undefined: // a base program URL
+			switch(req.path) {
+				case '/programs/editors': // programs available to open the file
+					info.info(req.query.file, function(i) {
+						res.send(programs.editorsForFile(i));
+					});
+					break;
+				default:
+					res.send(404);
+					break;
+			}
+			break;
 		case 'html':
 			info.info(req.query.file, function(i) {
 				programs.all[req.params.program].html(i, function(html) {
