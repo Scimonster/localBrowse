@@ -17,6 +17,11 @@ for (var program in all) {
 	extend(true, exports.messages, all[program].messages);
 }
 
+exports.routes = {};
+for (var program in all) {
+	exports.routes[program] = all[program].routes;
+}
+
 exports.editorsForFile = function(file) {
 	var editors = [];
 	for (var program in all) {

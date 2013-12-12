@@ -1,5 +1,5 @@
 /**
- * @file Text editor
+ * @file Program -- Text editor
  * @author Scimonster
  * @license {@link LICENSE} (AGPL)
  */
