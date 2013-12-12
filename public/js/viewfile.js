@@ -2,11 +2,7 @@ function viewFile() {
 	// This function opens a file
 
 	// TODO: Completely redo file-opening (see /TODO.md)
-	var editable_types = {
-		'text\/.*': 'text',
-		'inode\/x-empty': 'text',
-		'image\/svg': 'text'
-	}, editors = ['text'], trash=false;
+	var trash=false;
 	
 	if (file.path.match(/^trash/)) {
 		file.update(file.resolve());
@@ -14,48 +10,18 @@ function viewFile() {
 	}
 	// Check if the requested file exists
 	$.post('info/info','content=true&file='+file.path,function(f){
-		f = new LBFile(f);
-		$('#file').remove();
-		if (f.exists) {
-			if (f.type == 'directory') {
-				getDirContents(file.path,listDir);
-				return;
-			}
-			var editor;
-			// determine editor
-			$.each(editable_types, function(regex, ed) {
-				if (new RegExp(regex).test(f.type)) {editor = ed; return false;}
-			});
-			
-			// Load editor
-			if (editors.indexOf(editor)+1) {
-				// We have an editor for this type.
-
-				if (editor == 'text') { // load text editor
-					$('<textarea id="file" autofocus="autofocus">').val(f.cont).appendTo('#file-container').focus();
-				}
-				d.title = _('title',_('title-editing',file.name));
-				
-				if (f.writable) { // add save button
-					$('<button id="save"><!--<span class="ui-icon ui-icon-disk"></span>-->'+_('fileview-button-save')+'</button>').appendTo('#toolbar-left');
-				} else {
-					d.title = _('title',_('title-editing-read',file.name));
-				}
-				$.getJSON('info/writable'+file.dir,function(d){ // add save as button
-					if (d) {
-						$('<button id="saveAs">'+_('fileview-button-saveas')+'</button>').appendTo('#toolbar-left');
-					}
-					$('#toolbar-left').buttonset();
-				});
-				$('#message').html(_('messages-file-editingwith',_('editor-'+editor))+(f.writable?'':_('messages-file-readonly'))+(f.name.substr(-1)=='~'?_('messages-file-readonly'):''));
-			} else { // no editors
-				// Load the browser's view of the file.
-				$('<iframe id="file">').attr('src','info/echo/'+file.path).appendTo('#file-container');
-			}
-			$('#file').data('modDate',f.date.getTime()); // for checking if it was modified
-		} else { // doesn't exist
-			$('<div id="file" style="text-align:center">').appendTo('#file-container').html(_('fileview-noexist',file.path));
+		f = file = new LBFile(f);
+		if (f.type == 'directory') {
+			getDirContents(file.path,listDir);
+			return;
 		}
+		$.get('/programs/editors?file='+file.path, function(editors){
+			$('#file').remove();
+			$('<ul id="file" class="program-selector">').attr('title',_('fileview-openwith')).appendTo('#file-container').append(editors.map(function(editor){
+				return $('<li>').attr({'data-program':editor.modName, title: editor.desc}).append('<a>').
+					children('a').attr('href',location.hash).text(editor.name).parent();
+			})).menu();
+		});
 	});
 	sidebarTree(file.path);
 	if (trash) {file.update(file.relative())}
@@ -72,7 +38,8 @@ function listDir(files,beforeLoad,afterLoad) {
 		return;
 	}
 	// set message
-	$('#message').html(_('messages-dir-count',files({type:'directory'}).count(),files({type:{'!is':'directory'}}).count())+' <span id=\"dirSize\">'+_('messages-dir-size',($('#directorySize').text()||'...'),($('#dirSizeDepth').text()||3),location.hash)+'</span>');
+	$('#message').html(_('messages-dir-count',files({type:'directory'}).count(),files({type:{'!is':'directory'}}).count())+' <span id=\"dirSize\">'+
+		_('messages-dir-size',($('#directorySize').text()||'...'),($('#dirSizeDepth').text()||3),location.hash)+'</span>');
 	if (type!='search') {
 		// get dir size
 		$.post('info/dirSize','depth='+$('#dirSizeDepth').text()+'&file='+file.path,function(size){
@@ -121,6 +88,31 @@ function listDir(files,beforeLoad,afterLoad) {
 	$('#file').data('files',files);
 }
 
+$(d).on('click','ul#file li a',function() {
+	var program = $(this).parent().data('program');
+	$('#file-container').load('/programs/'+program+'/html?file='+encodeURIComponent(file.path), function() {
+		$('#message').html(_('messages-file-editingwith',_('editor-'+program))+
+			(file.writable?'':_('messages-file-readonly'))+
+			(file.name.substr(-1)=='~'?_('messages-file-backup'):''));
+		$('#file').data('program',program);
+		$('#file').data('modDate',file.date.getTime()); // for checking if it was modified
+		$.getJSON('/programs/'+program+'/buttons?file='+encodeURIComponent(file.path), function(buttons) {
+			$('#toolbar-left').children().remove();
+			buttons.forEach(function(b){
+				if (b instanceof Array) { // a buttonset
+					$('<span>').appendTo('#toolbar-left').append(b.map(buttonFromObject)).buttonset();
+				} else {
+					$('#toolbar-left').append(buttonFromObject(b));
+				}
+			});
+			function buttonFromObject(button) {
+				return $(button.elem).button({icons: button.icons});
+			}
+
+			$.getScript('/programs/'+program+'/index.js');
+		});
+	});
+});
 $(d).on('click','#fullDirSize',function() {
 	jqUI.prompt({text:_('dirlist-depth-body'),title:_('dirlist-depth-title')},(parseInt($('#dirSizeDepth').text())+1),function(depth){
 		if (depth) {
@@ -208,7 +200,8 @@ $(d).on('contextmenu','#file .file',function(e){
 		$('.sel').removeClass('sel last');
 		$(this).addClass('sel class');
 	}
-	$('<ul id="contextMenu">').appendTo('body').offset({top:e.pageY,left:e.pageX}).load('render/ctxMenu?type=seledFiles',{r:$('.sel').hasClass('restricted'),l:$('.sel').length==1},function(){
+	$('<ul id="contextMenu">').appendTo('body').offset({top:e.pageY,left:e.pageX}).
+		load('render/ctxMenu?type=seledFiles',{r:$('.sel').hasClass('restricted'),l:$('.sel').length==1},function(){
 		$('#contextMenu').menu();
 		$('#contextMenu-file-cut').zclip({
 			path: 'js/ZeroClipboard.swf',

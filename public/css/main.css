@@ -146,6 +146,9 @@ h2 {
 #file.dirlist .file.sel.last {
 	border: 1px dashed;}
 
+#file.program-selector li {
+	text-align: center;}
+
 #message {
 	height: 20px;
 	width: 83%;

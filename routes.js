@@ -174,8 +174,8 @@ exports.ctxMenu = function(req, res) {
 exports.programs = function(req, res) {
 	switch(req.params.action) {
 		case undefined: // a base program URL
-			switch(req.path) {
-				case '/programs/editors': // programs available to open the file
+			switch(req.path.split('/')[2]) {
+				case 'editors': // programs available to open the file
 					if (req.query.file) {
 						info.info(req.query.file, function(i) {
 							res.send(programs.editorsForFile(i));

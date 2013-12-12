@@ -71,6 +71,7 @@ var en = {
 		"fileview-noaccess": "$1 is not readable to localBrowse.",
 		"fileview-saveas-title": "Save as",
 		"fileview-saveas-body": "Name of new file:",
+		"fileview-openwith": "Choose a program to open with",
 
 		// editor-*: editor names
 		"editor-text": "text",
