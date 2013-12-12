@@ -30,5 +30,5 @@ exports.editorsForFile = function(file) {
 			editors.push(program); // add the program to the list
 		}
 	}
-	return editors;
+	return editors.map(function(ed){return {modName: all[ed].modName, name: all[ed].name, desc: all[ed].desc}});
 };
