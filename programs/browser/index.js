@@ -4,9 +4,9 @@
  * @license {@link LICENSE} (AGPL)
  */
 var path = require('path');
-var name = exports.name = __dirname;
+var name = exports.modName = path.basename(__dirname);
 exports.html = function(file, cb) {
-	cb('<iframe id="file" src="/programs/browser/file?file='+file.path+'"></iframe>');
+	cb('<iframe id="file" src="/programs/'+name+'/file?file='+file.path+'"></iframe>');
 };
 
 exports.messages = {en: {"editor-browser": "default browser viewing"}};
@@ -18,7 +18,7 @@ exports.name = 'Browser viewer';
 
 exports.routes = {};
 exports.routes.file = function(req, res) {
-	res.sendfile(req.body.file);
+	res.sendfile(req.query.file);
 };
 
 exports.buttons = function(f, cb) {

@@ -3,7 +3,8 @@
  * @author Scimonster
  * @license {@link LICENSE} (AGPL)
  */
-var info = require('../../info'), escHTML = require('escape-html');
+var info = require('../../info'), escHTML = require('escape-html'), path = require('path');
+var name = exports.modName = path.basename(__dirname);
 exports.html = function(file, cb) {
 	cb('<textarea id="file" autofocus="autofocus">' + escHTML(file.cont) + '</textarea>');
 };

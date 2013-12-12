@@ -4,7 +4,7 @@
  * @license {@link LICENSE} (AGPL)
  * @module routes
  */
-var _ = require('./text')(require('./lang').code)
+var _ = require('./text')(require('./lang').code), programs = require('./programs').routes;
 
 /**
  * GET homepage
@@ -168,5 +168,13 @@ exports.ctxMenu = function(req, res) {
 			break;
 		default:
 			res.send('<h2>Improper "type" GET variable set.</h2>');
+	}
+};
+
+exports.programs = function(req, res) {
+	if (typeof programs[req.params.program][req.params.action] == 'function') {
+		programs[req.params.program][req.params.action](req, res);
+	} else {
+		res.send(404);
 	}
 };

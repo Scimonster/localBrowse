@@ -47,6 +47,8 @@ app.post('/info/:action', info.routes.post);
 app.post('/search', search.search);
 app.post('/mod', mod.master);
 
+app.get('/programs/:program/:action', routes.programs);
+
 // pages to render
 app.post('/render/dir', routes.dir);
 app.post('/render/ctxMenu', routes.ctxMenu);
