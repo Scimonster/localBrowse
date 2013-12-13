@@ -125,10 +125,10 @@ $(d).on('change','#show_hide_hidden',function(){
 	s.hidden = $(this).is(':checked');
 	if (s.hidden) {
 		$('.file.hidden').hide();
-		$('label[for="show_hide_hidden"] span:last').text('show');
+		$(this).button('option','label',_('dirlist-show-hidden'));
 	} else {
 		$('.file.hidden').show();
-		$('label[for="show_hide_hidden"] span:last').text('hide');
+		$(this).button('option','label',_('dirlist-hide-hidden'));
 	}
 	if (s.restricted) {$('.file.restricted').hide()}
 });
@@ -136,10 +136,10 @@ $(d).on('change','#show_hide_restricted',function(){
 	s.restricted = $(this).is(':checked');
 	if (s.restricted) {
 		$('.file.restricted').hide();
-		$('label[for="show_hide_restricted"] span:last').text('show');
+		$(this).button('option','label',_('dirlist-show-restricted'));
 	} else {
 		$('.file.restricted').show();
-		$('label[for="show_hide_restricted"] span:last').text('hide');
+		$(this).button('option','label',_('dirlist-hide-restricted'));
 	}
 	if (s.hidden) {$('.file.hidden').hide()}
 });
