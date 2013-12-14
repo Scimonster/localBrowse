@@ -72,9 +72,6 @@ var en = {
 		"fileview-saveas-title": "Save as",
 		"fileview-saveas-body": "Name of new file:",
 
-		// editor-*: editor names
-		"editor-text": "text",
-
 		// ctxm-*: Context menu
 		// ctxm-selfile-*: ... for selected files
 		"ctxm-selfile-open": "Open",
@@ -95,7 +92,7 @@ var en = {
 		// messages-*: messages displayed at the bottom of the page
 		"messages-bookmarkadded": "Bookmark added.",
 		"messages-openwith": "Choose a program to open with.",
-		"messages-file-editingwith": "Opened with $1 editor.",
+		"messages-file-editingwith": "Opened with $1.",
 		"messages-file-readonly": " This file is read-only to localBrowse.", // keep the space
 		"messages-file-backup": " Warning: you are editing a backup file.", // keep the space
 		"messages-file-saved": "File saved.",

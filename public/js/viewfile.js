@@ -20,12 +20,16 @@ function viewFile() {
 			return;
 		}
 		$.get('/programs/editors?file='+file.path, function(editors){
-			$('#file').remove();
-			$('<ul id="file" class="program-selector">').appendTo('#file-container').append(editors.map(function(editor){
-				return $('<li>').attr({'data-program':editor.modName, title: editor.desc}).append('<a>').
-					children('a').attr('href',location.hash).text(editor.name).parent();
-			})).menu();
-			$('#message').text(_('fileview-openwith'));
+			if (editors.length == 1) {
+				loadProgram(editors[0].modName);
+			} else {
+				$('#file').remove();
+				$('<ul id="file" class="program-selector">').appendTo('#file-container').append(editors.map(function(editor){
+					return $('<li>').attr({'data-program':editor.modName, title: editor.desc}).append('<a>').
+						children('a').attr('href',location.hash).text(editor.name).parent();
+				})).menu();
+				$('#message').text(_('messages-openwith'));
+			}
 		});
 	});
 	sidebarTree(file.path);
@@ -95,7 +99,7 @@ function listDir(files,beforeLoad,afterLoad) {
 
 function loadProgram(program) {
 	$('#file-container').load('/programs/'+program+'/html?file='+encodeURIComponent(file.path), function() {
-		$('#message').html(_('messages-file-editingwith',_('editor-'+program))+
+		$('#message').html(_('messages-file-editingwith',_('program-'+program))+
 			(file.writable?'':_('messages-file-readonly'))+
 			(file.name.substr(-1)=='~'?_('messages-file-backup'):''));
 		$('#file').data('program',program);
