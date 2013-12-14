@@ -61,12 +61,18 @@ Note that either `message` or `icons` **must** be defined -- both, only `message
 An element describer is a string either formatted as an HTML element creatable by jQuery (`<input type="checkbox" name="my_box" checked="checked" />`, `<button>`) or a CSS selector string passable to [put-selector](https://npmjs.org/package/put-selector) (`button`, `button#save`, `#save`, `input[type="checkbox"][name="my_box"][checked="checked"]`). If a selector string is given without an element name, it defaults to `button`. Therefore, the second and third examples produce the same thing. It detects if it's an element by checking if the first non-whitespace character is a "<" sign.
 
 ## JavaScript
-After loading the HTML, localBrowse will attempt to run the script at `/programs/YOUR PROGRAM NAME/index.js` with `jQuery.getScript()`. If you want to make a script available, this is where to do it. You can expose this script with code like this (assuming your script is located in `./scripts/index.js`):
+After loading the HTML, localBrowse will attempt to run the script at `/programs/YOUR PROGRAM NAME/index.js` with `jQuery.getScript()`. This script should exist, and be where save data is stored. You can expose this script with code like this (assuming your script is located in `./scripts/index.js`):
 ```javascript
 exports.routes['index.js'] = function(req, res) {
 	res.sendfile(path.join(__dirname,'scripts/index.js'));
 };
 ```
+
+## Saving
+If your program has editing functionality, the following conventions should be used for saving:
+* Save button has ID of `#save`
+* Save as button has ID of `#saveAs`
+* In your index.js file, set $('#file').data('save') to a function(callback), where callback() is passed a single parameter, the data to be saved
 
 ## Summary
 This should be enough for even complex applications to be written. If additional functionality is really needed, please leave an issue.

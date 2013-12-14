@@ -103,7 +103,7 @@ exports.save = function(req, res) {
 									res.send({err:'could not stat after saving'});
 									return;
 								}
-								res.send({date:(e?0:i.mtime.getTime()/1000).toString(10)});
+								res.send({date:i.mtime.getTime()});
 							});
 						}
 					}

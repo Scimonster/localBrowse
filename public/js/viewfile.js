@@ -15,6 +15,10 @@ function viewFile() {
 			getDirContents(file.path,listDir);
 			return;
 		}
+		if ($('#file').data('program')) { // reloaded on change, because data is cleared in load()
+			loadProgram($('#file').data('program'));
+			return;
+		}
 		$.get('/programs/editors?file='+file.path, function(editors){
 			$('#file').remove();
 			$('<ul id="file" class="program-selector">').attr('title',_('fileview-openwith')).appendTo('#file-container').append(editors.map(function(editor){
@@ -88,14 +92,14 @@ function listDir(files,beforeLoad,afterLoad) {
 	$('#file').data('files',files);
 }
 
-$(d).on('click','ul#file li a',function() {
-	var program = $(this).parent().data('program');
+function loadProgram(program) {
 	$('#file-container').load('/programs/'+program+'/html?file='+encodeURIComponent(file.path), function() {
 		$('#message').html(_('messages-file-editingwith',_('editor-'+program))+
 			(file.writable?'':_('messages-file-readonly'))+
 			(file.name.substr(-1)=='~'?_('messages-file-backup'):''));
 		$('#file').data('program',program);
 		$('#file').data('modDate',file.date.getTime()); // for checking if it was modified
+		$('#file').addClass('fileview');
 		$.getJSON('/programs/'+program+'/buttons?file='+encodeURIComponent(file.path), function(buttons) {
 			$('#toolbar-left').children().remove();
 			buttons.forEach(function(b){
@@ -112,6 +116,10 @@ $(d).on('click','ul#file li a',function() {
 			$.getScript('/programs/'+program+'/index.js');
 		});
 	});
+}
+
+$(d).on('click','ul#file li a',function() {
+	loadProgram($(this).parent().data('program'));
 });
 $(d).on('click','#fullDirSize',function() {
 	jqUI.prompt({text:_('dirlist-depth-body'),title:_('dirlist-depth-title')},(parseInt($('#dirSizeDepth').text())+1),function(depth){
@@ -177,21 +185,25 @@ $(d).on('click','#file .file',function(e){
 	}
 });
 $(d).on('click','#save',function(){
-	$.post('/mod',{action:'save',file:file.path,content:$('#file').val()},function(info){
-		$('#file').data('modDate',info.date);
-		var oldMessage = $('#message').html();
-		$('#message').html(_('messages-file-saved'));
-		setTimeout(function(){$('#message').html(oldMessage)},1500);
+	$('#file').data('save')(function(content){
+		$.post('/mod',{action:'save',file:file.path,content:content},function(info){
+			$('#file').data('modDate',info.date);
+			var oldMessage = $('#message').html();
+			$('#message').html(_('messages-file-saved'));
+			setTimeout(function(){$('#message').html(oldMessage)},1500);
+		});
 	});
 });
 $(d).on('click','#saveAs',function(){
-	jqUI.prompt({title:_('fileview-saveas-title'),text:_('fileview-saveas-body')},function(name){
-		if (name) {
-			$.post('/mod',{action:'mkfile',file:file.dir+name,content:$('#file').val()},function(){
-				$('#message').html(_('messages-file-saved-as',file.dir+name));
-				location.hash = "#"+file.dir+name;
-			});
-		}
+	$('#file').data('save')(function(content){
+		jqUI.prompt({title:_('fileview-saveas-title'),text:_('fileview-saveas-body')},function(name){
+			if (name) {
+				$.post('/mod',{action:'mkfile',file:file.dir+name,content:content},function(){
+					$('#message').html(_('messages-file-saved-as',file.dir+name));
+					location.hash = "#"+file.dir+name;
+				});
+			}
+		});
 	});
 });
 $(d).on('contextmenu','#file .file',function(e){

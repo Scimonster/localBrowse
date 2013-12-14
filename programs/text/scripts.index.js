@@ -1,0 +1,1 @@
+$('#file').data('save',function(cb){cb($('#file').val())});

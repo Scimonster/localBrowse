@@ -338,7 +338,11 @@ $(w).click(function(){
 	$('#contextMenu').remove();
 });
 $(d).ajaxError(function(e, jqxhr, settings, exception){
-	var url = settings.url.split('?')[0], message = jqUI.alert({
+	var url = settings.url.split('?')[0], split = url.split('/').filter(function(i){return i});
+	if (split[0]=='programs' && split[2]=='index.js') { // ignore missing index.js program files
+		return;
+	}
+	var message = jqUI.alert({
 		text:
 			_('ajaxerror-e-' + ({
 				'/mod': "mod",
@@ -416,13 +420,13 @@ setInterval(function(){
 				$('#file').scrollTop(scroll.top).scrollLeft(scroll.left);
 			});
 		})
-	} else if ($('textarea#file').length) {
+	} else if ($('#file.fileview').length) {
 		$.getJSON('info/info.date'+file.path,function(d){
 			if (d!=$('#file').data('modDate')) {
 				jqUI.confirm({title:_('filechanged'),text:_('filechanged-body'),buttonLabel:_('filechanged-buttons')},function(reload){
 					if (reload) {
 						var scroll = {top:$('#file').scrollTop(),left:$('#file').scrollLeft()};
-						load();
+						viewFile();
 						$('#file').scrollTop(scroll.top).scrollLeft(scroll.left);
 					}
 					else {$('#file').data('modDate',d)}
