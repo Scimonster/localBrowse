@@ -33,6 +33,9 @@ function LBFile(path) {
 			this[key] = path[key];
 		}
 	}
+	if (!this.path) {
+		this.path = '/';
+	}
 	
 	// some path info
 	this.path = pathMod.normalize(this.path);
