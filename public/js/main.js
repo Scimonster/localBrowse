@@ -101,8 +101,10 @@ function load() {
 				tmp2[tmp2.length] = par;
 				$('#filepath').append('<a href="#/'+tmp2.join('/')+'/">'+par+'</a>');
 			});
-			$('#filepath a:last').attr('href',function(i,old){return old.slice(0,-1)});
 			$('#filepath').buttonset();
+		}
+		if (type !== 'directory') {
+			$('#filepath a:last').attr('href',function(i,old){return old.slice(0,-1)});
 		}
 		$('#ajax-loader').remove();
 	}
