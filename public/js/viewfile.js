@@ -21,10 +21,11 @@ function viewFile() {
 		}
 		$.get('/programs/editors?file='+file.path, function(editors){
 			$('#file').remove();
-			$('<ul id="file" class="program-selector">').attr('title',_('fileview-openwith')).appendTo('#file-container').append(editors.map(function(editor){
+			$('<ul id="file" class="program-selector">').appendTo('#file-container').append(editors.map(function(editor){
 				return $('<li>').attr({'data-program':editor.modName, title: editor.desc}).append('<a>').
 					children('a').attr('href',location.hash).text(editor.name).parent();
 			})).menu();
+			$('#message').text(_('fileview-openwith'));
 		});
 	});
 	sidebarTree(file.path);
