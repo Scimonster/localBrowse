@@ -221,7 +221,11 @@ $(d).on('contextmenu','#file .file',function(e){
 		$(this).addClass('sel class');
 	}
 	$('<ul id="contextMenu">').appendTo('body').offset({top:e.pageY,left:e.pageX}).
-		load('render/ctxMenu?type=seledFiles',{r:$('.sel').hasClass('restricted'),l:$('.sel').length==1},function(){
+		load('render/ctxMenu?type=seledFiles', {
+			r: $('.sel').hasClass('restricted'),
+			l: $('.sel').length==1,
+			files: $('.sel').map(function(){return $(this).data('path')}).get()
+		}, function(){
 		$('#contextMenu').menu();
 		$('#contextMenu-file-cut').zclip({
 			path: 'js/ZeroClipboard.swf',
