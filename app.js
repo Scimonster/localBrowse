@@ -49,6 +49,7 @@ app.post('/mod', mod.master);
 
 app.get('/programs/:program/:action', routes.programs);
 app.get('/programs/editors', routes.programs);
+app.get('/programs/alleditors', routes.programs);
 
 // pages to render
 app.post('/render/dir', routes.dir);

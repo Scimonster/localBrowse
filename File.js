@@ -33,7 +33,7 @@ function LBFile(path) {
 			this[key] = path[key];
 		}
 	}
-	if (!this.path) {
+	if (typeof this.path !== 'string') {
 		this.path = '/';
 	}
 	

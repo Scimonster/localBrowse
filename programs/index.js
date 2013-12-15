@@ -26,10 +26,10 @@ for (var program in all) {
 	exports.routes[program] = all[program].routes;
 }
 
-exports.editorsForFile = function(file) {
+exports.editorsForFile = function(file, showAll) {
 	var editors = [];
 	for (var program in all) {
-		if (all[program].mimetypes.filter(function(regex){return regex.test(file.type)}).length) {
+		if (all[program].mimetypes.filter(function(regex){return regex.test(file.type)}).length && (showAll || !all[program].noShow)) {
 			// one of the accepted regexes matches this file
 			editors.push(program); // add the program to the list
 		}

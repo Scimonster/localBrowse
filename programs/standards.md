@@ -60,6 +60,9 @@ Note that either `message` or `icons` **must** be defined -- both, only `message
 
 An element describer is a string either formatted as an HTML element creatable by jQuery (`<input type="checkbox" name="my_box" checked="checked" />`, `<button>`) or a CSS selector string passable to [put-selector](https://npmjs.org/package/put-selector) (`button`, `button#save`, `#save`, `input[type="checkbox"][name="my_box"][checked="checked"]`). If a selector string is given without an element name, it defaults to `button`. Therefore, the second and third examples produce the same thing. It detects if it's an element by checking if the first non-whitespace character is a "<" sign.
 
+### `noShow` - Boolean [Optional]
+If you don't want your program to appear in the list, only directly from the "open" menu (such as the system opener program), set `exports.noShow` to `true`, or a truthy value. Otherwise, you can leave it unset, or false (or falsy).
+
 ## JavaScript
 After loading the HTML, localBrowse will attempt to run the script at `/programs/YOUR PROGRAM NAME/index.js` with `jQuery.getScript()`. This script should exist, and be where save data is stored. You can expose this script with code like this (assuming your script is located in `./scripts/index.js`):
 ```javascript
