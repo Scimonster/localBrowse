@@ -27,14 +27,20 @@ for (var program in all) {
 }
 
 exports.editorsForFile = function(file, showAll) {
-	var editors = [];
-	for (var program in all) {
-		if (all[program].mimetypes.filter(function(regex){return regex.test(file.type)}).length && (showAll || !all[program].noShow)) {
-			// one of the accepted regexes matches this file
-			editors.push(program); // add the program to the list
-		}
-	}
-	return editors.map(function(ed){return {modName: all[ed].modName, name: all[ed].name, desc: all[ed].desc}});
+	return Object.keys(all).
+		filter(function(p){
+			return all[p].mimetypes.filter(function(regex){
+				if (file instanceof Array) {
+					return file.every(function(f){
+						return regex.test(f.type);
+					});
+				}
+				return regex.test(file.type);
+			}).length && (showAll || !all[p].noShow);
+		}).
+		map(function(p){
+			return {modName: all[p].modName, name: all[p].name, desc: all[p].desc};
+		});
 };
 
 exports.allEditors = Object.keys(all).map(function(ed){return {modName: all[ed].modName, name: all[ed].name, desc: all[ed].desc}});
