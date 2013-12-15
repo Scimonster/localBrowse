@@ -7,5 +7,11 @@ mixin item(i)
 				a!= _.apply(null,['ctxm-selfile-'+i.id].concat(i.params))
 			else
 				a!= _('ctxm-selfile-'+i.id)
+			if i.id=='open'
+				ul
+					- each p in programs
+						li(title=p.desc,data-program=p.modName)
+							a= p.name
+
 - each i in list
 	+item(i)

@@ -129,6 +129,14 @@ function loadProgram(program) {
 $(d).on('click','ul#file li a',function() {
 	loadProgram($(this).parent().data('program'));
 });
+$(d).on('click','li#contextMenu-file-open ul li a',function() {
+	// BROKEN
+	var me = this;
+	$('.sel').each(function(){
+		location.hash = $(this).data('info').path;
+		loadProgram($(me).parent().data('program'));
+	});
+});
 $(d).on('click','#fullDirSize',function() {
 	jqUI.prompt({text:_('dirlist-depth-body'),title:_('dirlist-depth-title')},(parseInt($('#dirSizeDepth').text())+1),function(depth){
 		if (depth) {
