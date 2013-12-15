@@ -92,6 +92,9 @@ function listDir(files,beforeLoad,afterLoad) {
 				$('<span>').appendTo('#'+s.sortby).addClass('ui-icon ui-icon-triangle-1-'+(s.asec?'s':'n'));
 				$('#file').menu();
 			}
+			$('#file .file').each(function(){
+				$(this).data('info',new LBFile(files({path:$(this).data('path')}).get()[0]));
+			});
 			afterLoad();
 	});
 	$('#file').data('files',files);
