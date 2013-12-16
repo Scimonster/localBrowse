@@ -44,9 +44,9 @@ function load() {
 		location.hash = file.path;
 		return;
 	}
-	d.title = _('title', file.name);
 
 	cd(file.path, function(){
+		d.title = _('title', file.name);
 		if (type=='trash') {
 			// If it's the trash, load it
 			getDirContents('~/.local/share/Trash/files',listTrash);
@@ -70,6 +70,7 @@ function cd(loc, cb) {
 	if (!type) { 
 		$.getJSON('info/info'+file.resolve(),function(f){
 			file = new LBFile(f);
+			if (loc=='/') {file.name = _('path-root')}
 			type = f.type;
 			finishLoading();
 		});

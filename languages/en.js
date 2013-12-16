@@ -156,6 +156,8 @@ var en = {
 		"filechanged-body": "The file has been changed on disk. Do you want to reload it?",
 		"filechanged-buttons": ["Reload","Cancel"],
 
+		"path-root": "root", // display instead of nothing in file.name
+
 	}
 };
 

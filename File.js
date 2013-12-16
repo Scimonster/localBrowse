@@ -20,7 +20,7 @@ function LBFile(path) {
 	this.items = null;
 	this.link = null;
 	this.path = path; // except path
-	this.perm = '---------';
+	this.perm = '0000',
 	this.readable = null;
 	this.size = null;
 	this.stat = null;
