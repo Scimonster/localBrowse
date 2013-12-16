@@ -37,25 +37,44 @@ function load() {
 	file = new LBFile(location.hash.substr(1));
 	if (location.hash.substr(1)=='') { // nothing was specified, so use homedir
 		file = new LBFile(LBFile.addSlashIfNeeded(homeroot));
-		location.hash += file.path;
+		location.hash = file.path;
 		return;
 	}
 	if (file.path !== location.hash.substr(1)) { // it was normalized
 		location.hash = file.path;
 		return;
 	}
-	d.title = _('title',file.name);
+	d.title = _('title', file.name);
 
+	cd(file.path, function(){
+		if (type=='trash') {
+			// If it's the trash, load it
+			getDirContents('~/.local/share/Trash/files',listTrash);
+		} else if (type=='search') {
+			// Load search
+			search(location.hash.substr(8));
+		} else {
+			// If it's a file or dir, load it
+			viewFile();
+		}
+	});
+}
+
+function cd(loc, cb) {
+	// Go to a specific file/dir
+
+	file = new LBFile(loc);
 	// Find out if it's a file or dir.
-	type = /^search/.test(location.hash.substr(1)) ? 'search' : (location.hash.substr(1)=='trash' ? 'trash' : '');
+	type = /^search/.test(loc) ? 'search' : (loc=='trash' ? 'trash' : '');
 	// first test if it's search, then trash, otherwise leave it for later
 	if (!type) { 
 		$.getJSON('info/info'+file.resolve(),function(f){
-			file = new LBFile(f)
+			file = new LBFile(f);
 			type = f.type;
 			finishLoading();
 		});
 	} else {
+		file = new LBFile(f);
 		finishLoading();
 	}
 
@@ -66,16 +85,7 @@ function load() {
 		$('#file').removeData().remove();
 		$('#toolbar-left').html('');
 		$('#new').show();
-		if (type=='trash') {
-			// If it's the trash, load it
-			getDirContents('~/.local/share/Trash/files',function(f){listTrash(f)});
-		} else if (type=='search') {
-			// Load search
-			search(location.hash.substr(8));
-		} else {
-			// If it's a file or dir, load it
-			viewFile();
-		}
+		if (typeof cb == 'function') {cb();}
 		// Create the pathbar
 		var tmp = file.path.split('/'), tmp2 = [];
 		if (tmp[tmp.length-1]=='') {tmp.pop()}
@@ -106,7 +116,6 @@ function load() {
 		if (type !== 'directory') {
 			$('#filepath a:last').attr('href',function(i,old){return old.slice(0,-1)});
 		}
-		$('#ajax-loader').remove();
 	}
 }
 

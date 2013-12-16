@@ -3,8 +3,9 @@ function listTrash(files) {
 	
 	// TODO: make trash work more like regular dir
 
-	$('#toolbar-left').html('<input id="show_hide_restricted" type="checkbox" name="show_hide_restricted" checked="checked" />'+
-	'<label for="show_hide_hidden">'+_(s.hidden?'dirlist-show-hidden':'dirlist-hide-hidden')+'</label>').buttonset();
+	$('#toolbar-left').html('<span><input id="show_hide_restricted" type="checkbox" name="show_hide_restricted" checked="checked" />'+
+		'<label for="show_hide_hidden">'+_(s.hidden?'dirlist-show-hidden':'dirlist-hide-hidden')+'</label></span>').
+		find('span').buttonset();
 	$('#file').remove();
 	$('<table id="file" class="trash">').appendTo('#file-container').html('<thead><tr>'+
 		'<th id="name">'+_('trash-header-name')+'</th>'+
@@ -40,6 +41,7 @@ function listTrash(files) {
 		$('<span>').appendTo('#'+s.sortby).addClass('ui-icon ui-icon-triangle-1-'+(s.asec?'s':'n'));
 		$('#message').text(files({type:'directory'}).count()+' directories; '+files({type:{'!is':'directory'}}).count()+' files');
 		$('table').menu();
+		$('#ajax-loader').remove();
 	});
 	$('#new').hide();
 	$('#file').data('files',files);

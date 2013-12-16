@@ -1,7 +1,6 @@
 function viewFile() {
 	// This function opens a file
 
-	// TODO: Completely redo file-opening (see /TODO.md)
 	var trash=false;
 	
 	if (file.path.match(/^trash/)) {
@@ -22,6 +21,7 @@ function viewFile() {
 		$.get('/programs/editors?file='+file.path, function(editors){
 			if (editors.length == 1) {
 				loadProgram(editors[0].modName);
+				$('#ajax-loader').remove();
 			} else {
 				$('#file').remove();
 				$('<ul id="file" class="program-selector">').appendTo('#file-container').append(editors.map(function(editor){
@@ -29,6 +29,7 @@ function viewFile() {
 						children('a').attr('href',location.hash).text(editor.name).parent();
 				})).menu();
 				$('#message').text(_('messages-openwith'));
+				$('#ajax-loader').remove();
 			}
 		});
 	});
@@ -96,11 +97,13 @@ function listDir(files,beforeLoad,afterLoad) {
 				$(this).data('info',new LBFile(files({path:$(this).data('path')}).get()[0]));
 			});
 			afterLoad();
+			$('#ajax-loader').remove();
 	});
 	$('#file').data('files',files);
 }
 
 function loadProgram(program) {
+	$('<div id="ajax-loader"><img src="img/ajax-loader.gif">').appendTo('#content');
 	$('#file-container').load('/programs/'+program+'/html?file='+encodeURIComponent(file.path), function() {
 		$('#message').html(_('messages-file-editingwith',_('program-'+program))+
 			(file.writable?'':_('messages-file-readonly'))+
@@ -122,6 +125,7 @@ function loadProgram(program) {
 			}
 
 			$.getScript('/programs/'+program+'/index.js');
+			$('#ajax-loader').remove();
 		});
 	});
 }
