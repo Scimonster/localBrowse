@@ -1,21 +1,23 @@
 thead
-  tr
-    th#name= _('dirlist-header-name')
-    th#size= _('dirlist-header-size')
-    th#date= _('dirlist-header-date')
-    th#type= _('dirlist-header-type')
-    th#perm= _('dirlist-header-perm')
-  tbody
-    each f in files
-      - var classes = ['file']
-      - if (f.name.substr(0,1)=='.'||f.name.substr(-1)=='~') {classes.push('hidden')}
-      - if (!f.readable) {classes.push('restricted')}
-      tr(class=classes,data-path=base+f.name)
-        td.file-name(title=f.name)
-          img.file-img(src=imageForFile(f,false))
-          = f.name.substr(0,35)
-          != f.name.length<35?'':'&#x2026;'
-        td.file-size(title=f.type=='directory'?_('dirlist-filesize-items',f.items):f.size+' B')!= f.type=='directory'?_('dirlist-filesize-items',f.items):(f.readable?f.filesizeFormatted():f.size)
-        td.file-date(title=f.date.toLocaleString())!= f.readable?f.dateFormatted(false):f.date
-        td.file-type!= _(f.type)
-        td.file-perm!= f.permsFormatted()
+	tr
+		th#name= _('dirlist-header-name')
+		th#size= _('dirlist-header-size')
+		th#date= _('dirlist-header-date')
+		th#type= _('dirlist-header-type')
+		th#perm= _('dirlist-header-perm')
+	tbody
+		each f in files
+			- var classes = ['file']
+			- if (f.name.substr(0,1)=='.'||f.name.substr(-1)=='~') {classes.push('hidden')}
+			- if (!f.readable) {classes.push('restricted')}
+			tr(class=classes,data-path=base+f.name)
+				td.file-name(title=f.name)
+					img.file-img(src=imageForFile(f,false))
+					if f.isLink
+						img.file-img-link(src='img/fatcow/16x16/link.png',title=f.link)
+					= f.name.substr(0,35)
+					!= f.name.length<35?'':'&#x2026;'
+				td.file-size(title=f.type=='directory'?_('dirlist-filesize-items',f.items):f.size+' B')!= f.type=='directory'?_('dirlist-filesize-items',f.items):(f.readable?f.filesizeFormatted():f.size)
+				td.file-date(title=f.date.toLocaleString())!= f.readable?f.dateFormatted(false):f.date
+				td.file-type!= _(f.type)
+				td.file-perm!= f.permsFormatted()
