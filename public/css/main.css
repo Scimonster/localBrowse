@@ -114,6 +114,16 @@ h2 {
 	word-wrap: break-word;}
 #file.dirlist div.file span.file-size, #file.dirlist div.file span.file-date, #file.dirlist div.file span.file-type {
 	display: inline-block;}
+div#file.dirlist div.file span.file-img {
+	position: relative;}
+div#file.dirlist div.file span.file-img img.file-img-link {
+	position: absolute;
+	bottom: 0px;
+	left: 0px;}
+div#file.dirlist div.file span.file-img img.file-restricted-link {
+	position: absolute;
+	bottom: 0px;
+	right: 0px;}
 #name {width: 46%}
 #size {width: 10%}
 #date {width: 22%}
