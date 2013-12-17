@@ -20,10 +20,7 @@ Client JS
 ## Editors/viewers
 Opening files
 
-* Move all editors to `/programs/`
-* Create a standard
-* Way to pick an editor when there are multiple ones
-* Open with system program
+* Open multiple files at once (tabs)
 
 ## Trash
 About the trash
