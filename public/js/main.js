@@ -53,7 +53,14 @@ function load() {
 			search(location.hash.substr(8));
 		} else {
 			// If it's a file or dir, load it
-			viewFile();
+			if (getUrlVars(location.search).program) { // a program was set via URL
+				loadProgram(getUrlVars(location.search).program);
+			} else {
+				viewFile();
+			}
+			if (location.search) { // we've done what's needed, now clear it
+				history.replaceState(null, document.title, '/'+location.hash);
+			}
 		}
 	});
 }

@@ -103,7 +103,9 @@ function listDir(files,beforeLoad,afterLoad) {
 }
 
 function loadProgram(program) {
-	$('<div id="ajax-loader"><img src="img/ajax-loader.gif">').appendTo('#content');
+	if (!$('#ajax-loader').length) {
+		$('<div id="ajax-loader"><img src="img/ajax-loader.gif">').appendTo('#content');
+	}
 	$('#file-container').load('/programs/'+program+'/html?file='+encodeURIComponent(file.path), function() {
 		$('#message').html(_('messages-file-editingwith',_('program-'+program))+
 			(file.writable?'':_('messages-file-readonly'))+
@@ -138,7 +140,6 @@ $(d).on('click','li#contextMenu-file-open ul li a',function() {
 	$('.sel').each(function(){
 		cd($(this).data('path'), function(){
 			loadProgram($(me).parent().data('program'));
-			$('#ajax-loader').remove();
 		});
 	});
 });
