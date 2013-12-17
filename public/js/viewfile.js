@@ -134,11 +134,12 @@ $(d).on('click','ul#file li a',function() {
 	loadProgram($(this).parent().data('program'));
 });
 $(d).on('click','li#contextMenu-file-open ul li a',function() {
-	// BROKEN
 	var me = this;
 	$('.sel').each(function(){
-		location.hash = $(this).data('info').path;
-		loadProgram($(me).parent().data('program'));
+		cd($(this).data('path'), function(){
+			loadProgram($(me).parent().data('program'));
+			$('#ajax-loader').remove();
+		});
 	});
 });
 $(d).on('click','#fullDirSize',function() {
@@ -230,7 +231,7 @@ $(d).on('contextmenu','#file .file',function(e){
 	$('#contextMenu').remove();
 	if (!$(this).hasClass('sel')) { // fix selections
 		$('.sel').removeClass('sel last');
-		$(this).addClass('sel class');
+		$(this).addClass('sel last');
 	}
 	$('<ul id="contextMenu">').appendTo('body').offset({top:e.pageY,left:e.pageX}).
 		load('render/ctxMenu?type=seledFiles', {

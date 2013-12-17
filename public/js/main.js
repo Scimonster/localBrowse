@@ -37,8 +37,6 @@ function load() {
 	file = new LBFile(location.hash.substr(1));
 	if (location.hash.substr(1)=='') { // nothing was specified, so use homedir
 		file = new LBFile(LBFile.addSlashIfNeeded(homeroot));
-		location.hash = file.path;
-		return;
 	}
 	if (file.path !== location.hash.substr(1)) { // it was normalized
 		location.hash = file.path;
@@ -64,6 +62,10 @@ function cd(loc, cb) {
 	// Go to a specific file/dir
 
 	file = new LBFile(loc);
+	if (file.path !== location.hash.substr(1)) { // it was normalized
+		noload = true;
+		location.hash = file.path;
+	}
 	// Find out if it's a file or dir.
 	type = /^search/.test(loc) ? 'search' : (loc=='trash' ? 'trash' : '');
 	// first test if it's search, then trash, otherwise leave it for later
@@ -282,7 +284,13 @@ function getDirContents(dir, opts, callback) {
 	});
 }
 
-$(w).on('hashchange',load);
+$(w).on('hashchange',function(){
+	if (typeof noload == 'undefined') {
+		load();
+	} else {
+		delete noload;
+	}
+});
 $(function(){ // set up jqUI elements
 	$('#filepath').buttonset();
 	$('#back-and-forth').buttonset();
