@@ -136,12 +136,18 @@ $(d).on('click','ul#file li a',function() {
 	loadProgram($(this).parent().data('program'));
 });
 $(d).on('click','li#contextMenu-file-open ul li a',function() {
-	var me = this;
-	$('.sel').each(function(){
-		cd($(this).data('path'), function(){
-			loadProgram($(me).parent().data('program'));
+	var p = $(this).parent().data('program');
+	if ($('.sel').length==1) { // open in this tab
+		cd($('.sel').data('path'), function(){
+			loadProgram(p);
 		});
-	});
+	} else { // open in new tabs
+		// BROKEN
+		$('.sel').each(function(){
+			$('<a target="_blank" href="/?program='+p+'#'+$(this).data('path')+'">')[0].click();
+		});
+		cd('..',load); // hack against a bug
+	}
 });
 $(d).on('click','#fullDirSize',function() {
 	jqUI.prompt({text:_('dirlist-depth-body'),title:_('dirlist-depth-title')},(parseInt($('#dirSizeDepth').text())+1),function(depth){

@@ -68,6 +68,9 @@ function load() {
 function cd(loc, cb) {
 	// Go to a specific file/dir
 
+	if (loc=='..') {
+		loc = file.dir;
+	}
 	file = new LBFile(loc);
 	if (file.path !== location.hash.substr(1)) { // it was normalized
 		noload = true;
