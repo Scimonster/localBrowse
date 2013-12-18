@@ -15,17 +15,21 @@ function LBFile(path) {
 	// default values are all null
 	this.cont = null;
 	this.date = null;
-	this.exists = null;
-	this.isLink = null;
+	this.executable = false;
+	this.exists = false;
+	this.group = {};
+	this.isLink = false;
 	this.items = null;
 	this.link = null;
+	this.owner = {};
 	this.path = path; // except path
 	this.perm = '0000',
-	this.readable = null;
-	this.size = null;
-	this.stat = null;
+	this.readable = false;
+	this.realpath = path;
+	this.size = 0;
+	this.stat = {};
 	this.type = null;
-	this.writable = null;
+	this.writable = false;
 
 	// if we were passed an object, so give us its info
 	if (typeof path==='object') {

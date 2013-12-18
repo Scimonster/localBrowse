@@ -10,7 +10,8 @@
 
 var fs = require('fs-extra'),
 	LBFile = require('./File.js'),
-	path = require('path');
+	path = require('path'),
+	spawn = require('child_process').spawn;
 
 /**
  * @property {function} get
@@ -137,8 +138,45 @@ exports.info = function(file, cb, content, stat) {
 			if (stat) {
 				i.stat = s; // add the stat in if we want it
 			}
+			var passwd = spawn('getent', ['passwd', s.uid]), group = spawn('getent', ['group', s.gid]);
+			passwd.stdout.on('data', function(data) {
+				data = data.toString().split(':');
+				i.owner = {
+					id: s.uid,
+					name: data[0],
+					full: data[4]
+				};
+				finished();
+			});
+			passwd.stderr.on('data', function(data) {
+				i.owner = {
+					id: s.uid,
+					name: '',
+					full: ''
+				};
+				finished();
+			});
+			group.stdout.on('data', function(data) {
+				data = data.toString().split(':');
+				i.group = {
+					id: s.gid,
+					name: data[0]
+				};
+				finished();
+			});
+			group.stderr.on('data', function(data) {
+				i.group = {
+					id: s.gid,
+					name: ''
+				};
+				finished();
+			});
 			exports.perms(s, 1, function(w) { // writable?
 				i.writable = w;
+				finished();
+			});
+			exports.perms(s, 2, function(e) { // writable?
+				i.executable = e;
 				finished();
 			});
 			exports.perms(s, 0, function(r) { // readable?
@@ -192,6 +230,10 @@ exports.info = function(file, cb, content, stat) {
 			i.perm = parseInt(s.mode.toString(8), 10).toString(10).substr(2); // get the value as an octal number, turn it to decimal, turn it to string, and chop off the first couple characters
 			finished();
 		});
+		fs.realpath(file, function(rp_e, rp) {
+			i.realpath = rp;
+			finished();
+		});
 	});
 	/**
 	 * Executes the callback function if all asynchronous actions have completed
@@ -200,12 +242,16 @@ exports.info = function(file, cb, content, stat) {
 		if (
 			typeof i.writable !== 'undefined' &&
 			typeof i.readable !== 'undefined' &&
+			typeof i.executable !== 'undefined' &&
 			typeof i.date !== 'undefined' &&
 			typeof i.size !== 'undefined' &&
 			(i.type=='directory'?typeof i.items !== 'undefined':true) &&
 			typeof i.perm !== 'undefined' &&
+			typeof i.owner !== 'undefined' &&
+			typeof i.group !== 'undefined' &&
 			typeof i.type !== 'undefined' && i.type !== '' &&
 			typeof i.isLink !== 'undefined' && (!i.isLink || typeof i.link !== 'undefined') &&
+			typeof i.realpath !== 'undefined' &&
 			(content && i.type!='directory'?typeof i.cont !== 'undefined':true) &&
 			(stat?typeof i.stat !== 'undefined':true)
 		) {
