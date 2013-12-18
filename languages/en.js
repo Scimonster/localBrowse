@@ -161,6 +161,6 @@ var en = {
 	}
 };
 
-extend(true, en.messages, require('../programs').messages.en);
+extend(true, en.messages, require('../programs').messages.en, require('../views/properties/en.js'));
 
 module.exports = en;

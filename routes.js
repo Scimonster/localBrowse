@@ -4,7 +4,12 @@
  * @license {@link LICENSE} (AGPL)
  * @module routes
  */
-var _ = require('./text')(require('./lang').code), programs = require('./programs'), info = require('./info');
+var
+	_        = require('./text')(require('./lang').code),
+	programs = require('./programs'),
+	info     = require('./info'),
+	LBFile   = require('./File.js'),
+	jade     = require('jade');
 
 /**
  * GET homepage
@@ -86,9 +91,8 @@ exports.browserify.text = function(req, res) {
 	);
 };
 
-var iconset = require('fs').readdirSync('./public/img/fatcow/16x16'),
+var iconset = require('fs').readdirSync('./public/img/fatcow/16x16');
 // so that it's ready; ok to sync during setup
-LBFile = require('./File.js'), info = require('./info'); // dependencies for file operations
 /**
  * GET directory listing; pre-render list or tiles
  * @param {Object} req Express request object
@@ -96,15 +100,6 @@ LBFile = require('./File.js'), info = require('./info'); // dependencies for fil
  * @require fs
  */
 exports.dir = function(req, res) {
-	function imageForFile(f, big) { // get an image for a file
-		if (f.type=='directory') {return 'img/fatcow/'+(big?'32x32':'16x16')+'/folder.png'}
-		else {
-			if (iconset.indexOf('file_extension_'+f.ext+'.png')>-1) { // there is an icon
-				return 'img/fatcow/'+(big?'32x32':'16x16')+'/file_extension_'+f.ext+'.png';
-			}
-			else {return 'img/fatcow/'+(big?'32x32':'16x16')+'/document_empty.png'} // no icon
-		}
-	};
 	if (req.body.files) { // we have a list of files through POST
 		send(req.body.files.map(function(i){return new LBFile(i)}));
 	} else { // just a dirname
@@ -129,6 +124,15 @@ exports.dir = function(req, res) {
 		});
 	}
 };
+function imageForFile(f, big) { // get an image for a file
+	if (f.type=='directory') {return '/img/fatcow/'+(big?'32x32':'16x16')+'/folder.png'}
+	else {
+		if (iconset.indexOf('file_extension_'+f.ext+'.png')>-1) { // there is an icon
+			return '/img/fatcow/'+(big?'32x32':'16x16')+'/file_extension_'+f.ext+'.png';
+		}
+		else {return '/img/fatcow/'+(big?'32x32':'16x16')+'/document_empty.png'} // no icon
+	}
+}
 
 /**
  * GET context menu pre-rendering
@@ -180,6 +184,43 @@ exports.ctxMenu = function(req, res) {
 	}
 };
 
+/**
+ * GET properties dialog pre-rendering
+ * @param {Object} req Express request object
+ * @param {Object} res Express response object
+ */
+exports.props = function(req, res) {
+	info.info(req.query.file, function(i) {
+		var tabs = [
+			{title: 'Basic', file: 'basic', locals: {imageForFile: imageForFile, _: _, i: i}},
+			{title: 'Permissions', file: 'perms', locals: {_: _, i: i}},
+		], compiled = [];
+		tabs.forEach(function(tab) {
+			try {
+				jade.renderFile('views/properties/'+tab.file+'.jade', tab.locals, function(err, html) {
+					compiled.push(html);
+					if (compiled.length==tabs.length) {
+						res.render('properties/index.jade', {
+							tabs: tabs.map(function(t){return {title: t.title, short: t.file}}),
+							file: i,
+							compiled: compiled,
+							_: _
+						});
+					}
+				});
+			} catch(e) {
+				console.log(e)
+				compiled.push('');
+			}
+		});
+	}, true, true);
+};
+
+/**
+ * GET programs files
+ * @param {Object} req Express request object
+ * @param {Object} res Express response object
+ */
 exports.programs = function(req, res) {
 	switch(req.params.action) {
 		case undefined: // a base program URL

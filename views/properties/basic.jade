@@ -1,0 +1,24 @@
+table
+	tr
+		td(rowspan=100,valign='top')
+			img(src=imageForFile(i,true))
+		td= _('props-basic-name')
+		td
+			input(type="text",value=i.name)
+	tr
+		td= _('props-basic-type')
+		td= _(i.type)
+	tr
+		td= _('props-basic-size')
+		td= i.filesizeFormatted()
+	tr(height=15)
+	tr
+		td= _('props-basic-location')
+		td= i.realpath
+	tr(height=15)
+	tr
+		td= _('props-basic-atime')
+		td= i.stat.atime
+	tr
+		td= _('props-basic-mtime')
+		td= i.stat.mtime

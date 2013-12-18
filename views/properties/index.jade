@@ -1,0 +1,12 @@
+link(type='text/css', rel='stylesheet', href='/css/jquery-ui.min.css')
+script(src='/js/jquery.js')
+script(src='/js/jquery-ui.min.js')
+#props(title=_('props-title',file.name))
+	ul
+		each tab in tabs
+			li
+				a(href="#props-"+tab.short)= tab.title
+	each tab, i in tabs
+		div(id="props-"+tab.short)!= compiled[i]
+script.
+	$('#props').tabs().dialog({width:1000})

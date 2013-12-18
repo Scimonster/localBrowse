@@ -54,6 +54,7 @@ app.get('/programs/alleditors', routes.programs);
 // pages to render
 app.post('/render/dir', routes.dir);
 app.post('/render/ctxMenu', routes.ctxMenu);
+app.get('/render/props', routes.props);
 
 http.createServer(app).listen(app.get('port'), function() {
 	console.log('Express server listening on port ' + app.get('port'));
