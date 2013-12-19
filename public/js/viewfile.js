@@ -279,3 +279,11 @@ $(d).on('contextmenu','#file.dirlist',function(e){
 	})
 });
 $(d).on('click','#contextMenu-folder-paste',function(){paste()}); // no event object
+$(d).on('click','#contextMenu-file-props',function(){
+	$.get('/render/props?file='+$('.sel.last').data('path'), function(res){
+		$('body').append(res);
+		$('#props').tabs({heightStyle:'auto'}).dialog({width:500,buttons:[
+			{text: _('props-buttons-close'), click: function(){$(this).dialog('close')}}
+		]});
+	});
+});

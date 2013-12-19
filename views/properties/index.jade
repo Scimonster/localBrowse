@@ -1,7 +1,3 @@
-link(type='text/css', rel='stylesheet', href='/css/jquery-ui.min.css')
-script(src='/js/jquery.js')
-script(src='/js/jquery-ui.min.js')
-script(src='/browserify/text.js')
 #props(title=_('props-title',file.name))
 	ul
 		each tab in tabs
@@ -9,7 +5,3 @@ script(src='/browserify/text.js')
 				a(href="#props-"+tab.short)= tab.title
 	each tab, i in tabs
 		div(id="props-"+tab.short)!= compiled[i]
-script.
-	$('#props').tabs({active:2,heightStyle:'auto'}).dialog({width:500,buttons:[
-		{text: _('props-buttons-close'), click: function(){$(this).dialog('close')}}
-	]})
