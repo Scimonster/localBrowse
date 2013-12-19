@@ -1,2 +1,37 @@
-// temporary
-div= i.permsFormatted()
+mixin permList(i,c)
+	select
+		option(value=6, selected=parseInt(i.perm[c])>=6)= _('props-perms-access-rw')
+		option(value=4, selected=parseInt(i.perm[c])>=4&&parseInt(i.perm[c])<6)= _('props-perms-access-r')
+		option(value=2, selected=parseInt(i.perm[c])>=2&&parseInt(i.perm[c])<4)= _('props-perms-access-w')
+		option(value=0, selected=parseInt(i.perm[c])<2)= _('props-perms-access-none')
+
+table
+	tr
+		td= _('props-perms-owner')
+		td= _('props-perms-owner-data', i.owner.name, i.owner.full)
+	tr
+		td= _('props-perms-access')
+		td
+			+permList(i, 1)
+	tr(height=15)
+	tr
+		td= _('props-perms-group')
+		td= i.group.name
+	tr
+		td= _('props-perms-access')
+		td
+			+permList(i, 2)
+	tr(height=15)
+	tr
+		td= _('props-perms-others')
+		td
+	tr
+		td= _('props-perms-access')
+		td
+			+permList(i, 3)
+	tr(height=15)
+	tr
+		td= _('props-perms-exec')
+		td
+			input(type="checkbox", checked=i.executable, id='props-perms-exec-box')
+			label(for='props-perms-exec-box')= _('props-perms-exec-box')

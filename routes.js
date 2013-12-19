@@ -194,6 +194,7 @@ exports.props = function(req, res) {
 		var tabs = [
 			{title: 'Basic', file: 'basic', locals: {imageForFile: imageForFile, _: _, i: i}},
 			{title: 'Permissions', file: 'perms', locals: {_: _, i: i}},
+			{title: 'Open With', file: 'openwith', locals: {_: _, i: i, programs: programs}},
 		], compiled = [];
 		tabs.forEach(function(tab) {
 			try {
