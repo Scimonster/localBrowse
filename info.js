@@ -138,39 +138,57 @@ exports.info = function(file, cb, content, stat) {
 			if (stat) {
 				i.stat = s; // add the stat in if we want it
 			}
-			var passwd = spawn('getent', ['passwd', s.uid]), group = spawn('getent', ['group', s.gid]);
-			passwd.stdout.on('data', function(data) {
-				data = data.toString().split(':');
-				i.owner = {
-					id: s.uid,
-					name: data[0],
-					full: data[4]
-				};
-				finished();
-			});
-			passwd.stderr.on('data', function(data) {
+			try {
+				var passwd = spawn('getent', ['passwd', s.uid]);
+				passwd.stdout.on('data', function(data) {
+					data = data.toString().split(':');
+					i.owner = {
+						id: s.uid,
+						name: data[0],
+						full: data[4]
+					};
+					finished();
+				});
+				passwd.stderr.on('data', function(data) {
+					i.owner = {
+						id: s.uid,
+						name: '',
+						full: ''
+					};
+					finished();
+				});
+			} catch(e) {
 				i.owner = {
 					id: s.uid,
 					name: '',
 					full: ''
 				};
 				finished();
-			});
-			group.stdout.on('data', function(data) {
-				data = data.toString().split(':');
-				i.group = {
-					id: s.gid,
-					name: data[0]
-				};
-				finished();
-			});
-			group.stderr.on('data', function(data) {
+			}
+			try {
+				var group = spawn('getent', ['group', s.gid]);
+				group.stdout.on('data', function(data) {
+					data = data.toString().split(':');
+					i.group = {
+						id: s.gid,
+						name: data[0]
+					};
+					finished();
+				});
+				group.stderr.on('data', function(data) {
+					i.group = {
+						id: s.gid,
+						name: ''
+					};
+					finished();
+				});	
+			} catch(e) {
 				i.group = {
 					id: s.gid,
 					name: ''
 				};
 				finished();
-			});
+			}
 			exports.perms(s, 1, function(w) { // writable?
 				i.writable = w;
 				finished();
@@ -213,7 +231,7 @@ exports.info = function(file, cb, content, stat) {
 				} else if (r) { // is dir
 					fs.readdir(file, function(d_e, d) {
 						i.size = s.size;
-						i.items = d.length;
+						i.items = d_e?0:d.length;
 						finished();
 					});
 				} else {

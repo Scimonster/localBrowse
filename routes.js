@@ -92,6 +92,15 @@ exports.browserify.text = function(req, res) {
 };
 
 var iconset = require('fs').readdirSync('./public/img/fatcow/16x16');
+function imageForFile(f, big) { // get an image for a file
+	if (f.type=='directory') {return '/img/fatcow/'+(big?'32x32':'16x16')+'/folder.png'}
+	else {
+		if (iconset.indexOf('file_extension_'+f.ext+'.png')>-1) { // there is an icon
+			return '/img/fatcow/'+(big?'32x32':'16x16')+'/file_extension_'+f.ext+'.png';
+		}
+		else {return '/img/fatcow/'+(big?'32x32':'16x16')+'/document_empty.png'} // no icon
+	}
+}
 // so that it's ready; ok to sync during setup
 /**
  * GET directory listing; pre-render list or tiles
@@ -124,15 +133,6 @@ exports.dir = function(req, res) {
 		});
 	}
 };
-function imageForFile(f, big) { // get an image for a file
-	if (f.type=='directory') {return '/img/fatcow/'+(big?'32x32':'16x16')+'/folder.png'}
-	else {
-		if (iconset.indexOf('file_extension_'+f.ext+'.png')>-1) { // there is an icon
-			return '/img/fatcow/'+(big?'32x32':'16x16')+'/file_extension_'+f.ext+'.png';
-		}
-		else {return '/img/fatcow/'+(big?'32x32':'16x16')+'/document_empty.png'} // no icon
-	}
-}
 
 /**
  * GET context menu pre-rendering

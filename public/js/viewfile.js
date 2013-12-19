@@ -278,7 +278,4 @@ $(d).on('contextmenu','#file.dirlist',function(e){
 		appendTo('body').menu().offset({top:e.pageY,left:e.pageX});
 	})
 });
-$(d).on('click','#contextMenu-file-open',function(){
-	$('.sel.last').dblclick();
-});
 $(d).on('click','#contextMenu-folder-paste',function(){paste()}); // no event object
