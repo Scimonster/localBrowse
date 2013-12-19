@@ -278,6 +278,17 @@ exports.info = function(file, cb, content, stat) {
 	}
 }
 
+exports.info.type = function(file, cb) {
+	var mmm = require('mmmagic'), magic = new mmm.Magic(mmm.MAGIC_MIME_TYPE); // MIME checking dependencies
+	magic.detectFile(file, function(m_e, m_type) {
+		if (m_e || m_type=='regular file, no read permission') { // Magic error, use lazy checking
+			cb(require('mime').lookup(file));
+		} else {
+			cb(m_type);
+		}
+	});
+};
+
 /**
  * Web abstraction for {@link module:info.funcs~info info}
  * @param {Object} req Express request object

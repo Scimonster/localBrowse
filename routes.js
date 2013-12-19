@@ -142,40 +142,46 @@ exports.dir = function(req, res) {
 exports.ctxMenu = function(req, res) {
 	switch (req.query.type) {
 		case 'seledFiles': // some files were selected
-			info.fileListInfo(req.body.files, function(i) {
-				res.render('ctxMenu.seledFiles.jade', {
-					list: req.body.l=="true"?[ // just one
-						{r:req.body.r,id:'open'},
-						null,
-						{r:req.body.r,id:'cut'},
-						{r:req.body.r,id:'copy'},
-						null,
-						{r:req.body.r,id:'moveTo'},
-						{r:req.body.r,id:'copyTo'},
-						{r:false,id:'makeLink',params:['']},
-						{r:req.body.r,id:'rename'},
-						null,
-						{r:req.body.r,id:'trash'},
-						null,
-						{r:false,id:'props'},
-					]:[ // more than one
-						{r:req.body.r,id:'open'},
-						null,
-						{r:req.body.r,id:'newFolder'},
-						null,
-						{r:req.body.r,id:'cut'},
-						{r:req.body.r,id:'copy'},
-						null,
-						{r:req.body.r,id:'moveTo'},
-						{r:req.body.r,id:'copyTo'},
-						{r:false,id:'makeLink',params:['s']},
-						null,
-						{r:req.body.r,id:'trash'},
-						null,
-						{r:false,id:'props'},
-					],
-					'_': _,
-					programs: programs.editorsForFile(i, true)
+			var types = [];
+			req.body.files.forEach(function(f) {
+				info.info.type(f, function(t) {
+					types.push(t);
+					if (types.length == req.body.files.length) {
+						res.render('ctxMenu.seledFiles.jade', {
+							list: req.body.l=="true"?[ // just one
+								{r:req.body.r,id:'open'},
+								null,
+								{r:req.body.r,id:'cut'},
+								{r:req.body.r,id:'copy'},
+								null,
+								{r:req.body.r,id:'moveTo'},
+								{r:req.body.r,id:'copyTo'},
+								{r:false,id:'makeLink',params:['']},
+								{r:req.body.r,id:'rename'},
+								null,
+								{r:req.body.r,id:'trash'},
+								null,
+								{r:false,id:'props'},
+							]:[ // more than one
+								{r:req.body.r,id:'open'},
+								null,
+								{r:req.body.r,id:'newFolder'},
+								null,
+								{r:req.body.r,id:'cut'},
+								{r:req.body.r,id:'copy'},
+								null,
+								{r:req.body.r,id:'moveTo'},
+								{r:req.body.r,id:'copyTo'},
+								{r:false,id:'makeLink',params:['s']},
+								null,
+								{r:req.body.r,id:'trash'},
+								null,
+								{r:false,id:'props'},
+							],
+							'_': _,
+							programs: programs.editorsForFile(types.map(function(t){return {type:t}}), true)
+						});
+					}
 				});
 			});
 			break;
@@ -214,7 +220,7 @@ exports.props = function(req, res) {
 				compiled.push('');
 			}
 		});
-	}, true, true);
+	}, false, true);
 };
 
 /**
