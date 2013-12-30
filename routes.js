@@ -5,7 +5,7 @@
  * @module routes
  */
 var
-	_        = require('./text')(require('./config').lang.code),
+	_        = require('./text').load(),
 	programs = require('./programs'),
 	info     = require('./info'),
 	LBFile   = require('./File.js'),

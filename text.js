@@ -10,7 +10,7 @@ var obj = require('./Object.js'), extend = require('extend');
  * @param {string} lang A language code to get for
  * @return {function} Function taking a single parameter, the message name, and returning the localized text
  */
-module.exports = function gettext(lang) {
+function gettext(lang) {
 	var messages = {}, fallbacks = [lang];
 	function getlang(lang) {
 		if (!messages.hasOwnProperty(lang)) {
@@ -51,4 +51,8 @@ module.exports = function gettext(lang) {
 			return messages;
 		}
 	};
+};
+module.exports = gettext;
+module.exports.load = function() {
+	return gettext(require('./config').lang.code);
 };

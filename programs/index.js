@@ -45,7 +45,7 @@ exports.editorsForFile = function(file, showAll) {
 exports.allEditors = arr.map(function(ed){return {modName: ed.modName, name: ed.name, desc: ed.desc}});
 
 exports.generateButtons = function(buttonFunction, file, cb) {
-	var _ = require('../text')(require('../config').lang.code);
+	var _ = require('../text').load();
 	put.defaultTag = 'button';
 	buttonFunction(file, function(buttons) {
 		cb(buttons.map(function(b){
