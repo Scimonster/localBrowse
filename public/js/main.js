@@ -408,15 +408,14 @@ $(d).on('click','.ui-icon.ui-icon-squaresmall-close',function(){
 	localStorage.setItem('bookmarks',JSON.stringify(crit.allBut(bookmarks,$(this).data('index'))));
 	loadBookmarks();
 });
-$(d).on('click','#sidebar-tree span.ui-icon',function(e, iter) {
+$(d).on('click','#sidebar-tree span.ui-icon',function sbTreeExpand(e, iter) {
 	var me = $(this);
 	if (me.siblings('ul').length) {
 		me.removeClass('ui-icon-folder-open').addClass('ui-icon-folder-collapsed').siblings('ul').remove();
 	} else {
-		getDirContents(me.parent().data('path'),function(dirs){
-			dirs = dirs({type:'directory',name:{'!left':'.'}});
+		getDirContents(me.parent().data('path'),{cont:false,simple:true,dirsOnly:true},function(dirs){
 			me.removeClass('ui-icon-folder-collapsed').addClass('ui-icon-folder-open').parent().append($('<ul>'));
-			dirs.each(function(part){
+			dirs().each(function(part){
 				var path = me.parent().data('path')+part.name;
 				$('<li data-path="'+path+'/"><span class="ui-icon ui-icon-folder-collapsed"></span><a href="#'+path+'">'+part.name+'</a></li>').appendTo(me.siblings('ul'));
 			});

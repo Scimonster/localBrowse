@@ -392,12 +392,32 @@ exports.dir = function(files, cb, cont, cwd) {
  * @param {Object} res Express response object
  */
 actions.dir = function(req, res) {
-	var content = req.body.cont=="true", simple = req.body.simple=="true";
+	var content = req.body.cont=="true", simple = req.body.simple=="true", dirsOnly = req.body.dirsOnly=="true";
 	fs.readdir(req.file, function(e, d) {
 		if (e) { // can't leave this up to dir() because then we'd have an unresolved error
 			res.send({error: e.code==='EACCES'?'perms':'exist'});
 		} else if (simple) {
-			res.send(d);
+			if (dirsOnly) {
+				var files = [];
+				d.forEach(function(f) {
+					if (f[0]=='.') {
+						files.push({name:f,dir:false});
+						fin();
+					} else {
+						fs.stat(path.join(req.file, f), function(e, s) {
+							files.push({name:f,dir:e?false:s.isDirectory()});
+							fin();
+						});	
+					}
+				});
+				function fin() {
+					if (files.length==d.length) {
+						res.send(files.filter(function(f){return f.dir}));
+					}
+				}
+			} else {
+				res.send(d);
+			}
 		} else {
 			exports.dir(
 				d,
