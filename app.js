@@ -12,12 +12,13 @@ var express = require('express'),
 	http = require('http'),
 	path = require('path'),
 	params = require('express-params'),
+	config = require('./config'),
 	app = express();
 
 params.extend(app);
 
 // all environments
-app.set('port', process.env.PORT || 8000);
+app.set('port', config.port);
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 app.use(express.favicon());
