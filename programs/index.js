@@ -8,42 +8,41 @@ var fs       = require('fs'),
     extend   = require('extend'),
     put      = require('put-selector'),
     all      = {},
+    arr      = [],
     programs = fs.readdirSync(__dirname);
 programs.forEach(function(p) {
 	if (fs.statSync(path.join(__dirname,p)).isDirectory()) { // find subdirectories of here
 		all[p] = require(path.join(__dirname,p));
+		arr.push(all[p]);
 	}
 });
 exports.all = all;
+exports.arr = arr;
 
-exports.messages = {};
-for (var program in all) {
-	extend(true, exports.messages, all[program].messages);
-}
+exports.messages = arr.reduce(function(prev, cur){return extend(true, prev, cur.messages)}, {});
 
-exports.routes = {};
-for (var program in all) {
-	exports.routes[program] = all[program].routes;
-}
+exports.routes = arr.reduce(function(prev, cur){
+	var a = {};
+	a[cur.modName] = cur.routes;
+	return extend(true, prev, a);
+}, {});
 
 exports.editorsForFile = function(file, showAll) {
-	return Object.keys(all).
-		filter(function(p){
-			return all[p].mimetypes.filter(function(regex){
-				if (file instanceof Array) {
-					return file.every(function(f){
-						return regex.test(f.type);
-					});
-				}
-				return regex.test(file.type);
-			}).length && (showAll || !all[p].noShow);
-		}).
-		map(function(p){
-			return {modName: all[p].modName, name: all[p].name, desc: all[p].desc};
-		});
+	return arr.filter(function(p){
+		return p.mimetypes.filter(function(regex){
+			if (file instanceof Array) {
+				return file.every(function(f){
+					return regex.test(f.type);
+				});
+			}
+			return regex.test(file.type);
+		}).length && (showAll || !p.noShow);
+	}).map(function(p){
+		return {modName: p.modName, name: p.name, desc: p.desc};
+	});
 };
 
-exports.allEditors = Object.keys(all).map(function(ed){return {modName: all[ed].modName, name: all[ed].name, desc: all[ed].desc}});
+exports.allEditors = arr.map(function(ed){return {modName: ed.modName, name: ed.name, desc: ed.desc}});
 
 exports.generateButtons = function(buttonFunction, file, cb) {
 	var _ = require('../text')(require('../lang').code);
