@@ -59,13 +59,3 @@ function parseTrashInfo(info) {
 	info2.DeletionDate = Date.parse(info2.DeletionDate)/1000;
 	return info2;
 }
-
-function imageForFile(f,big) {
-	if (f.type=='directory') {return 'img/fatcow/'+(big?'32x32':'16x16')+'/folder.png'}
-	else {
-		if (iconset.indexOf('file_extension_'+f.ext+'.png')>-1) {
-			return 'img/fatcow/'+(big?'32x32':'16x16')+'/file_extension_'+f.ext+'.png';
-		}
-		else {return 'img/fatcow/'+(big?'32x32':'16x16')+'/document_empty.png'}
-	}
-}

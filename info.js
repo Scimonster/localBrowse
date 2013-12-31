@@ -495,7 +495,6 @@ actions.dirSize = function(req, res) {
  * Send current work directory
  * @param {Object} req Express request object
  * @param {Object} res Express response object
- * @deprecated due to only use-case being removed (will likely be removed in full release)
  */
 exports.localbrowseCWD = function(req, res) {
 	res.send(process.env.PWD);

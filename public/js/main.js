@@ -17,7 +17,7 @@ var
 	iconset = [], // deprecated, probably
 	toPaste = {}, // fromPath=>toPath
 	LBFile = require('./File.js'); // LBFile class, containing file methods
-$.get('/info/localbrowseCWD',function(cwd){getDirContents(cwd+'/public/img/fatcow/16x16',{cont:false,simple:true},function(i){iconset = i().select('name')})}); // deprecated
+$.get('/info/localbrowseCWD',function(cwd){getDirContents(cwd+'/public/img/fatcow/16x16',{cont:false,simple:true},function(i){iconset = i().get()})});
 
 LBFile.prototype.resolve = function() {
 	// Get a full absolute path from a URL-path
@@ -470,7 +470,7 @@ setInterval(function(){
 			}
 		});
 	}
-},5000);
+},10000);
 $(d).ajaxSuccess(function(e, xhr, settings){
 	var b = parseInt(xhr.getResponseHeader('Content-Length'));
 	bytes += b;
