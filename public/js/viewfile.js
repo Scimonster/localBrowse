@@ -70,35 +70,33 @@ function listDir(files,beforeLoad,afterLoad) {
 		'<label for="dir_type_list">'+_('dirlist-type-list')+'</label>'+
 		'<label for="dir_type_tiles">'+_('dirlist-type-tiles')+'</label>'+
 		'</span>').buttonset().appendTo('#toolbar-left');
-	$.post(
-		'render/dir?type='+(s.dirTiles?'tiles':'list'), // render listing
-		type=='search'?{ // so we need to pass the entire listing
-			base:LBFile.addSlashIfNeeded(cwd),
-			files:(s.dirFirst?files({type:'directory'}).order(s.sortby).get().concat(files({type:{'!is':'directory'}}).order(s.sortby).get()):files().order(s.sortby).get())
-		}:{ // we can just give it the dirpath and it'll get the files
-			dir: file.addSlashIfNeeded(),
-			s: s
-		},
-		function(res){
-			beforeLoad();
-			if ($('#file').prop('tagName')!==(s.dirTiles?'div':'table')) { // only recreate #file if it's the wrong type
-				$('#file').remove();
-				$('<'+(s.dirTiles?'div':'table')+' id="file" class="dirlist">').appendTo('#file-container');
-			}
-			$('#file').html(res);
-			$('#show_hide_hidden,#show_hide_restricted').change();
-			if (!s.dirTiles) {
-				if (!s.asec) {$('#file tr').reverse()}
-				$('#file th span.ui-icon').remove();
-				$('<span>').appendTo('#'+s.sortby).addClass('ui-icon ui-icon-triangle-1-'+(s.asec?'s':'n'));
-				$('#file').menu();
-			}
-			$('#file .file').each(function(){
-				$(this).data('info',new LBFile(files({path:$(this).data('path')}).get()[0]));
-			});
-			afterLoad();
-			$('#ajax-loader').remove();
+	beforeLoad();
+	if ($('#file').prop('tagName')!==(s.dirTiles?'div':'table')) { // only recreate #file if it's the wrong type
+		$('#file').remove();
+		$('<'+(s.dirTiles?'div':'table')+' id="file" class="dirlist">').appendTo('#file-container');
+	}
+	$('#file').html(jade.render('dir.'+(s.dirTiles?'tiles':'list'), {
+		base: type=='search'?LBFile.addSlashIfNeeded(cwd):file.addSlashIfNeeded(),
+		imageForFile: imageForFile,
+		'_': _,
+		files: (s.dirFirst?
+			files({type:'directory'}).order(s.sortby).get().concat(
+				files({type:{'!is':'directory'}}).order(s.sortby).get())
+			:files().order(s.sortby).get())
+			.map(function(i){return new LBFile(i)})
+	}));
+	$('#show_hide_hidden,#show_hide_restricted').change();
+	if (!s.dirTiles) {
+		if (!s.asec) {$('#file tr').reverse()}
+		$('#file th span.ui-icon').remove();
+		$('<span>').appendTo('#'+s.sortby).addClass('ui-icon ui-icon-triangle-1-'+(s.asec?'s':'n'));
+		$('#file').menu();
+	}
+	$('#file .file').each(function(){
+		$(this).data('info',new LBFile(files({path:$(this).data('path')}).get()[0]));
 	});
+	afterLoad();
+	$('#ajax-loader').remove();
 	$('#file').data('files',files);
 }
 

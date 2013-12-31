@@ -121,49 +121,6 @@ exports.browserify.jade = function(req, res) {
 	});
 };
 
-var iconset = require('fs').readdirSync('./public/img/fatcow/16x16');
-function imageForFile(f, big) { // get an image for a file
-	if (f.type=='directory') {return '/img/fatcow/'+(big?'32x32':'16x16')+'/folder.png'}
-	else {
-		if (iconset.indexOf('file_extension_'+f.ext+'.png')>-1) { // there is an icon
-			return '/img/fatcow/'+(big?'32x32':'16x16')+'/file_extension_'+f.ext+'.png';
-		}
-		else {return '/img/fatcow/'+(big?'32x32':'16x16')+'/document_empty.png'} // no icon
-	}
-}
-// so that it's ready; ok to sync during setup
-/**
- * GET directory listing; pre-render list or tiles
- * @param {Object} req Express request object
- * @param {Object} res Express response object
- * @require fs
- */
-exports.dir = function(req, res) {
-	if (req.body.files) { // we have a list of files through POST
-		send(req.body.files.map(function(i){return new LBFile(i)}));
-	} else { // just a dirname
-		info.dir(req.body.dir, function(files) {
-			if (req.body.s.dirFirst) {
-				var TAFFY = require('taffy');
-				files = TAFFY(files);
-				files = files({type:'directory'}).order(req.body.s.sortby).get(). // dirs
-					map(function(i){return new LBFile(i)}).concat( // turn back into LBFiles
-					files({type:{'!is':'directory'}}).order(req.body.s.sortby).get().map(function(i){return new LBFile(i)}) // non-dirs
-				);
-			}
-			send(files);
-		});
-	}
-	function send(files) { // send them
-		res.render('dir.'+req.query.type+'.jade', { // list or tiles
-			imageForFile: imageForFile,
-			files: files,
-			base: req.body.base||req.body.dir,
-			'_': _
-		});
-	}
-};
-
 /**
  * GET context menu pre-rendering
  * @param {Object} req Express request object
@@ -252,6 +209,17 @@ exports.props = function(req, res) {
 		});
 	}, false, true);
 };
+
+var iconset = require('fs').readdirSync('./public/img/fatcow/16x16');
+function imageForFile(f, big) { // get an image for a file
+	if (f.type=='directory') {return '/img/fatcow/'+(big?'32x32':'16x16')+'/folder.png'}
+	else {
+		if (iconset.indexOf('file_extension_'+f.ext+'.png')>-1) { // there is an icon
+			return '/img/fatcow/'+(big?'32x32':'16x16')+'/file_extension_'+f.ext+'.png';
+		}
+		else {return '/img/fatcow/'+(big?'32x32':'16x16')+'/document_empty.png'} // no icon
+	}
+}
 
 /**
  * GET programs files

@@ -54,7 +54,6 @@ app.get('/programs/editors', routes.programs);
 app.get('/programs/alleditors', routes.programs);
 
 // pages to render
-app.post('/render/dir', routes.dir);
 app.post('/render/ctxMenu', routes.ctxMenu);
 app.get('/render/props', routes.props);
 

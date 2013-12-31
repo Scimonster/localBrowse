@@ -295,6 +295,12 @@ function getDirContents(dir, opts, callback) {
 	});
 }
 
+jade.render = function(f, locals) {
+	// Render a file from jade.files
+
+	return jade.files['views/' + (/\.jade$/.test(f)?f:f+'.jade')](locals);
+}
+
 $(w).on('hashchange',function(){
 	if (typeof noload == 'undefined') {
 		load();
