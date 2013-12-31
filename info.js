@@ -8,10 +8,11 @@
  * @module info
  */
 
-var fs = require('fs-extra'),
+var fs     = require('fs-extra'),
 	LBFile = require('./File.js'),
-	path = require('path'),
-	spawn = require('child_process').spawn;
+	path   = require('path'),
+	spawn  = require('child_process').spawn,
+	prefex = require('preffy-extend');
 
 /**
  * @property {function} get
@@ -496,6 +497,79 @@ actions.dirSize = function(req, res) {
  * @param {Object} res Express response object
  * @deprecated due to only use-case being removed (will likely be removed in full release)
  */
-exports.localbrowseCWD = function(req, res){
+exports.localbrowseCWD = function(req, res) {
 	res.send(process.env.PWD);
+};
+
+/**
+ * Create an object tree of current directory and children to a certain level
+ * @param {string} dir Directory to search
+ * @param {number} depth How far down to search (defaults to 3)
+ * @param {function} cb Callback taking 1 parameter, the tree object
+ */
+exports.tree = function tree(dir, depth, cb) {
+	if (typeof depth == 'function') {
+		cb = depth;
+		depth = 3;
+	}
+	fs.readdir(dir, function(e, d) {
+		if (e) {
+			cb({});
+			return;
+		}
+		var files = {}, async = d.length;
+		function stat(f, i) {
+			fs.stat(path.join(dir, f), function(e, s) {
+				files[f] = e?false:s.isDirectory();
+				if (files[f] && depth-1) {
+					tree(path.join(dir, f), depth-1, function(t) {
+						files[f] = t;
+						async--;
+						fin();
+					});
+				} else {
+					async--;
+					fin();
+				}
+			});
+		}
+		function fin() {
+			if (!async) {
+				cb(files);
+			}
+		}
+		d.forEach(stat);
+	});
+};
+
+/**
+ * Create an object tree of current directories and parents
+ * @param {string,array} dir Director(y/ies) to search
+ * @param {function} cb Callback taking 1 parameter, the tree object
+ */
+exports.treeParents = function treeParents(dir, cb) {
+	if (typeof dir == 'string') {
+		dir = [dir];
+	}
+	if (!Array.isArray(dir)) {
+		throw new Error('non-array given to info.tree');
+	}
+	dir = dir.map(function(d){return path.resolve(d)});
+	console.log(dir)
+	var ret = [];
+	dir.forEach(function(d){
+		exports.tree(d, 1, function(t) {
+			if (d=='/') {
+				cb(t);
+			} else {
+				treeParents(path.dirname(d), function(tp) {
+					path.dirname(d).split('/').filter(function(v){return v}).reduce(function(o,n){console.log(o);console.log(n);return o[n]},tp)[path.basename(d)] = t;
+					ret.push(tp);
+					if (ret.length==dir.length) {
+						cb(prefex.apply(null, [['object'], true, {}].concat(ret)));
+					}
+				});	
+			}
+		});
+	});
 };

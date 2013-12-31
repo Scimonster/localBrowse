@@ -16,6 +16,7 @@
     "uglify-js": "*",
     "browserify": "*",
     "extend": "*",
+    "preffy-extend": "*",
     "escape-html": "*",
     "put-selector": "https://github.com/Scimonster/put-selector/archive/0.3.6.tar.gz"
   },
