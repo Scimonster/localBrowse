@@ -122,62 +122,6 @@ exports.browserify.jade = function(req, res) {
 };
 
 /**
- * GET context menu pre-rendering
- * @param {Object} req Express request object
- * @param {Object} res Express response object
- */
-exports.ctxMenu = function(req, res) {
-	switch (req.query.type) {
-		case 'seledFiles': // some files were selected
-			var types = [];
-			req.body.files.forEach(function(f) {
-				info.info.type(f, function(t) {
-					types.push(t);
-					if (types.length == req.body.files.length) {
-						res.render('ctxMenu.seledFiles.jade', {
-							list: req.body.l=="true"?[ // just one
-								{r:req.body.r,id:'open'},
-								null,
-								{r:req.body.r,id:'cut'},
-								{r:req.body.r,id:'copy'},
-								null,
-								{r:req.body.r,id:'moveTo'},
-								{r:req.body.r,id:'copyTo'},
-								{r:false,id:'makeLink',params:['']},
-								{r:req.body.r,id:'rename'},
-								null,
-								{r:req.body.r,id:'trash'},
-								null,
-								{r:false,id:'props'},
-							]:[ // more than one
-								{r:req.body.r,id:'open'},
-								null,
-								{r:req.body.r,id:'newFolder'},
-								null,
-								{r:req.body.r,id:'cut'},
-								{r:req.body.r,id:'copy'},
-								null,
-								{r:req.body.r,id:'moveTo'},
-								{r:req.body.r,id:'copyTo'},
-								{r:false,id:'makeLink',params:['s']},
-								null,
-								{r:req.body.r,id:'trash'},
-								null,
-								{r:false,id:'props'},
-							],
-							'_': _,
-							programs: programs.editorsForFile(types.map(function(t){return {type:t}}), true)
-						});
-					}
-				});
-			});
-			break;
-		default:
-			res.send(404);
-	}
-};
-
-/**
  * GET properties dialog pre-rendering
  * @param {Object} req Express request object
  * @param {Object} res Express response object
@@ -233,8 +177,15 @@ exports.programs = function(req, res) {
 				case 'editors': // programs available to open the file
 				case 'alleditors': // even hidden ones
 					if (req.query.file) {
-						info.info(req.query.file, function(i) {
-							res.send(programs.editorsForFile(i, req.path.split('/')[2][0]=='a'));
+						if (typeof req.query.file=='string') {req.query.file = [req.query.file]}
+						var types = [];
+						req.query.file.forEach(function(f) {
+							info.info.type(f, function(t) {
+								types.push({type:t});
+								if (types.length == req.query.file.length) {
+									res.send(programs.editorsForFile(types, req.path.split('/')[2][0]=='a'));
+								}
+							});
 						});
 					} else { // all editors
 						res.send(programs.allEditors)

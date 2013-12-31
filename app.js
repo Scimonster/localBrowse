@@ -52,9 +52,11 @@ app.post('/mod', mod.master);
 app.get('/programs/:program/:action', routes.programs);
 app.get('/programs/editors', routes.programs);
 app.get('/programs/alleditors', routes.programs);
+app.post('/programs/:program/:action', routes.programs);
+app.post('/programs/editors', routes.programs);
+app.post('/programs/alleditors', routes.programs);
 
-// pages to render
-app.post('/render/ctxMenu', routes.ctxMenu);
+// pages to render - deprecated
 app.get('/render/props', routes.props);
 
 http.createServer(app).listen(app.get('port'), function() {

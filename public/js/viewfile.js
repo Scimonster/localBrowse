@@ -48,8 +48,10 @@ function listDir(files,beforeLoad,afterLoad) {
 		return;
 	}
 	// set message
-	$('#message').html(_('messages-dir-count',files({type:'directory'}).count(),files({type:{'!is':'directory'}}).count())+' <span id=\"dirSize\">'+
-		_('messages-dir-size',($('#directorySize').text()||'...'),($('#dirSizeDepth').text()||3),location.hash)+'</span>');
+	$('#message').html(_('messages-dir-count',files({type:'directory'}).count(),files({type:{'!is':'directory'}}).count())+
+		' <span id=\"dirSize\">'+
+		_('messages-dir-size',($('#directorySize').text()||'...'),($('#dirSizeDepth').text()||3),location.hash)+
+		'</span>');
 	if (type!='search') {
 		// get dir size
 		$.post('info/dirSize','depth='+$('#dirSizeDepth').text()+'&file='+file.path,function(size){
@@ -148,7 +150,8 @@ $(d).on('click','li#contextMenu-file-open ul li a',function() {
 	}
 });
 $(d).on('click','#fullDirSize',function() {
-	jqUI.prompt({text:_('dirlist-depth-body'),title:_('dirlist-depth-title')},(parseInt($('#dirSizeDepth').text())+1),function(depth){
+	jqUI.prompt({text:_('dirlist-depth-body'),title:_('dirlist-depth-title')},
+		(parseInt($('#dirSizeDepth').text())+1),function(depth){
 		if (depth) {
 			$('#dirSizeDepth').text(depth);
 			$('#directorySize').text(_('dirlist-size-placeholder'));
@@ -238,12 +241,44 @@ $(d).on('contextmenu','#file .file',function(e){
 		$('.sel').removeClass('sel last');
 		$(this).addClass('sel last');
 	}
-	$('<ul id="contextMenu">').appendTo('body').offset({top:e.pageY,left:e.pageX}).
-		load('render/ctxMenu?type=seledFiles', {
-			r: $('.sel').hasClass('restricted'),
-			l: $('.sel').length==1,
-			files: $('.sel').map(function(){return $(this).data('path')}).get()
-		}, function(){
+	var r = $('.sel').hasClass('restricted');
+	$.get('/programs/alleditors', {file: $('.file.sel').map(function(){return $(this).data('path')}).get()},
+		function(p){
+		$('<ul id="contextMenu">').appendTo('body').offset({top:e.pageY,left:e.pageX}).
+			html(jade.render('ctxMenu.seledFiles', {
+				list: $('.sel').length==1?[ // just one
+					{r:r,id:'open'},
+					null,
+					{r:r,id:'cut'},
+					{r:r,id:'copy'},
+					null,
+					{r:r,id:'moveTo'},
+					{r:r,id:'copyTo'},
+					{r:false,id:'makeLink',params:['']},
+					{r:r,id:'rename'},
+					null,
+					{r:r,id:'trash'},
+					null,
+					{r:false,id:'props'},
+				]:[ // more than one
+					{r:r,id:'open'},
+					null,
+					{r:r,id:'newFolder'},
+					null,
+					{r:r,id:'cut'},
+					{r:r,id:'copy'},
+					null,
+					{r:r,id:'moveTo'},
+					{r:r,id:'copyTo'},
+					{r:false,id:'makeLink',params:['s']},
+					null,
+					{r:r,id:'trash'},
+					null,
+					{r:false,id:'props'},
+				],
+				'_': _,
+				programs: p
+			}));
 		$('#contextMenu').menu();
 		$('#contextMenu-file-cut').zclip({
 			path: 'js/ZeroClipboard.swf',
