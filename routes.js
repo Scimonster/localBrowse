@@ -9,7 +9,9 @@ var
 	programs = require('./programs'),
 	info     = require('./info'),
 	LBFile   = require('./File.js'),
-	jade     = require('jade');
+	jade     = require('jade'),
+	path     = require('path'),
+	fs       = require('fs');
 
 /**
  * GET homepage
@@ -17,8 +19,7 @@ var
  * @param {Object} res Express response object
  */
 exports.index = function(req, res) {
-	var scripts = ['jquery','jquery-ui.min','plugins','main','viewfile','trash','keypress'].map(function(f){return '/js/'+f+'.js'});
-	scripts.unshift('/browserify/File.js','/browserify/text.js');
+	var scripts = ['/browserify/File.js','/browserify/text.js','/browserify/jade.js'].concat(['jquery','jquery-ui.min','plugins','main','viewfile','trash','keypress'].map(function(f){return '/js/'+f+'.js'}));
 	var sidebar = [
 		{name:_('places-home'), icon:'home', url:'~/'},
 		{name:_('places-docs'), icon:'document', url:'~/Document/'},
@@ -79,7 +80,6 @@ exports.browserify.File = function(req, res) {
  * GET list of messages
  * @param {Object} req Express request object
  * @param {Object} res Express response object
- * @require browserify
  */
 exports.browserify.text = function(req, res) {
 	res.header('Content-Type', 'text/javascript');
@@ -89,6 +89,36 @@ exports.browserify.text = function(req, res) {
 			return line.substr(str[1].lastIndexOf('\t'));
 		}).join('\n') // normalize lines
 	);
+};
+
+/**
+ * GET Jade functions
+ * @param {Object} req Express request object
+ * @param {Object} res Express response object
+ */
+exports.browserify.jade = function(req, res) {
+	res.header('Content-Type', 'text/javascript');
+	info.tree('views', 1000, function(tree) {
+		fs.readFile('node_modules/jade/runtime.js', 'utf8', function(e, js) {
+			js += '\n\njade.files = {};\n';
+			res.send(js+gen(tree, 'views'));
+		});
+		function gen(obj, dir) {
+			var js = '';
+			for (var i in obj) {
+				if (obj[i]) { // truthy - dir
+					if (typeof obj[i]=='object') {
+						js += gen(obj[i], path.join(dir, i));
+					}
+				} else {
+					js += 'jade.files['+JSON.stringify(path.join(dir, i))+'] = '
+					js += jade.compileFileClient(path.join(dir, i));
+					js += ';\n';
+				}
+			}
+			return js;
+		}
+	});
 };
 
 var iconset = require('fs').readdirSync('./public/img/fatcow/16x16');

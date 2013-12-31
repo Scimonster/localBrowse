@@ -40,6 +40,7 @@ app.get('/', routes.index);
 app.get('/ugly.js', routes.uglify);
 app.get('/browserify/File.js', routes.browserify.File);
 app.get('/browserify/text.js', routes.browserify.text);
+app.get('/browserify/jade.js', routes.browserify.jade);
 
 // info for parsing
 app.get('/info/:action/*', info.routes.get);
