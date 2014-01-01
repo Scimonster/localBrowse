@@ -6,16 +6,11 @@
 
 var express = require('express'),
 	routes = require('./routes'),
-	info = require('./info'),
-	search = require('./search'),
 	mod = require('./mod'),
 	http = require('http'),
 	path = require('path'),
-	params = require('express-params'),
 	config = require('./config'),
 	app = express();
-
-params.extend(app);
 
 // all environments
 app.set('port', config.port);
@@ -43,10 +38,10 @@ app.get('/browserify/text.js', routes.browserify.text);
 app.get('/browserify/jade.js', routes.browserify.jade);
 
 // info for parsing
-app.get('/info/:action/*', info.routes.get);
-app.get('/info/localbrowseCWD', info.localbrowseCWD);
-app.post('/info/:action', info.routes.post);
-app.post('/search', search.search);
+app.get('/info/:action/*', routes.info.routes.get);
+app.get('/info/localbrowseCWD', routes.info.cwd);
+app.post('/info/:action', routes.info.routes.post);
+app.post('/search', routes.search);
 app.post('/mod', mod.master);
 
 app.get('/programs/:program/:action', routes.programs);

@@ -8,6 +8,7 @@ var
 	_        = require('./text').load(),
 	programs = require('./programs'),
 	info     = require('./info'),
+	search   = require('./search'),
 	LBFile   = require('./File.js'),
 	jade     = require('jade'),
 	path     = require('path'),
@@ -40,6 +41,7 @@ exports.index = function(req, res) {
 	});
 };
 
+// not using
 // set it up. unfortunately you have to reset Node each time you change any of the JS files
 var UglifyJS = require("uglify-js"), browserify = require('browserify'), code;
 var b = {};
@@ -173,4 +175,62 @@ exports.programs = function(req, res) {
 				res.send(404);
 			}
 	}
+};
+
+exports.info = {};
+
+/**
+ * @property {function} get
+ * Intercepts GET requests
+ * @property {function} post
+ * Intercepts POST requests
+ * @property {function} all
+ * Run action after pre-parsing
+ * */
+exports.info.routes = {
+	/**
+	 * Intercepts GET requests
+	 * @param {Object} req Express request object
+	 * @param {Object} res Express response object
+	 */
+	get: function(req, res) {
+		req.file = req.path.substr(req.path.indexOf('/', 6)); // the filename is everything after the first slash after /info/
+		exports.info.routes.all(req, res);
+	},
+	/**
+	 * Intercepts POST requests
+	 * @param {Object} req Express request object
+	 * @param {Object} res Express response object
+	 */
+	post: function(req, res) {
+		req.file = req.body.file;
+		exports.info.routes.all(req, res);
+	},
+	/**
+	 * Run action after pre-parsing
+	 * @param {Object} req Express request object
+	 * @param {Object} res Express response object
+	 */
+	all: function(req, res) {
+		req.file = path.normalize(decodeURIComponent(req.file)); // fix it up
+		info.actions[req.params.action](req, res); // and do whatever we asked
+	}
+};
+
+/**
+ * Send current work directory
+ * @param {Object} req Express request object
+ * @param {Object} res Express response object
+ */
+exports.info.cwd = function(req, res) {
+	res.send(process.env.PWD);
+};
+
+/**
+ * POST search listing
+ * @param {Object} req Express request object
+ * @param {Object} res Express response object
+ */
+exports.search = function(req, res) {
+	search(req.body.term, function(i){res.send(i)}, req.body.cwd?decodeURIComponent(req.body.cwd):null);
 };

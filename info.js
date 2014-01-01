@@ -15,47 +15,9 @@ var fs     = require('fs-extra'),
 	prefex = require('preffy-extend');
 
 /**
- * @property {function} get
- * Intercepts GET requests
- * @property {function} post
- * Intercepts POST requests
- * @property {function} all
- * Run action after pre-parsing
- * */
-exports.routes = {
-	/**
-	 * Intercepts GET requests
-	 * @param {Object} req Express request object
-	 * @param {Object} res Express response object
-	 */
-	get: function(req, res) {
-		req.file = req.path.substr(req.path.indexOf('/', 6)); // the filename is everything after the first slash after /info/
-		exports.routes.all(req, res);
-	},
-	/**
-	 * Intercepts POST requests
-	 * @param {Object} req Express request object
-	 * @param {Object} res Express response object
-	 */
-	post: function(req, res) {
-		req.file = req.body.file;
-		exports.routes.all(req, res);
-	},
-	/**
-	 * Run action after pre-parsing
-	 * @param {Object} req Express request object
-	 * @param {Object} res Express response object
-	 */
-	all: function(req, res) {
-		req.file = path.normalize(decodeURIComponent(req.file)); // fix it up
-		actions[req.params.action](req, res); // and do whatever we asked
-	}
-};
-
-/**
  * List of actions to run 
  */
-var actions = {};
+var actions = exports.actions = {};
 
 /**
  * Check if file exists
@@ -489,15 +451,6 @@ actions.dirSize = function(req, res) {
 		req.file,
 		depth===0?Infinity:depth, // a depth of 0 means infinite depth
 		function(s){res.send(s.toString())}); // again to prevent a crazy HTTP status being sent
-};
-
-/**
- * Send current work directory
- * @param {Object} req Express request object
- * @param {Object} res Express response object
- */
-exports.localbrowseCWD = function(req, res) {
-	res.send(process.env.PWD);
 };
 
 /**

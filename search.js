@@ -8,12 +8,13 @@
  */
 var spawn = require('child_process').spawn, info = require('./info');
 /**
- * Run the requests
- * @param {Object} req Express request object
- * @param {Object} res Express response object
+ * Search for a term
+ * @param term {string} Term to search for
+ * @param cb {function} Callback, called with one parameter - info (from info.info) on all items
+ * @param [cwd=home directory] Directory to search in
  */
-exports.search = function(req, res) {
-	var cwd = req.body.cwd?decodeURIComponent(req.body.cwd):process.env.HOME, // the cwd to search in
+exports.search = function(term, cb, cwd) {
+	cwd = cwd||process.env.HOME;
 	find = spawn('find', // UNIX `find` command
 		[
 			'-path', // path is:
@@ -21,7 +22,7 @@ exports.search = function(req, res) {
 			'-prune', // ...is excluded
 			'-o', // OR
 			'-iname', // check for case insensitive filename...
-			'*'+req.body.term+'*' // ...like the term
+			'*'+term+'*' // ...like the term
 		],
 		{cwd: cwd}); // in the current directory
 	function onfind(found){
@@ -31,7 +32,7 @@ exports.search = function(req, res) {
 				i.forEach(function(f){
 					f.name = f.name.substr(2); // ...remove leading `./`
 				});
-				res.send(i);
+				cb(i);
 			},
 		false,
 		cwd);
