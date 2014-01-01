@@ -122,50 +122,6 @@ exports.browserify.jade = function(req, res) {
 };
 
 /**
- * GET properties dialog pre-rendering
- * @param {Object} req Express request object
- * @param {Object} res Express response object
- */
-exports.props = function(req, res) {
-	info.info(req.query.file, function(i) {
-		var tabs = [
-			{title: 'Basic', file: 'basic', locals: {imageForFile: imageForFile, _: _, i: i}},
-			{title: 'Permissions', file: 'perms', locals: {_: _, i: i}},
-			{title: 'Open With', file: 'openwith', locals: {_: _, i: i, programs: programs}},
-		], compiled = [];
-		tabs.forEach(function(tab) {
-			try {
-				jade.renderFile('views/properties/'+tab.file+'.jade', tab.locals, function(err, html) {
-					compiled.push(html);
-					if (compiled.length==tabs.length) {
-						res.render('properties/index.jade', {
-							tabs: tabs.map(function(t){return {title: t.title, short: t.file}}),
-							file: i,
-							compiled: compiled,
-							_: _
-						});
-					}
-				});
-			} catch(e) {
-				console.log(e)
-				compiled.push('');
-			}
-		});
-	}, false, true);
-};
-
-var iconset = require('fs').readdirSync('./public/img/fatcow/16x16');
-function imageForFile(f, big) { // get an image for a file
-	if (f.type=='directory') {return '/img/fatcow/'+(big?'32x32':'16x16')+'/folder.png'}
-	else {
-		if (iconset.indexOf('file_extension_'+f.ext+'.png')>-1) { // there is an icon
-			return '/img/fatcow/'+(big?'32x32':'16x16')+'/file_extension_'+f.ext+'.png';
-		}
-		else {return '/img/fatcow/'+(big?'32x32':'16x16')+'/document_empty.png'} // no icon
-	}
-}
-
-/**
  * GET programs files
  * @param {Object} req Express request object
  * @param {Object} res Express response object

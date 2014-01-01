@@ -313,11 +313,29 @@ $(d).on('contextmenu','#file.dirlist',function(e){
 });
 $(d).on('click','#contextMenu-folder-paste',function(){paste()}); // no event object
 $(d).on('click','#contextMenu-file-props',function(){
-	$.get('/render/props?file='+$('.sel.last').data('path'), function(res){
-		$('body').append(res);
-		$('#props').tabs({heightStyle:'auto'}).dialog({width:500,buttons:[
-			{text: _('props-buttons-close'), click: function(){$(this).dialog('close')}}
-		]});
+	$.get('/programs/alleditors', {file: $('.file.sel').map(function(){return $(this).data('path')}).get()},
+		function(p){
+		$.get('/programs/alleditors', function(allp){
+			allp = {allEditors: allp};
+			allp.editorsForFile = function(){return p}; // temporary hack
+			$.post('/info/info',{file:$('.sel.last').data('path'),stat:true}, function(i){
+				i = new LBFile(i);
+				var tabs = [
+					{title: 'Basic', file: 'basic', locals: {imageForFile: imageForFile, _: _, i: i}},
+					{title: 'Permissions', file: 'perms', locals: {_: _, i: i}},
+					{title: 'Open With', file: 'openwith', locals: {_: _, i: i, programs: allp}},
+				];
+				$('body').append(jade.render('properties/index.jade', {
+					tabs: tabs.map(function(t){return {title: t.title, short: t.file}}),
+					file: i,
+					compiled: tabs.map(function(tab){return jade.render('properties/'+tab.file, tab.locals)}),
+					_: _
+				}));
+				$('#props').tabs({heightStyle:'auto'}).dialog({width:500,buttons:[
+					{text: _('props-buttons-close'), click: function(){$(this).dialog('close')}}
+				]});
+			});
+		});
 	});
 });
 
