@@ -12,7 +12,8 @@ var fs     = require('fs-extra'),
 	LBFile = require('./File.js'),
 	path   = require('path'),
 	spawn  = require('child_process').spawn,
-	prefex = require('preffy-extend');
+	prefex = require('preffy-extend'),
+	obj    = require('./Object.js');
 
 /**
  * List of actions to run 
@@ -208,7 +209,8 @@ exports.info = function(file, cb, content, stat) {
 				finished();
 			});
 			i.date = s.mtime;
-			i.perm = parseInt(s.mode.toString(8), 10).toString(10).substr(2); // get the value as an octal number, turn it to decimal, turn it to string, and chop off the first couple characters
+			i.perm = parseInt(s.mode.toString(8), 10).toString(10).substr(2);
+			// get the value as an octal number, turn it to decimal, turn it to string, and chop off the first couple characters
 			finished();
 		});
 		fs.realpath(file, function(rp_e, rp) {
@@ -515,7 +517,7 @@ exports.treeParents = function treeParents(dir, cb) {
 				cb(t);
 			} else {
 				treeParents(path.dirname(d), function(tp) {
-					path.dirname(d).split('/').filter(function(v){return v}).reduce(function(o,n){console.log(o);console.log(n);return o[n]},tp)[path.basename(d)] = t;
+					obj.filter(path.dirname(d).split('/'), true).reduce(function(o,n){return o[n]},tp)[path.basename(d)] = t;
 					ret.push(tp);
 					if (ret.length==dir.length) {
 						cb(prefex.apply(null, [['object'], true, {}].concat(ret)));

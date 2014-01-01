@@ -6,7 +6,7 @@
  * @requre child_process
  * @require ./info
  */
-var spawn = require('child_process').spawn, info = require('./info');
+var spawn = require('child_process').spawn, info = require('./info'), obj = require('./Object');
 /**
  * Search for a term
  * @param term {string} Term to search for
@@ -27,7 +27,7 @@ exports.search = function(term, cb, cwd) {
 		{cwd: cwd}); // in the current directory
 	function onfind(found){
 		info.fileListInfo( // get info on the...
-			found.toString().split('\n').filter(function(f){return f}), // ...non-blank items of the list, which has been split by newline from stdout...
+			obj.filter(found.toString().split('\n'), true), // ...non-blank items of the list, which has been split by newline from stdout...
 			function(i){ // ...and...
 				i.forEach(function(f){
 					f.name = f.name.substr(2); // ...remove leading `./`

@@ -1,6 +1,6 @@
 var
 	w = window, // shortcuts
-	d= document,
+	d = document,
 	bytes = 0, requests = 0, // development - bytes transferred
 	s = { // settings
 		sortby: 'name', // in directory list view, sort by this
@@ -16,7 +16,8 @@ var
 	bookmarks, // array of bookmarks
 	iconset = [], // deprecated, probably
 	toPaste = {}, // fromPath=>toPath
-	LBFile = require('./File.js'); // LBFile class, containing file methods
+	LBFile = require('./File.js'), // LBFile class, containing file methods
+	obj = require('./Object.js'); // object helpers
 $.get('/info/localbrowseCWD',function(cwd){getDirContents(cwd+'/public/img/fatcow/16x16',{cont:false,simple:true},function(i){iconset = i().get()})});
 
 LBFile.prototype.resolve = function() {
@@ -277,7 +278,7 @@ function sidebarTree(f) {
 	$('#sidebar-tree li').remove(); // remove all past ones
 	var fileparts = f.split('/');
 	fileparts[0] = '/';
-	$('#sidebar-tree').data({fileparts:fileparts.filter(function(part){return part}),file:f}); // get the parts of the file
+	$('#sidebar-tree').data({fileparts:obj.filter(fileparts,true),file:f}); // get the parts of the file
 	$('<li data-path="/"><span class="ui-icon ui-icon-folder-collapsed"></span><a href="#/">/</a></li>').appendTo('#sidebar-tree>ul');
 	$('li[data-path="/"]>span.ui-icon').trigger('click',[1]);
 }
@@ -375,7 +376,7 @@ $(w).click(function(){
 	$('#contextMenu').remove();
 });
 $(d).ajaxError(function(e, jqxhr, settings, exception){
-	var url = settings.url.split('?')[0], split = url.split('/').filter(function(i){return i});
+	var url = settings.url.split('?')[0], split = obj.filter(url.split('/'),true);
 	if (split[0]=='programs' && split[2]=='index.js') { // ignore missing index.js program files
 		return;
 	}

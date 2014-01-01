@@ -20,7 +20,7 @@ var
  * @param {Object} res Express response object
  */
 exports.index = function(req, res) {
-	var scripts = ['/browserify/File.js','/browserify/text.js','/browserify/jade.js'].concat(['jquery','jquery-ui.min','plugins','main','viewfile','trash','keypress'].map(function(f){return '/js/'+f+'.js'}));
+	var scripts = ['/browserify/File.js','/browserify/Object.js','/browserify/text.js','/browserify/jade.js'].concat(['jquery','jquery-ui.min','plugins','main','viewfile','trash','keypress'].map(function(f){return '/js/'+f+'.js'}));
 	var sidebar = [
 		{name:_('places-home'), icon:'home', url:'~/'},
 		{name:_('places-docs'), icon:'document', url:'~/Document/'},
@@ -73,6 +73,21 @@ exports.browserify = {};
  */
 exports.browserify.File = function(req, res) {
 	b.File.bundle(function(e, src){
+		res.header('Content-Type', 'text/javascript');
+		res.send(src);
+	});
+};
+
+b.Object = browserify([]);
+b.Object.require('./Object.js');
+/**
+ * GET browserified Object.js
+ * @param {Object} req Express request object
+ * @param {Object} res Express response object
+ * @require browserify
+ */
+exports.browserify.Object = function(req, res) {
+	b.Object.bundle(function(e, src){
 		res.header('Content-Type', 'text/javascript');
 		res.send(src);
 	});

@@ -34,6 +34,7 @@ app.get('/', routes.index);
 // JS files
 app.get('/ugly.js', routes.uglify);
 app.get('/browserify/File.js', routes.browserify.File);
+app.get('/browserify/Object.js', routes.browserify.Object);
 app.get('/browserify/text.js', routes.browserify.text);
 app.get('/browserify/jade.js', routes.browserify.jade);
 
