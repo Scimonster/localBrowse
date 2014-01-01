@@ -56,9 +56,6 @@ app.post('/programs/:program/:action', routes.programs);
 app.post('/programs/editors', routes.programs);
 app.post('/programs/alleditors', routes.programs);
 
-// pages to render - deprecated
-app.get('/render/props', routes.props);
-
 http.createServer(app).listen(app.get('port'), function() {
 	console.log('Express server listening on port ' + app.get('port'));
 });
