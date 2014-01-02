@@ -91,7 +91,7 @@ actions.readable = function(req, res) {
  * @param {fs.Stats} [stat=false] Add {@code stat} property to returned object with stat results
  */
 exports.info = function(file, cb, content, stat) {
-	var i = {path: path.resolve(file)};
+	var i = {path: path.resolve(file)}, sent = false;
 	fs.exists(file, function(e) { // check existence
 		i.exists = e;
 		if (!e) {
@@ -101,6 +101,21 @@ exports.info = function(file, cb, content, stat) {
 		fs.stat(file, function(e, s) { // get stat
 			if (stat) {
 				i.stat = s; // add the stat in if we want it
+			}
+			function passwd_err() {
+				i.owner = i.owner || {
+					id: s.uid,
+					name: '',
+					full: ''
+				};
+				finished();
+			}
+			function group_err() {
+				i.group = i.group || {
+					id: s.gid,
+					name: ''
+				};
+				finished();
 			}
 			try {
 				var passwd = spawn('getent', ['passwd', s.uid]);
@@ -113,21 +128,10 @@ exports.info = function(file, cb, content, stat) {
 					};
 					finished();
 				});
-				passwd.stderr.on('data', function(data) {
-					i.owner = {
-						id: s.uid,
-						name: '',
-						full: ''
-					};
-					finished();
-				});
+				passwd.stderr.on('data', passwd_err);
+				passwd.on('close', passwd_err);
 			} catch(e) {
-				i.owner = {
-					id: s.uid,
-					name: '',
-					full: ''
-				};
-				finished();
+				passwd_err();
 			}
 			try {
 				var group = spawn('getent', ['group', s.gid]);
@@ -139,19 +143,10 @@ exports.info = function(file, cb, content, stat) {
 					};
 					finished();
 				});
-				group.stderr.on('data', function(data) {
-					i.group = {
-						id: s.gid,
-						name: ''
-					};
-					finished();
-				});	
+				group.stderr.on('data', group_err);
+				passwd.on('close', group_err);
 			} catch(e) {
-				i.group = {
-					id: s.gid,
-					name: ''
-				};
-				finished();
+				group_err();
 			}
 			exports.perms(s, 1, function(w) { // writable?
 				i.writable = w;
@@ -223,6 +218,7 @@ exports.info = function(file, cb, content, stat) {
 	 */
 	function finished(){
 		if (
+			!sent &&
 			typeof i.writable !== 'undefined' &&
 			typeof i.readable !== 'undefined' &&
 			typeof i.executable !== 'undefined' &&
@@ -239,6 +235,7 @@ exports.info = function(file, cb, content, stat) {
 			(stat?typeof i.stat !== 'undefined':true)
 		) {
 			cb(new LBFile(i));
+			sent = true;
 		}
 	}
 }
@@ -339,15 +336,14 @@ exports.dir = function(files, cb, cont, cwd) {
 			if (e) {
 				cb({error: e.code==='EACCES'?'perms':'exist'}); // send correct error
 			} else {
-				files = d;
-				run();
+				run(d);
 			}
 		});
 	} else {
-		run();
+		run(files);
 	}
-	function run() {
-		exports.fileListInfo(files, cb, cont, cwd);
+	function run(f) {
+		exports.fileListInfo(f, cb, cont, cwd);
 	}
 }
 
@@ -509,7 +505,6 @@ exports.treeParents = function treeParents(dir, cb) {
 		throw new Error('non-array given to info.tree');
 	}
 	dir = dir.map(function(d){return path.resolve(d)});
-	console.log(dir)
 	var ret = [];
 	dir.forEach(function(d){
 		exports.tree(d, 1, function(t) {
