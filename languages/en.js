@@ -85,7 +85,7 @@ var en = {
 		"ctxm-selfile-props": "Properties",
 		"ctxm-selfile-newFolder": "New folder with selection",
 		// ctxm-dirlist-*: ... for a directory
-		"ctxm-dirlist-new": "New folder",
+		"ctxm-dirlist-newFolder": "New folder",
 		"ctxm-dirlist-paste": "Paste",
 		"ctxm-dirlist-props": "Properties",
 

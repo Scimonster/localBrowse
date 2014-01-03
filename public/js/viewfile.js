@@ -245,7 +245,7 @@ $(d).on('contextmenu','#file .file',function(e){
 	$.get('/programs/alleditors', {file: $('.file.sel').map(function(){return $(this).data('path')}).get()},
 		function(p){
 		$('<ul id="contextMenu">').appendTo('body').offset({top:e.pageY,left:e.pageX}).
-			html(jade.render('ctxMenu.seledFiles', {
+			html(jade.render('ctxMenu', {
 				list: $('.sel').length==1?[ // just one
 					{r:r,id:'open'},
 					null,
@@ -277,6 +277,7 @@ $(d).on('contextmenu','#file .file',function(e){
 					{r:false,id:'props'},
 				],
 				'_': _,
+				prefix: 'selfile',
 				programs: p
 			}));
 		$('#contextMenu').menu();
@@ -295,21 +296,17 @@ $(d).on('contextmenu','#file .file',function(e){
 $(d).on('contextmenu','#file.dirlist',function(e){
 	if ($(e.target).add($(e.target).parent()).hasClass('file')) {return}
 	$('#contextMenu').remove();
-	function item(d,id,message){
-		return '<li'+(d?' class="ui-state-disabled"':'')+' id="contextMenu-folder-'+id+'"><a>'+
-		_('ctxm-dirlist-'+message)+
-		'</a></li>';
-	}
-	var line = '<li></li>';
-	$.get('info/writable'+file.path,function(r){
-		//console.log(!!r);
-		$('<ul id="contextMenu">').append(
-			item(!r,'newFolder','new'),
-			line,
-			item(!(r&&sessionStorage.getItem('copy')),'paste','paste'),
-			item(false,'props','props')).
+	$('<ul id="contextMenu">').appendTo('body').offset({top:e.pageY,left:e.pageX}).
+		html(jade.render('ctxMenu', {
+			list: [
+				{r:!file.writable,id:'newFolder'},
+				null,
+				{r:!(file.writable&&sessionStorage.getItem('copy')),id:'paste'},
+				{r:false,id:'props'}
+			],
+			prefix: 'dirlist',
+			'_': _})).
 		appendTo('body').menu().offset({top:e.pageY,left:e.pageX});
-	})
 });
 $(d).on('click','#contextMenu-folder-paste',function(){paste()}); // no event object
 $(d).on('click','#contextMenu-file-props',function(){
