@@ -91,7 +91,7 @@ actions.readable = function(req, res) {
  * @param {fs.Stats} [stat=false] Add {@code stat} property to returned object with stat results
  */
 exports.info = function(file, cb, content, stat) {
-	var i = {path: path.resolve(file)}, sent = false;
+	var i = {path: path.resolve(file)};
 	fs.exists(file, function(e) { // check existence
 		i.exists = e;
 		if (!e) {
@@ -103,19 +103,23 @@ exports.info = function(file, cb, content, stat) {
 				i.stat = s; // add the stat in if we want it
 			}
 			function passwd_err() {
-				i.owner = i.owner || {
-					id: s.uid,
-					name: '',
-					full: ''
-				};
-				finished();
+				if (!i.owner) {
+					i.owner = {
+						id: s.uid,
+						name: '',
+						full: ''
+					};
+					finished();	
+				}
 			}
 			function group_err() {
-				i.group = i.group || {
-					id: s.gid,
-					name: ''
-				};
-				finished();
+				if (!i.group) {
+					i.group = i.group || {
+						id: s.gid,
+						name: ''
+					};
+					finished();
+				}
 			}
 			try {
 				var passwd = spawn('getent', ['passwd', s.uid]);
@@ -218,7 +222,6 @@ exports.info = function(file, cb, content, stat) {
 	 */
 	function finished(){
 		if (
-			!sent &&
 			typeof i.writable !== 'undefined' &&
 			typeof i.readable !== 'undefined' &&
 			typeof i.executable !== 'undefined' &&
@@ -235,7 +238,6 @@ exports.info = function(file, cb, content, stat) {
 			(stat?typeof i.stat !== 'undefined':true)
 		) {
 			cb(new LBFile(i));
-			sent = true;
 		}
 	}
 }
