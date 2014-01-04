@@ -33,6 +33,7 @@ function viewFile() {
 			}
 		});
 	});
+	$('#sidebar-tree').data('file',[file.path])
 	sidebarTree(file.path);
 	if (trash) {file.update(file.relative())}
 }

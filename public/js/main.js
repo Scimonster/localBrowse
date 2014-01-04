@@ -179,15 +179,28 @@ function paste(files,destination) {
 							function dataForFile(f,replace){
 								return '<div class="fileOverwriteDialog-fileInfo"><img src="'+imageForFile(f,true)+'"/><p>' +
 									(f.type==='directory'?
-										('<b>'+_(replace?'paste-fileinfo-rfolder':'paste-fileinfo-efolder')+'</b><br/>'+_('paste-fileinfo-size',_('dirlist-filesize-items',f.items))):
-										('<b>'+_(replace?'paste-fileinfo-rfile':'paste-fileinfo-efile')+'</b><br/>'+_('paste-fileinfo-size',f.filesizeFormatted()))) +
+										('<b>'+_(replace?'paste-fileinfo-rfolder':'paste-fileinfo-efolder')+'</b><br/>'+
+											_('paste-fileinfo-size',_('dirlist-filesize-items',f.items))):
+										('<b>'+_(replace?'paste-fileinfo-rfile':'paste-fileinfo-efile')+'</b><br/>'+
+											_('paste-fileinfo-size',f.filesizeFormatted()))) +
 									'<br/>'+_('paste-fileinfo-date',f.dateFormatted())+'</p></div>';
 							};
 							if (dest.type=='directory' && src.type=='directory') { // merge
-								$.post('info/dir','simple=true&file='+dest.dir,function(otherfiles){ // other files in dest dir, to see if it will be overwritten
+								$.post('info/dir','simple=true&file='+dest.dir,function(otherfiles){
+								// other files in dest dir, to see if it will be overwritten
 									var d = jqUI.prompt({
 										title:_('paste-merge-title',src.name),
-										text:'<div>'+_(src.date<dest.date?'paste-merge-body-newer':'paste-merge-body-older',(new LBFile(dest.dir)).name)+'</div>'+dataForFile(src,true)+dataForFile(dest,false)+'<p>'+_('paste-merge-body-newname')+'</p><p class="fileOverwriteDialog-exists">'+_('paste-merge-body-newname-exists')+'</p>',
+										text:
+											'<div>'+
+											_(src.date<dest.date?'paste-merge-body-newer':'paste-merge-body-older',(new LBFile(dest.dir)).name)+
+											'</div>'+
+											dataForFile(src,true)+
+											dataForFile(dest,false)+
+											'<p>'+
+											_('paste-merge-body-newname')+
+											'</p><p class="fileOverwriteDialog-exists">'+
+											_('paste-merge-body-newname-exists')+
+											'</p>',
 										buttonLabel: _('paste-buttons'),
 										width: 500
 									},src.name,function(newname){
@@ -209,10 +222,21 @@ function paste(files,destination) {
 									});
 								});
 							} else { // overwrite
-								$.post('info/dir','simple=true&file='+dest.dir,function(otherfiles){ // other files in dest dir, to see if it will be overwritten
+								$.post('info/dir','simple=true&file='+dest.dir,function(otherfiles){
+								// other files in dest dir, to see if it will be overwritten
 									var d = jqUI.prompt({
 										title:_('paste-oberwrite-title',s.name),
-										text:'<div>'+_(src.date<dest.date?'paste-overwrite-body-newer':'paste-overwrite-body-older',(new LBFile(dest.dir)).name)+'</div>'+dataForFile(src,true)+dataForFile(dest,false)+'<p>'+_('paste-overwrite-body-newname')+'</p><p class="fileOverwriteDialog-exists">'+_('paste-merge-body-newname-exists')+'</p>',
+										text:
+											'<div>'+
+											_(src.date<dest.date?'paste-overwrite-body-newer':'paste-overwrite-body-older',(new LBFile(dest.dir)).name)+
+											'</div>'+
+											dataForFile(src,true)+
+											dataForFile(dest,false)+
+											'<p>'+
+											_('paste-overwrite-body-newname')+
+											'</p><p class="fileOverwriteDialog-exists">'+
+											_('paste-merge-body-newname-exists')+
+											'</p>',
 										buttonLabel: _('paste-buttons'),
 										width: 500
 									},src.name,function(newname){
@@ -253,7 +277,12 @@ function loadBookmarks() {
 	else {localStorage.setItem('bookmarks','[]')}
 	$('#sidebar-bookmarks').html('');
 	$.each(bookmarks, function(i, b) {
-		$('#sidebar-bookmarks').append('<li><a href="#'+b[0]+'" title="'+b[0]+'"><span class="ui-icon ui-icon-'+(b[1]=='directory'?'folder-collapsed':'document')+'"></span>'+(new LBFile(b[0])).name+'</a><span class="ui-icon ui-icon-squaresmall-close" title="'+_('index-loc-bookmarks-remove')+'" data-index="'+i+'"></span></li>');
+		$('#sidebar-bookmarks').append(
+			'<li><a href="#'+b[0]+'" title="'+b[0]+'">'+
+			'<span class="ui-icon ui-icon-'+(b[1]=='directory'?'folder-collapsed':'document')+'"></span>'+
+			(new LBFile(b[0])).name+'</a>'+
+			'<span class="ui-icon ui-icon-squaresmall-close" title="'+_('index-loc-bookmarks-remove')+'" data-index="'+i+'"></span>'+
+			'</li>');
 	});
 }
 
@@ -274,13 +303,32 @@ function addBookmark() {
 
 function sidebarTree(f) {
 	// This function creates the tree in the sidebar
-	
-	$('#sidebar-tree li').remove(); // remove all past ones
-	var fileparts = f.split('/');
-	fileparts[0] = '/';
-	$('#sidebar-tree').data({fileparts:obj.filter(fileparts,true),file:f}); // get the parts of the file
-	$('<li data-path="/"><span class="ui-icon ui-icon-folder-collapsed"></span><a href="#/">/</a></li>').appendTo('#sidebar-tree>ul');
-	$('li[data-path="/"]>span.ui-icon').trigger('click',[1]);
+
+	$.post('/info/treeParents',{file:f},function(tree){
+		$('#sidebar-tree li').remove(); // remove all past ones
+		tree = (function m(t){
+			return obj.map(obj.filter(obj.filter(t,true),function(v,k){
+				return /^[^\.]/.test(k);
+			}),function(v){
+				return typeof v=='object'?m(v):v;
+			});
+		})(tree);
+		$('#sidebar-tree>ul').html((function m(t,k){
+			var a = '';
+			obj.foreach(t,function(v,i){
+				var f = LBFile.addSlashIfNeeded(k)+i+'/';
+				a += '<li data-path="'+f+'">'+
+					'<span class="ui-icon ui-icon-folder-'+(typeof v=='object'?'open':'collapsed')+'"></span>'+
+					'<a href="#'+f+'">'+i+'</a>'+(typeof v=='object'?'<ul>'+m(v,f)+'</ul>':'')+'</li>';
+			});
+			return a;
+		})(tree,'/'));
+		var curLocInTree = $('li[data-path="'+LBFile.addSlashIfNeeded(typeof f=='string'?f:f[f.length-1])+'"]');
+		function scroll(){$('#sidebar-tree').scrollTop(curLocInTree.position()?~~curLocInTree.position().top:0)}
+		scroll();
+		if (!$('#sidebar-tree').scrollTop()) {scroll()}
+		curLocInTree.children('a').css('fontWeight','bold');
+	});
 }
 
 function getDirContents(dir, opts, callback) {
@@ -329,8 +377,19 @@ $(function(){ // set up jqUI elements
 			});
 		}
 	}).button();
-	$('#new').click(function(e){if ($('#new-menu').is(':visible')) {$('html').click()} else {$('#new-menu').show(); $('#file').css('opacity',0.5); e.stopPropagation();}}).button();
-	$('#new-menu').menu().css({position:'absolute',zIndex:100}).offset({top:$('#new').offset().top+$('#new').height()+3,left:$('#new').offset().left-$('#new').width()+15}).hide();
+	$('#new').click(function(e){
+		if ($('#new-menu').is(':visible')) {
+			$('html').click()
+		} else {
+			$('#new-menu').show();
+			$('#file').css('opacity',0.5);
+			e.stopPropagation();
+		}
+	}).button();
+	$('#new-menu').menu().css({position:'absolute',zIndex:100}).offset({
+		top: $('#new').offset().top+$('#new').height()+3,
+		left: $('#new').offset().left-$('#new').width()+15
+	}).hide();
 	$('#new-dir, #new-file').click(function() {
 		var newType = $(this).attr('id').substr(4), me=this;
 		jqUI.prompt(
@@ -416,28 +475,17 @@ $(d).on('click','.ui-icon.ui-icon-squaresmall-close',function(){
 	localStorage.setItem('bookmarks',JSON.stringify(crit.allBut(bookmarks,$(this).data('index'))));
 	loadBookmarks();
 });
-$(d).on('click','#sidebar-tree span.ui-icon',function sbTreeExpand(e, iter) {
+$(d).on('click','#sidebar-tree span.ui-icon',function sbTreeExpand(e) {
 	var me = $(this);
 	if (me.siblings('ul').length) {
 		me.removeClass('ui-icon-folder-open').addClass('ui-icon-folder-collapsed').siblings('ul').remove();
+		$('#sidebar-tree').data('file',$('#sidebar-tree').data('file').map(function(v){
+			return LBFile.addSlashIfNeeded(v)==me.parent().data('path')?me.parent().parent().parent().data('path'):v;
+		}));
 	} else {
-		getDirContents(me.parent().data('path'),{cont:false,simple:true,dirsOnly:true},function(dirs){
-			me.removeClass('ui-icon-folder-collapsed').addClass('ui-icon-folder-open').parent().append($('<ul>'));
-			dirs().each(function(part){
-				var path = me.parent().data('path')+part.name;
-				$('<li data-path="'+path+'/"><span class="ui-icon ui-icon-folder-collapsed"></span><a href="#'+path+'">'+part.name+'</a></li>').appendTo(me.siblings('ul'));
-			});
-			if (iter && $('#sidebar-tree').data('fileparts')[iter]) {
-				$('li[data-path="/'+$('#sidebar-tree').data('fileparts').slice(1,iter+1).join('/')+'/"]>span.ui-icon').trigger('click',[iter+1]);
-			}
-			if (iter) {
-				var curLocInTree = $('li[data-path="'+LBFile.addSlashIfNeeded($('#sidebar-tree').data('file'))+'"]');
-				function scroll(){$('#sidebar-tree').scrollTop(curLocInTree.position()?Math.floor(curLocInTree.position().top):0)}
-				scroll();
-				if (!$('#sidebar-tree').scrollTop()) {scroll()}
-				curLocInTree.children('a').css('fontWeight','bold');
-			}
-		});
+		$('#sidebar-tree').data('file').push(me.parent().data('path'));
+		sidebarTree($('#sidebar-tree').data('file'));
+		return;
 	}
 });
 $(d).on('contextmenu',false);
