@@ -495,6 +495,19 @@ exports.tree = function tree(dir, depth, cb) {
 };
 
 /**
+ * Web abstraction of {@link module:info.tree tree}
+ * @param {Object} req Express request object
+ * @param {Object} res Express response object
+ */
+actions.tree = function(req, res) {
+	var depth = (req.body && req.body.depth) || 3; // get depth from POST, otherwise 3
+	exports.tree(
+		req.file,
+		depth===0?Infinity:depth, // a depth of 0 means infinite depth
+		function(s){res.send(s)});
+};
+
+/**
  * Create an object tree of current directories and parents
  * @param {string,array} dir Director(y/ies) to search
  * @param {function} cb Callback taking 1 parameter, the tree object
@@ -523,4 +536,15 @@ exports.treeParents = function treeParents(dir, cb) {
 			}
 		});
 	});
+};
+
+/**
+ * Web abstraction of {@link module:info.treeParents treeParents}
+ * @param {Object} req Express request object
+ * @param {Object} res Express response object
+ */
+actions.treeParents = function(req, res) {
+	exports.treeParents(
+		req.file,
+		function(s){res.send(s)});
 };
