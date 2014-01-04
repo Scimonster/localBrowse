@@ -18,17 +18,6 @@ module.exports = {
 				}
 			}
 		}
-		if (Array.isArray(self) || typeof self == 'string') { // came as an array, return an array
-			var arr = [];
-			for (var i in res) {
-				arr[Number(i)] = res[i];
-			}
-			res = arr.filter(function(v){return v}); // for...in isn't guaranteed to give any meaningful order
-			if (typeof self == 'string') {
-				res = res.join('');
-			}
-		}
-		return res;
 	},
 
 	'map': function(self, fun, thisp, sameprops) {
