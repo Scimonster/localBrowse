@@ -10,6 +10,7 @@ var
 	info     = require('./info'),
 	search   = require('./search'),
 	LBFile   = require('./File.js'),
+	obj      = require('./Object.js'),
 	jade     = require('jade'),
 	path     = require('path'),
 	fs       = require('fs');
@@ -227,7 +228,11 @@ exports.info.routes = {
 	 * @param {Object} res Express response object
 	 */
 	all: function(req, res) {
-		req.file = path.normalize(decodeURIComponent(req.file)); // fix it up
+		if (typeof req.file == 'string') {
+			req.file = path.normalize(decodeURIComponent(req.file)); // fix it up
+		} else {
+			req.file = obj.map(req.file,function(f){return path.normalize(decodeURIComponent(f))}); // fix it up
+		}
 		info.actions[req.params.action](req, res); // and do whatever we asked
 	}
 };
