@@ -7,11 +7,11 @@ each f in files
 			img.file-img(src=imageForFile(f,true),title=_(f.type))
 			if f.isLink
 				img.file-img-link(src='img/fatcow/16x16/link.png',title=f.link)
-			if !f.readable
-				img.file-img-restricted(src='img/fatcow/16x16/lock.png')
+			if !f.writable
+				img.file-img-restricted(src='img/fatcow/16x16/lock.png',title=_('dirlist-nowrite'))
 		span.file-name(title=f.name)
 			= f.name.substr(0,25)
 			!= f.name.length<25?'':'&#x2026;'
-		span.file-size(title=f.type=='directory'?_('dirlist-filesize-items',f.items):f.size+' B')!= f.type=='directory'?_('dirlist-filesize-items',f.items):(f.readable?f.filesizeFormatted():f.size)
+		span.file-size(title=f.type=='directory'?_('dirlist-filesize-items',f.items):f.size+' B')!= f.type=='directory'?_('dirlist-filesize-items',f.items):f.filesizeFormatted()
 		span.file-date(title=f.date.toLocaleString())!= f.dateFormatted(false)
 		span.file-perm!= f.permsFormatted()

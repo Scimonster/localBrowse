@@ -1,7 +1,7 @@
 function viewFile() {
 	// This function opens a file
 
-	var trash=false;
+	var trash = false;
 	
 	if (file.path.match(/^trash/)) {
 		file.update(file.resolve());

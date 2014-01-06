@@ -17,7 +17,7 @@ thead
 						img.file-img-link(src='img/fatcow/16x16/link.png',title=f.link)
 					= f.name.substr(0,35)
 					!= f.name.length<35?'':'&#x2026;'
-				td.file-size(title=f.type=='directory'?_('dirlist-filesize-items',f.items):f.size+' B')!= f.type=='directory'?_('dirlist-filesize-items',f.items):(f.readable?f.filesizeFormatted():f.size)
-				td.file-date(title=f.date.toLocaleString())!= f.readable?f.dateFormatted(false):f.date
+				td.file-size(title=f.type=='directory'?_('dirlist-filesize-items',f.items):f.size+' B')!= f.type=='directory'?_('dirlist-filesize-items',f.items):f.filesizeFormatted()
+				td.file-date(title=f.date.toLocaleString())!= f.dateFormatted(false)
 				td.file-type!= _(f.type)
 				td.file-perm!= f.permsFormatted()

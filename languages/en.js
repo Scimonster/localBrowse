@@ -46,6 +46,7 @@ var en = {
 		// dirlist-*: other items when listing directory
 		"dirlist-filesize-items": "$1 items",
 		"dirlist-filetype-directory": "directory",
+		"dirlist-nowrite": "Not writable",
 		"dirlist-show-hidden": "show hidden files",
 		"dirlist-hide-hidden": "hide hidden files",
 		"dirlist-show-restricted": "show restricted files",
