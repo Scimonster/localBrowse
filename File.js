@@ -3,9 +3,10 @@
  * @author Scimonster
  * @license {@link LICENSE} (AGPL)
  * @require path
+ * @require extend
  */
 
-var pathMod = require('path');
+var pathMod = require('path'), extend = require('extend');
 /**
  * Constructor for LBFile class, containing information about a file
  * @constructor
@@ -33,9 +34,7 @@ function LBFile(path) {
 
 	// if we were passed an object, so give us its info
 	if (typeof path==='object') {
-		for (key in path) {
-			this[key] = path[key];
-		}
+		extend(this, path);
 	}
 	if (typeof this.path !== 'string') {
 		this.path = '/';
@@ -85,14 +84,23 @@ LBFile.prototype.filesizeFormatted = function() {
  * @return {string}
  */
 LBFile.prototype.permsFormatted = function() {
-	var permsReadable = '';
-	perms = this.perm.split('');
+	var perms = this.perm.split('');
 	if (perms.length==4) {perms.shift()}
-	perms.forEach(function(p) {
-		var permsBin = parseInt(p,8).toString(2).split('');
-		permsReadable += (permsBin[0]=='1'?'r':'-') + (permsBin[1]=='1'?'w':'-') + (permsBin[2]=='1'?'x':'-');
-	});
-	return permsReadable;
+	return perms.map(function(p) {
+		var permsBin = parseInt(p,8).toString(2);
+		return (permsBin[0]=='1'?'r':'-') + (permsBin[1]=='1'?'w':'-') + (permsBin[2]=='1'?'x':'-');
+	}).join('');
+};
+
+/**
+ * The message name of the current permission
+ * Should be passed to message function
+ * @return {string}
+ */
+LBFile.prototype.permsMessage = function(level) {
+	var perms = this.perm.split('');
+	if (perms.length==4) {perms.shift()}
+	return 'perms-'+(this.type=='directory'?'dir-':'')+perms[level];
 };
 
 /**
@@ -104,20 +112,21 @@ LBFile.prototype.dateFormatted = function(long) {
 	function getFullMonthName(date) {
 		if (date instanceof Date) {
 			switch (date.getMonth()) {
-				case 0: return "January"; break;
-				case 1: return "February"; break;
-				case 2: return "March"; break;
-				case 3: return "April"; break;
-				case 4: return "May"; break;
-				case 5: return "June"; break;
-				case 6: return "July"; break;
-				case 7: return "August"; break;
-				case 8: return "September"; break;
-				case 9: return "October"; break;
-				case 10: return "November"; break;
-				case 11: return "December"; break;
+				case 0: return "January";
+				case 1: return "February";
+				case 2: return "March";
+				case 3: return "April";
+				case 4: return "May";
+				case 5: return "June";
+				case 6: return "July";
+				case 7: return "August";
+				case 8: return "September";
+				case 9: return "October";
+				case 10: return "November";
+				case 11: return "December";
 			}
 		}
+		return null;
 	}
 	function padNum(n) {n=n.toString();return n.length==1?'0'+n:n}
 	return long?
@@ -135,5 +144,7 @@ LBFile.prototype.dateFormatted = function(long) {
 LBFile.addSlashIfNeeded = function(f) {
 	return f.substr(-1)=='/'?f:f+'/';
 };
+
+LBFile.path = pathMod;
 
 module.exports = LBFile;

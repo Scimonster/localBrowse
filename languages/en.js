@@ -57,6 +57,24 @@ var en = {
 		"dirlist-depth-body": "Calculate size how many levels? (Note that a higher number is a slower operation.)",
 		"dirlist-size-placeholder": "&hellip;",
 
+		// perms-*: permission listings
+		"perms-0": "No access",
+		"perms-1": "Execute only",
+		"perms-2": "Write only",
+		"perms-3": "Write and execute",
+		"perms-4": "Read only",
+		"perms-5": "Read and execute",
+		"perms-6": "Read and write",
+		"perms-7": "Full",
+		"perms-dir-0": "No access",
+		"perms-dir-1": "Access metainfo",
+		"perms-dir-2": "Create only",
+		"perms-dir-3": "Create and access metainfo",
+		"perms-dir-4": "List files only",
+		"perms-dir-5": "List and read metainfo",
+		"perms-dir-6": "List and create, no metainfo",
+		"perms-dir-7": "Full",
+
 		// trash-*: items for trash
 		"trash-header-name": "Name",
 		"trash-header-size": "Size",
