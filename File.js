@@ -93,14 +93,14 @@ LBFile.prototype.permsFormatted = function() {
 };
 
 /**
- * The message name of the current permission
+ * Message name of our access level
  * Should be passed to message function
  * @return {string}
  */
-LBFile.prototype.permsMessage = function(level) {
+LBFile.prototype.permsMessage = function() {
 	var perms = this.perm.split('');
 	if (perms.length==4) {perms.shift()}
-	return 'perms-'+(this.type=='directory'?'dir-':'')+perms[level];
+	return 'perms-'+(this.type=='directory'?'dir-':'')+perms[this.owner.is?0:this.group.is?1:2];
 };
 
 /**
