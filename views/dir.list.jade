@@ -20,4 +20,4 @@ thead
 				td.file-size(title=f.type=='directory'?_('dirlist-filesize-items',f.items):f.size+' B')!= f.type=='directory'?_('dirlist-filesize-items',f.items):f.filesizeFormatted()
 				td.file-date(title=f.date.toLocaleString())!= f.dateFormatted(false)
 				td.file-type!= _(f.type)
-				td.file-perm!= f.permsFormatted()
+				td.file-perm(title=f.permsFormatted())!= _(f.permsFormatted())

@@ -113,7 +113,7 @@ h2 {
 	font-size: larger;
 	word-wrap: break-word;}
 #file.dirlist div.file span.file-size, #file.dirlist div.file span.file-date, #file.dirlist div.file span.file-perm {
-	display: inline-block;}
+	display: block;}
 div#file.dirlist div.file span.file-img {
 	position: relative;}
 div#file.dirlist div.file span.file-img img.file-img-link {
