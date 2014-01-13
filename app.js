@@ -45,12 +45,17 @@ app.post('/info/:action', routes.info.routes.post);
 app.post('/search', routes.search);
 app.post('/mod', mod.master);
 
+// programs
 app.get('/programs/:program/:action', routes.programs);
 app.get('/programs/editors', routes.programs);
 app.get('/programs/alleditors', routes.programs);
 app.post('/programs/:program/:action', routes.programs);
 app.post('/programs/editors', routes.programs);
 app.post('/programs/alleditors', routes.programs);
+
+// config
+app.get('/config', routes.config.get);
+app.post('/config', routes.config.post);
 
 http.createServer(app).listen(app.get('port'), function() {
 	console.log('Express server listening on port ' + app.get('port'));

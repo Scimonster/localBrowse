@@ -13,7 +13,8 @@ var
 	obj      = require('./Object.js'),
 	jade     = require('jade'),
 	path     = require('path'),
-	fs       = require('fs');
+	fs       = require('fs-extra'),
+	config   = require('./config');
 
 /**
  * GET homepage
@@ -253,4 +254,22 @@ exports.info.cwd = function(req, res) {
  */
 exports.search = function(req, res) {
 	search(req.body.term, function(i){res.send(i)}, req.body.cwd?decodeURIComponent(req.body.cwd):null);
+};
+
+/**
+ * GET/POST configuration items
+ */
+exports.config = {};
+exports.config.get = function(req, res) {
+	res.send(req.query.item?req.query.item.split('.').reduce(function(o,n){return o[n]}, config):config);
+};
+exports.config.post = function(req, res) {
+	req.body.newVal = parseFloat(req.body.newVal)==req.body.newVal?parseFloat(req.body.newVal):req.body.newVal; // turn to num
+	var tree = req.body.item.split('.'),
+	    last = tree.pop(),
+	    item = tree.reduce(function(o,n){return o[n]}, config);
+	item[last] = req.body.newVal;
+	fs.writeJSON('config.json', config, function(e){
+		res.send(config)
+	});
 };
