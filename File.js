@@ -18,11 +18,11 @@ function LBFile(path) {
 	this.date = null;
 	this.executable = false;
 	this.exists = false;
-	this.group = {};
+	this.group = {is:false};
 	this.isLink = false;
 	this.items = null;
 	this.link = null;
-	this.owner = {};
+	this.owner = {is:false};
 	this.path = path; // except path
 	this.perm = '0000',
 	this.readable = false;

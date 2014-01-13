@@ -107,7 +107,8 @@ exports.info = function(file, cb, content, stat) {
 					i.owner = {
 						id: s.uid,
 						name: '',
-						full: ''
+						full: '',
+						is: process.getuid() === s.uid
 					};
 					finished();	
 				}
@@ -116,7 +117,8 @@ exports.info = function(file, cb, content, stat) {
 				if (!i.group) {
 					i.group = i.group || {
 						id: s.gid,
-						name: ''
+						name: '',
+						is: process.getgid() === s.gid
 					};
 					finished();
 				}
@@ -128,7 +130,8 @@ exports.info = function(file, cb, content, stat) {
 					i.owner = {
 						id: s.uid,
 						name: data[0],
-						full: data[4]
+						full: data[4],
+						is: process.getuid() === s.uid
 					};
 					finished();
 				});
@@ -143,7 +146,8 @@ exports.info = function(file, cb, content, stat) {
 					data = data.toString().split(':');
 					i.group = {
 						id: s.gid,
-						name: data[0]
+						name: data[0],
+						is: process.getgid() === s.gid
 					};
 					finished();
 				});
