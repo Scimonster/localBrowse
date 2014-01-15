@@ -22,6 +22,8 @@ exports.routes['index.js'] = function(req, res) {
 	res.sendfile(path.join(__dirname,'scripts.index.js'));
 };
 
+exports.tabs = true;
+
 exports.buttons = function(f, cb) {
 	var buttons = [[]], done = false;
 	if (f.writable) {

@@ -12,13 +12,13 @@ This should be done with the following line of code:
 ```javascript
 var name = exports.modName = path.basename(__dirname);
 ```
-The `var name = ` is optional, but allows for faster inclusion of the module's name (such as in routes). The name should never be hardcoded, because it the directory may be renamed.
+The `var name = ` is optional, but allows for easier inclusion of the module's name (such as in routes). The name should never be hardcoded, because the directory may be renamed.
 
 ### `html` - Function
 This is a function taking two parameters, both required:
 * `file`: an instance of `LBFile` (from `./File.js`)
 * `cb`: a callback function to be passed a single string
-The string passed to the callback will be inserted into `#file-container`.
+The string passed to the callback will be inserted into `#file-container`. A string **must** be passed to it, or else the URL will never return!
 
 ### `messages` - Object
 The `messages` objects from all programs are compiled and added to the native messaging interface. Your program's `messages` object should look something like this:
@@ -39,7 +39,7 @@ The human-readable-name of your program that will be displayed in the program op
 A short description of your program that will be displayed in a tooltip for the `name`.
 
 ### `routes` - Object of Functions
-Your program can provide a web interface besides the plain HTML from `html`. This is done through the `routes` object. Each key in the object is used as the request function for `/programs/YOUR PROGRAM NAME/KEY IN OBJECT`. The functions are passed two arguments: `req` and `res`. These are the same as any Express `req`/`res` objects. Only GET requests are supported right now, with POST coming soon.
+Your program can provide a web interface besides the plain HTML from `html`. This is done through the `routes` object. Each key in the object is used as the request function for `/programs/YOUR PROGRAM NAME/KEY IN OBJECT`. The functions are passed two arguments: `req` and `res`. These are the same as any Express `req`/`res` objects. Both GET and POST requests are supported.
 
 The route `/programs/YOUR PROGRAM NAME/html` is reserved for outputting the callback value of `html`, and `/programs/YOUR PROGRAM NAME/buttons` for generating the buttons.
 
@@ -75,7 +75,7 @@ exports.routes['index.js'] = function(req, res) {
 If your program has editing functionality, the following conventions should be used for saving:
 * Save button has ID of `#save`
 * Save as button has ID of `#saveAs`
-* In your index.js file, set $('#file').data('save') to a function(callback), where callback() is passed a single parameter, the data to be saved
+* In your index.js file, set $('#file').data('save') to a function(callback), where callback() is passed two string parameters: the filename, and the data to be saved
 
 ## Summary
 This should be enough for even complex applications to be written. If additional functionality is really needed, please leave an issue.

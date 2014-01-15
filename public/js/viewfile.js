@@ -215,8 +215,8 @@ $(d).on('click','#file .file',function(e){
 	}
 });
 $(d).on('click','#save',function(){
-	$('#file').data('save')(function(content){
-		$.post('/mod',{action:'save',file:file.path,content:content},function(info){
+	$('#file').data('save')(function(f,content){
+		$.post('/mod',{action:'save',file:f,content:content},function(info){
 			$('#file').data('modDate',info.date);
 			var oldMessage = $('#message').html();
 			$('#message').html(_('messages-file-saved'));
@@ -225,7 +225,7 @@ $(d).on('click','#save',function(){
 	});
 });
 $(d).on('click','#saveAs',function(){
-	$('#file').data('save')(function(content){
+	$('#file').data('save')(function(f,content){
 		jqUI.prompt({title:_('fileview-saveas-title'),text:_('fileview-saveas-body')},function(name){
 			if (name) {
 				$.post('/mod',{action:'mkfile',file:file.dir+name,content:content},function(){
