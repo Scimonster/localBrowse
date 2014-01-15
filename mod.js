@@ -37,8 +37,8 @@ exports.mkdir = function(req, res) {
 exports.mkfile = function(req, res) {
 	fs.open(req.body.file, 'wx', function(e, fd) { // open the file for writing if it doesn't exist
 		if (fd && req.body.content) { // write the content to it
-			fs.write(fd, new Buffer(req.body.content), 0, req.body.content, null, function(err, written) {
-				res.send(written);
+			fs.write(fd, new Buffer(req.body.content), 0, req.body.content.length, null, function(err, written) {
+				res.send(!!written);
 			});
 		} else {
 			res.send(!!e); // send success
