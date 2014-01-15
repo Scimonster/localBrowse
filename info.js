@@ -91,7 +91,7 @@ actions.readable = function(req, res) {
  * @param {fs.Stats} [stat=false] Add {@code stat} property to returned object with stat results
  */
 exports.info = function(file, cb, content, stat) {
-	var i = {path: path.resolve(file)};
+	var i = {path: path.resolve(file)}, sent = false;
 	fs.exists(file, function(e) { // check existence
 		i.exists = e;
 		if (!e) {
@@ -226,6 +226,7 @@ exports.info = function(file, cb, content, stat) {
 	 */
 	function finished(){
 		if (
+			!sent &&
 			typeof i.writable !== 'undefined' &&
 			typeof i.readable !== 'undefined' &&
 			typeof i.executable !== 'undefined' &&
@@ -242,6 +243,7 @@ exports.info = function(file, cb, content, stat) {
 			(stat?typeof i.stat !== 'undefined':true)
 		) {
 			cb(new LBFile(i));
+			sent = true;
 		}
 	}
 }

@@ -11,7 +11,7 @@ each f in files
 				img.file-img-restricted(src='img/fatcow/16x16/lock.png',title=_('dirlist-nowrite'))
 		span.file-name(title=f.name)
 			= f.name.substr(0,25)
-			!= f.name.length<25?'':'&#x2026;'
+			!= f.name.length<25?'':_('dirlist-ellipsis')
 		span.file-size(title=f.type=='directory'?_('dirlist-filesize-items',f.items):f.size+' B')!= f.type=='directory'?_('dirlist-filesize-items',f.items):f.filesizeFormatted()
 		span.file-date(title=f.date.toLocaleString())!= f.dateFormatted(false)
 		span.file-perm(title=f.permsFormatted())!= _(f.permsMessage())

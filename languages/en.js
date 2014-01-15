@@ -56,6 +56,7 @@ var en = {
 		"dirlist-depth-title": "Depth",
 		"dirlist-depth-body": "Calculate size how many levels? (Note that a higher number is a slower operation.)",
 		"dirlist-size-placeholder": "&hellip;",
+		"dirlist-ellipsis": "&hellip;",
 
 		// perms-*: permission listings
 		"perms-0": "No access",
