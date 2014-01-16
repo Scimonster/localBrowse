@@ -102,35 +102,41 @@ function cd(loc, cb) {
 		$('#new').show();
 		if (typeof cb == 'function') {cb();}
 		// Create the pathbar
-		var tmp = file.path.split('/'), tmp2 = [];
-		if (tmp[tmp.length-1]=='') {tmp.pop()}
-		$('#filepath').buttonset('destroy');
-		$('#filepath').html('');
-		if (!tmp[0]) {
-			$('#filepath').append('<a href="#/">/</a>');
-			tmp = tmp.slice(1);
-		}
-		$.each(tmp,function(tmp3,par) {
-			tmp2[tmp2.length] = par;
-			$('#filepath').append('<a href="#/'+tmp2.join('/')+'/">'+par+'</a>');
-		});
-		$('#filepath').buttonset();
-		var tmp3=0;
-		while ($('#filepath').height()>53) {
-			tmp2=tmp.slice(0,tmp3+1);
-			tmp3++;
-			$('#filepath').buttonset('destroy');
-			$('#filepath').html('');
-			$('#filepath').append('<a>...</a>');
-			$.each(tmp.slice(tmp3),function(tmp4,par) {
-				tmp2[tmp2.length] = par;
-				$('#filepath').append('<a href="#/'+tmp2.join('/')+'/">'+par+'</a>');
-			});
-			$('#filepath').buttonset();
-		}
+		pathbar(file.path, '#filepath', 53);
 		if (type !== 'directory') {
 			$('#filepath a:last').attr('href',function(i,old){return old.slice(0,-1)});
 		}
+	}
+}
+
+function pathbar(path, element, height) {
+	// Create a pathbar of a certain filepath
+
+	path = path.split('/'), parts = [];
+	if (path[path.length-1]=='') {path.pop()}
+	$(element).buttonset('destroy');
+	$(element).html('');
+	if (!path[0]) {
+		$(element).append('<a href="#/">/</a>');
+		path = path.slice(1);
+	}
+	path.forEach(function(par) {
+		parts[parts.length] = par;
+		$(element).append('<a href="#/'+parts.join('/')+'/">'+par+'</a>');
+	});
+	$(element).buttonset();
+	var i=0;
+	while ($(element).height()>height) {
+		parts=path.slice(0,i+1);
+		i++;
+		$(element).buttonset('destroy');
+		$(element).html('');
+		$(element).append('<a>...</a>');
+		path.slice(i).forEach(function(par) {
+			parts[parts.length] = par;
+			$(element).append('<a href="#/'+parts.join('/')+'/">'+par+'</a>');
+		});
+		$(element).buttonset();
 	}
 }
 
