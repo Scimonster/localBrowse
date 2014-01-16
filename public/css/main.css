@@ -13,7 +13,7 @@ header {
   overflow: hidden; }
 
 h1 {
-  background-image: url(../img/logo.png);
+  background-image: url(/img/logo.png);
   background-size: 250px;
   width: 250px;
   height: 40px;
@@ -102,15 +102,14 @@ h2 {
   position: relative;
   opacity: 1;
   border: 1px dashed;
-  border-bottom: none;
-  border-spacing: 0px 1px;
-  border-radius: 4px 4px 0px 0px; }
+    border-bottom: none;
+    border-spacing: 0px 1px;
+    border-radius: 4px 4px 0px 0px; }
 
 #file.dirlist {
   cursor: default;
   -moz-user-select: none;
   -webkit-user-select: none;
-  -ms-user-select: none;
   user-select: none; }
   #file.dirlist tr.file td, #file.dirlist tr td {
     border-top: 1px solid gray;
@@ -152,17 +151,18 @@ h2 {
     width: 7%;
     font-family: monospace;
     font-size: larger; }
-  #file.dirlist .file.restricted {
-    background-color: #ddd;
-    display: none; }
-  #file.dirlist .file.hidden {
-    font-style: italic;
-    display: none; }
-  #file.dirlist .file.sel {
-    background-color: blue;
-    color: white; }
-    #file.dirlist .file.sel.last {
-      border: 1px dashed; }
+
+#file.dirlist .restricted.file, #filesel .content .files-container table.files tr.restricted.file {
+  background-color: #ddd;
+  display: none; }
+#file.dirlist .hidden.file, #filesel .content .files-container table.files tr.hidden.file {
+  font-style: italic;
+  display: none; }
+#file.dirlist .sel.file, #filesel .content .files-container table.files tr.sel.file {
+  background-color: blue;
+  color: white; }
+  #file.dirlist .sel.last.file, #filesel .content .files-container table.files tr.sel.last.file {
+    border: 1px dashed; }
 
 #file.trash #name {
   width: 30%; }
@@ -207,6 +207,42 @@ h2 {
   margin: 15px; }
 .fileOverwriteDialog-fileInfo p {
   font-size: smaller; }
+
+#filesel {
+  overflow: auto; }
+  #filesel table.top {
+    width: 100%;
+    margin-bottom: 10px; }
+    #filesel table.top td:first-child {
+      width: 20%; }
+    #filesel table.top td.create {
+      width: 20%; }
+      #filesel table.top td.create button {
+        float: right; }
+    #filesel table.top #filesel-name {
+      width: 100%; }
+  #filesel .content .sidebar {
+    width: 20%;
+    overflow: auto;
+    float: left;
+    list-style: none;
+    padding: 5px; }
+    #filesel .content .sidebar span.ui-icon {
+      display: inline-block; }
+  #filesel .content .files-container {
+    border: 1px gray dotted;
+    width: 78%;
+    height: 100%;
+    float: left; }
+    #filesel .content .files-container table.files {
+      width: 100%; }
+      #filesel .content .files-container table.files tr.file {
+        border-spacing: 0px 1px; }
+  #filesel.preview .content .files-container {
+    width: 55%; }
+  #filesel.preview .content .preview {
+    width: 15%;
+    float: left; }
 
 /* UI modifications */
 #content .ui-icon {

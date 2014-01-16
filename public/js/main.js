@@ -495,7 +495,7 @@ $(d).on('click','#sidebar-tree span.ui-icon',function sbTreeExpand(e) {
 	}
 });
 $(d).on('contextmenu',false);
-setInterval(function(){
+var refresh = setInterval(function(){
 	if ($('#file.dirlist').length && type!='search') {
 		getDirContents(file.path,function(f){
 			var selList, selLast, scroll;

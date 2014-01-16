@@ -18,9 +18,12 @@ function fileSelector(base, options, callback) {
 				:files().order(s.sortby).get())
 				.map(function(i){return new LBFile(i)}),
 			dialog: {
+				title: _('filesel-title-open'),
 				modal: true,
 				minHeight: 600,
-				minWidth: 600
+				minWidth: 600,
+				height: $(window).height()/1.1,
+				width: $(window).width()/1.5
 			}
 		}, options, {dialog: {buttons: []}});
 		options.dialog.buttons[0] = {text: _('filesel-button-cancel'), click: function() {
@@ -50,6 +53,12 @@ function fileSelector(base, options, callback) {
 		$('.sidebar',dialog).append($('#sidebar-places li').clone().add(
 			$('#sidebar-bookmarks li').clone().each(function(){$('span[title]',this).remove()})
 		));
-		$(dialog).dialog(options.dialog);
+		dialog = $(dialog).dialog(options.dialog);
+		$('button.newfolder',dialog).button();
+		$('.pathbar',dialog).buttonset().height(41);
+		pathbar(base, $('.pathbar',dialog), 41);
+		$('#filesel .content').height($('#filesel').height()-$('#filesel .top').height()-10);
 	});
 }
+
+//clearInterval(refresh)

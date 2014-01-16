@@ -85,16 +85,17 @@ h2 {
 	overflow: auto;
 	position: relative;
 	opacity: 1;
-	border: 1px dashed;
-	border-bottom: none;
-	border-spacing: 0px 1px;
-	border-radius: 4px 4px 0px 0px;}
+	border: 1px dashed {
+		bottom: none;
+		spacing: 0px 1px;
+		radius: 4px 4px 0px 0px;
+	}
+}
 
 #file.dirlist {
 	cursor: default;
 	-moz-user-select: none;
 	-webkit-user-select: none;
-	-ms-user-select: none;
 	user-select: none;
 	
 	tr.file td, tr td {
@@ -138,6 +139,10 @@ h2 {
 		}
 	}
 
+	.file {
+		@extend %file;
+	}
+
 	#name {width: 46%}
 	#size {width: 10%}
 	#date {width: 22%}
@@ -148,20 +153,20 @@ h2 {
 		font-family: monospace;
 		font-size: larger;
 	}
+}
 
-	.file {
-		&.restricted {
-			background-color: #ddd;
-			display: none;}
-		&.hidden {
-			font-style: italic;
-			display: none;}
-		&.sel {
-			background-color: blue;
-			color: white;
-			&.last {
-				border: 1px dashed;
-			}
+%file { // extend only so that it doesn't mess up selectors
+	&.restricted {
+		background-color: #ddd;
+		display: none;}
+	&.hidden {
+		font-style: italic;
+		display: none;}
+	&.sel {
+		background-color: blue;
+		color: white;
+		&.last {
+			border: 1px dashed;
 		}
 	}
 }
@@ -211,6 +216,72 @@ h2 {
 		margin: 15px;
 	}
 	p {font-size: smaller}
+}
+
+#filesel {
+	overflow: auto;
+
+	table.top {
+		width: 100%;
+		margin-bottom: 10px;
+
+		td:first-child {
+			width: 20%;
+		}
+		td.create {
+			width: 20%;
+
+			button {
+				float: right;
+			}
+		}
+
+		#filesel-name {
+			width: 100%;
+		}
+	}
+
+	.content {
+		.sidebar {
+			width: 20%;
+			overflow: auto;
+			float: left;
+			list-style: none;
+			padding: 5px;
+
+			span.ui-icon {
+				display: inline-block;
+			}
+		}
+
+		.files-container {
+			border: 1px gray dotted;
+			width: 78%;
+			height: 100%;
+			float: left;
+
+			table.files {
+				width: 100%;
+			
+				tr.file {
+					border-spacing: 0px 1px;
+					@extend %file;
+				}
+			}
+		}
+	}
+
+	&.preview {
+		.content {
+			 .files-container {
+				width: 55%;
+			}
+			.preview {
+				width: 15%;
+				float: left;
+			}
+		}
+	}
 }
 
 /* UI modifications */

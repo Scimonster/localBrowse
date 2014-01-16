@@ -179,6 +179,7 @@ var en = {
 		"path-root": "root", // display instead of nothing in file.name
 
 		// filesel-*: items in the file open/save dialog
+		"filesel-title-open": "Choose file to open",
 		"filesel-button-open": "Open",
 		"filesel-button-save": "Save",
 		"filesel-button-cancel": "Cancel",
