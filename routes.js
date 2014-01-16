@@ -22,7 +22,10 @@ var
  * @param {Object} res Express response object
  */
 exports.index = function(req, res) {
-	var scripts = ['/browserify/File.js','/browserify/Object.js','/browserify/text.js','/browserify/jade.js'].concat(['jquery','jquery-ui.min','plugins','main','viewfile','trash','keypress'].map(function(f){return '/js/'+f+'.js'}));
+	var scripts = ['File','Object','text','jade'].
+		map(function(f){return '/browserify/'+f+'.js'}).concat(
+			['jquery','jquery-ui.min','plugins','main','viewfile','trash','keypress','filesel'].
+			map(function(f){return '/js/'+f+'.js'}));
 	var sidebar = [
 		{name:_('places-home'), icon:'home', url:'~/'},
 		{name:_('places-docs'), icon:'document', url:'~/Document/'},

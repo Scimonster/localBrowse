@@ -178,6 +178,14 @@ var en = {
 
 		"path-root": "root", // display instead of nothing in file.name
 
+		// filesel-*: items in the file open/save dialog
+		"filesel-button-open": "Open",
+		"filesel-button-save": "Save",
+		"filesel-button-cancel": "Cancel",
+		"filesel-top-name": "Name:",
+		"filesel-top-pathbar": "Location:",
+		"filesel-newfolder": "Create Folder",
+
 	}
 };
 
