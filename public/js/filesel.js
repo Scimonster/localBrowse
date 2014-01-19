@@ -67,6 +67,9 @@ function fileSelector(base, options, callback) {
 		$('.pathbar',dialog).buttonset().height(41);
 		pathbar(base, $('.pathbar',dialog), 41);
 		$('#filesel .content').height($('#filesel').height()-$('#filesel .top').height()-10);
+		$('#filesel').data('base',base);
+		$('#filesel').data('types',options.types);
+		$('#filesel').data('callback',callback);
 	});
 }
 
@@ -88,7 +91,7 @@ fileSelector.updatePreview = function() {
 };
 
 
-$(d).on('click','#filesel .files .file',function(e){
+$(d).on('click','#filesel .files .file', function(e){
 	if ($(this).hasClass('sel')) {
 		if ($('#filesel').hasClass('multiple') && e.ctrlKey && $('#filesel .sel').length>1) {
 			$(this).removeClass('sel');
@@ -110,6 +113,27 @@ $(d).on('click','#filesel .files .file',function(e){
 		$(this).addClass('sel last');
 	}
 	fileSelector.updatePreview();
+});
+$(d).on('dblclick','#filesel .files .file', function(){
+	if ($(this).data('info').type=='directory') { // "cd" to the dir
+		var info = [
+			$(this).data('path'),
+			{
+				types: $('#filesel').data('types'),
+				multiple: $('#filesel').hasClass('multiple'),
+				preview: $('#filesel').hasClass('preview'),
+				nosel: $('#filesel').hasClass('nosel'),
+				buttonLabel: $('#filesel').parents('.ui-dialog').
+					find('.ui-dialog-buttonset button.ok').button('option','label'),
+				name: $('#filesel-name').val()
+			},
+			$('#filesel').data('callback'),
+		];
+		$('#filesel').dialog('close').dialog('destroy').remove();
+		fileSelector.apply(null,info);
+	} else {
+		$('#filesel').parents('.ui-dialog').find('.ui-dialog-buttonset button.ok').click();
+	}
 });
 
 //clearInterval(refresh)
