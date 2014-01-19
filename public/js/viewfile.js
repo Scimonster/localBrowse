@@ -226,11 +226,17 @@ $(d).on('click','#save',function(){
 });
 $(d).on('click','#saveAs',function(){
 	$('#file').data('save')(function(f,content){
-		jqUI.prompt({title:_('fileview-saveas-title'),text:_('fileview-saveas-body')},function(name){
+		fileSelector(file.dir, {
+			title: _('fileview-saveas-body'),
+			name: LBFile.path.basename(f),
+			buttonLabel: _('fileview-saveas-title'),
+			preview: false,
+			nosel: true
+		}, function(info,name){
 			if (name) {
-				$.post('/mod',{action:'mkfile',file:file.dir+name,content:content},function(){
-					$('#message').html(_('messages-file-saved-as',file.dir+name));
-					location.hash = "#"+file.dir+name;
+				$.post('/mod',{action:'mkfile',file:name,content:content},function(){
+					$('#message').html(_('messages-file-saved-as',name));
+					location.hash = "#"+name;
 				});
 			}
 		});

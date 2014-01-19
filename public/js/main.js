@@ -418,7 +418,7 @@ $(function(){ // set up jqUI elements
 				if (filename) {
 					fileSelector(file.path, {
 						buttonLabel: _('new-link'),
-						dialog: {title: _('new-link-file')}
+						title: _('new-link-file')
 					}, function(linkto){
 						$.post('/mod',{action:'link',dest:file.addSlashIfNeeded()+filename,src:linkto.path},load);
 					});

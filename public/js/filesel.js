@@ -11,10 +11,10 @@ function fileSelector(base, options, callback) {
 			nosel: false, // allow dialog to be closed without a file having been selected
 			buttonLabel: _('filesel-button-open'), // text to be shown on OK button
 			name: '', // text to be initially placed in text input
+			title: _('filesel-title-open'), // title of dialog
 			_: _,
 			imageForFile: imageForFile,
 			dialog: {
-				title: _('filesel-title-open'),
 				close: function(e){
 					if (e.currentTarget) { // clicked X in corner
 						callback(null);
@@ -28,6 +28,7 @@ function fileSelector(base, options, callback) {
 				position: { my: "center", at: "center", of: window }
 			}
 		}, options, {dialog: {buttons: []}});
+		options.dialog.title = options.title
 		options.dialog.buttons[0] = {text: _('filesel-button-cancel'), click: function() {
 			$(this).dialog('close').dialog('destroy').remove();
 			callback(null);
