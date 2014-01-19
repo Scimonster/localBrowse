@@ -3,7 +3,7 @@ function fileSelector(base, options, callback) {
 		callback = options;
 		options = {};
 	}
-	getDirContents(base, function(files){
+	function run(files){
 		options = $.extend(true, {
 			types: [{name:_('filetype-all'),reg:/.*/}], // MIMEtypes to accept
 			multiple: false, // let multiple files be selected
@@ -83,7 +83,12 @@ function fileSelector(base, options, callback) {
 		$('#filesel .types .current').text(options.types[0].name);
 		$('#filesel select.types').chosen({inherit_select_classes: true, disable_search_threshold: 5});
 		$('#filesel').dialog('option', 'position', {my: "center", at: "center", of: window});
-	});
+	}
+	if (LBFile.addSlashIfNeeded(base)==LBFile.addSlashIfNeeded(file.path)) {
+		run($('#file').data('files'));
+	} else {
+		getDirContents(base, run);
+	}
 }
 
 fileSelector.filter = function(regex) {
