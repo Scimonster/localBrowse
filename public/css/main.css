@@ -246,7 +246,7 @@ h2 {
     height: 99%;
     float: left;
     text-align: center; }
-    #filesel.preview .content .preview h3 {
+    #filesel.preview .content .preview h3, #filesel.preview .content .preview h4 {
       margin: 5px; }
     #filesel.preview .content .preview table {
       width: 100%;

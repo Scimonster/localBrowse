@@ -71,13 +71,20 @@ function fileSelector(base, options, callback) {
 }
 
 fileSelector.updatePreview = function() {
-	if ($('#filesel').hasClass('preview')) {
+	if ($('#filesel').hasClass('preview') && $('#filesel .sel').length) {
 		var info = new LBFile($('#filesel .sel.last').data('info'));
 		console.log(info);
-		$('#filesel .preview').html(jade.render('filesel.preview',{info:info,_:_,imageForFile:imageForFile}));
+		$('#filesel .preview').html(jade.render('filesel.preview',{
+			info: info,
+			_: _,
+			imageForFile: imageForFile,
+			count: $('#filesel .sel').length
+		}));
+	} else {
+		$('#filesel .preview').html('<h4>'+_('filesel-none-selected')+'</h4>');
 	}
 	$('#filesel').parents('.ui-dialog').find('.ui-dialog-buttonset button.ok').button(
-		'option','disabled',$('#filesel .sel').length<1);
+		'option', 'disabled', $('#filesel').hasClass('forcesel') && $('#filesel .sel').length<1);
 };
 
 
@@ -91,7 +98,9 @@ $(d).on('click','#filesel .files .file',function(e){
 				else {$('#filesel .sel').add(this).removeClass('last')}
 			}
 		}
-		else {
+		else if ($('#filesel').hasClass('nosel') && $('#filesel .sel').length==1) {
+			$(this).removeClass('sel last');
+		} else {
 			$('#filesel .sel').removeClass('sel');
 			$(this).addClass('sel last');
 		}

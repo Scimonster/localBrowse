@@ -186,6 +186,8 @@ var en = {
 		"filesel-top-name": "Name:",
 		"filesel-top-pathbar": "Location:",
 		"filesel-newfolder": "Create Folder",
+		"filesel-none-selected": "No files are selected",
+		"filesel-sel-count": "$1 file(s) selected",
 
 	}
 };
