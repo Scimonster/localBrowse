@@ -49,10 +49,11 @@ function fileSelector(base, options, callback) {
 					selected = null;
 				}
 				$(this).dialog('close').dialog('destroy').remove();
-				callback({name:name,selected:selected});
+				callback(selected,LBFile.path.join(base,name));
 			}
 		};
 		function filesFilter(){ // filter by type
+			if (options.types[0]==/.*/) {return true}
 			return options.types.filter(function(reg){
 				return reg.test(this.type);
 			}, this).length;
