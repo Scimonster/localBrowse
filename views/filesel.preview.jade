@@ -1,0 +1,9 @@
+img.file-img(src=imageForFile(info,true),title=_(info.type))
+h3= info.name
+table
+	tr
+		th= _('dirlist-header-date')
+		td= info.dateFormatted(false)
+	tr
+		th= _('dirlist-header-size')
+		td= info.type=='directory'?_('dirlist-filesize-items',info.items):info.filesizeFormatted()

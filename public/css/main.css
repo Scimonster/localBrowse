@@ -233,16 +233,25 @@ h2 {
   #filesel .content .files-container {
     border: 1px gray dotted;
     width: 78%;
-    height: 100%;
-    float: left; }
+    height: 99%;
+    float: left;
+    overflow: auto; }
     #filesel .content .files-container table.files {
       width: 100%;
       border-spacing: 0px 1px; }
   #filesel.preview .content .files-container {
     width: 55%; }
   #filesel.preview .content .preview {
-    width: 15%;
-    float: left; }
+    width: 23%;
+    height: 99%;
+    float: left;
+    text-align: center; }
+    #filesel.preview .content .preview h3 {
+      margin: 5px; }
+    #filesel.preview .content .preview table {
+      width: 100%;
+      text-align: right;
+      font-size: 0.9em; }
 
 /* UI modifications */
 #content .ui-icon {

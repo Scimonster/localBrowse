@@ -5,11 +5,12 @@ function fileSelector(base, options, callback) {
 	}
 	getDirContents(base, function(files){
 		options = $.extend(true, {
-			types: [/.*/],
-			multiple: false,
-			preview: true,
-			buttonLabel: _('filesel-button-open'),
-			name: '',
+			types: [/.*/], // MIMEtypes to accept
+			multiple: false, // let multiple files be selected
+			preview: true, // show a little info about the file
+			nosel: false, // allow dialog to be closed without a file having been selected
+			buttonLabel: _('filesel-button-open'), // text to be shown on OK button
+			name: '', // text to be initially placed in text input
 			_: _,
 			imageForFile: imageForFile,
 			files: (s.dirFirst?
@@ -20,7 +21,6 @@ function fileSelector(base, options, callback) {
 			dialog: {
 				title: _('filesel-title-open'),
 				close: function(e){
-					console.log(e);
 					if (e.currentTarget) { // clicked X in corner
 						callback(null);
 					}
@@ -39,10 +39,10 @@ function fileSelector(base, options, callback) {
 		options.dialog.buttons[1] = {
 			text: options.buttonLabel,
 			icons: {primary: 'ui-icon-check'},
-			disabled: true,
+			disabled: !options.nosel,
 			class: 'ok',
 			click: function() {
-				var selected = $('#filesel .files .file.sel');
+				var selected = $('#filesel .files .file.sel'), name = $('#filesel-name').val();
 				if (selected.length) {
 					if (options.multiple) { // we need an array, even if just one was selected
 						selected = selected.map(function(){return new LBFile($(this).data('info'))}).get();
@@ -50,9 +50,11 @@ function fileSelector(base, options, callback) {
 						selected = new LBFile(selected.data('info'));
 					}
 					console.log(selected)
-					$(this).dialog('close').dialog('destroy').remove();
-					callback(selected);
+				} else {
+					selected = null;
 				}
+				$(this).dialog('close').dialog('destroy').remove();
+				callback({name:name,selected:selected});
 			}
 		};
 
@@ -68,8 +70,12 @@ function fileSelector(base, options, callback) {
 	});
 }
 
-zfileSelector.updatePreview = function() {
-	if ($('#filesel').hasClass('preview')) {}
+fileSelector.updatePreview = function() {
+	if ($('#filesel').hasClass('preview')) {
+		var info = new LBFile($('#filesel .sel.last').data('info'));
+		console.log(info);
+		$('#filesel .preview').html(jade.render('filesel.preview',{info:info,_:_,imageForFile:imageForFile}));
+	}
 	$('#filesel').parents('.ui-dialog').find('.ui-dialog-buttonset button.ok').button(
 		'option','disabled',$('#filesel .sel').length<1);
 };

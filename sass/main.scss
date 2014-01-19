@@ -262,8 +262,9 @@ h2 {
 		.files-container {
 			border: 1px gray dotted;
 			width: 78%;
-			height: 100%;
+			height: 99%;
 			float: left;
+			overflow: auto;
 
 			table.files {
 				width: 100%;
@@ -282,8 +283,20 @@ h2 {
 				width: 55%;
 			}
 			.preview {
-				width: 15%;
+				width: 23%;
+				height: 99%;
 				float: left;
+				text-align: center;
+
+				h3 {
+					margin: 5px;
+				}
+
+				table {
+					width: 100%;
+					text-align: right;
+					font-size: 0.9em;
+				}
 			}
 		}
 	}
