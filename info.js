@@ -13,7 +13,9 @@ var fs     = require('fs-extra'),
 	path   = require('path'),
 	spawn  = require('child_process').spawn,
 	prefex = require('preffy-extend'),
-	obj    = require('./Object.js');
+	obj    = require('./Object.js'),
+	mmm    = require('mmmagic'),
+	mime   = require('mime');
 
 /**
  * List of actions to run 
@@ -185,10 +187,13 @@ exports.info = function(file, cb, content, stat) {
 							finished();
 						});
 					}
-					var mmm = require('mmmagic'), magic = new mmm.Magic(mmm.MAGIC_MIME_TYPE); // MIME checking dependencies
+					var magic = new mmm.Magic(mmm.MAGIC_MIME_TYPE); // MIME checking dependencies
 					magic.detectFile(file, function(m_e, m_type) {
-						if (m_e || m_type=='regular file, no read permission') { // Magic error, use lazy checking
-							i.type = require('mime').lookup(file);
+						if (m_e || m_type=='regular file, no read permission' || m_type=='text/plain') { // Magic error, use lazy checking
+							i.type = mime.lookup(file);
+							if (i.type==mime.default_type && m_type=='text/plain') {
+								i.type = 'text/plain';
+							}
 						} else {
 							i.type = m_type;
 						}
