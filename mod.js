@@ -52,7 +52,7 @@ exports.mkfile = function(req, res) {
  * @param {Object} res Express response object
  */
 exports.link = function(req, res) {
-	fs.link(req.body.src, req.body.dest, function(e) {
+	fs.symlink(req.body.src, req.body.dest, function(e) {
 		res.send(!!e);
 	});
 };
