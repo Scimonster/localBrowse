@@ -210,7 +210,7 @@ h2 {
   font-size: smaller; }
 
 #filesel {
-  overflow: auto; }
+  overflow: visible; }
   #filesel table.top {
     width: 100%;
     margin-bottom: 10px; }
@@ -239,6 +239,11 @@ h2 {
     #filesel .content .files-container table.files {
       width: 100%;
       border-spacing: 0px 1px; }
+  #filesel .types {
+    z-index: 100;
+    font-size: 0.9em;
+    width: 125px;
+    float: right; }
   #filesel.preview .content .files-container {
     width: 55%; }
   #filesel.preview .content .preview {

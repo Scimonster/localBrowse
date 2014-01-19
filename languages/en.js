@@ -189,6 +189,9 @@ var en = {
 		"filesel-none-selected": "No files are selected",
 		"filesel-sel-count": "$1 file(s) selected",
 
+		// filetype-*: Types of files
+		"filetype-all": "All",
+
 	}
 };
 

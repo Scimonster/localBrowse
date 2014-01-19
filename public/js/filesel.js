@@ -5,7 +5,7 @@ function fileSelector(base, options, callback) {
 	}
 	getDirContents(base, function(files){
 		options = $.extend(true, {
-			types: [/.*/], // MIMEtypes to accept
+			types: [{name:_('filetype-all'),reg:/.*/}], // MIMEtypes to accept
 			multiple: false, // let multiple files be selected
 			preview: true, // show a little info about the file
 			nosel: false, // allow dialog to be closed without a file having been selected
@@ -24,7 +24,8 @@ function fileSelector(base, options, callback) {
 				minHeight: 600,
 				minWidth: 600,
 				height: $(window).height()/1.1,
-				width: $(window).width()/1.5
+				width: $(window).width()/1.5,
+				position: { my: "center", at: "center", of: window }
 			}
 		}, options, {dialog: {buttons: []}});
 		options.dialog.buttons[0] = {text: _('filesel-button-cancel'), click: function() {
@@ -52,39 +53,55 @@ function fileSelector(base, options, callback) {
 				callback(selected,LBFile.path.join(base,name));
 			}
 		};
-		function filesFilter(){ // filter by type
-			if (options.types[0]==/.*/) {return true}
-			return options.types.filter(function(reg){
-				return reg.test(this.type);
-			}, this).length;
-		}
 		options.files = (s.dirFirst?
-			files({type:'directory'}).filter(filesFilter).order(s.sortby).get().concat(
-				files({type:{'!is':'directory'}}).filter(filesFilter).order(s.sortby).get())
-			:files(filesFilter).order(s.sortby).get()).
+			files({type:'directory'}).order(s.sortby).get().concat(
+				files({type:{'!is':'directory'}}).order(s.sortby).get())
+			:files().order(s.sortby).get()).
 			map(function(i){return new LBFile(i)});
 
-		var dialog = $(jade.render('filesel',options));
+		var dialog = $(jade.render('filesel', $.extend({}, options, {
+			files: jade.render('filesel.files', {
+				_: _,
+				imageForFile: imageForFile,
+				files: options.files
+			})
+		})));
 		$('.sidebar',dialog).append($('#sidebar-places li').clone().add(
 			$('#sidebar-bookmarks li').clone().each(function(){$('span[title]',this).remove()})
 		));
-		dialog = $(dialog).dialog(options.dialog);
+		dialog = $(dialog).dialog(options.dialog).height($(window).height()/1.5);
+		// no idea why the height suddenly stopped working
 		$('button.newfolder',dialog).button();
 		$('.pathbar',dialog).buttonset().height(41);
 		pathbar(base, $('.pathbar',dialog), 41);
-		$('#filesel .content').height($('#filesel').height()-$('#filesel .top').height()-10);
+		$('#filesel .content').height(~~($('#filesel').height()-$('#filesel .top').height()-30));
 		$('#filesel').data('base',base);
 		$('#filesel').data('types',options.types);
 		$('#filesel').data('callback',callback);
+		$('#filesel').data('files',files);
+		$('#filesel .types .current').text(options.types[0].name);
+		$('#filesel select.types').chosen({inherit_select_classes: true, disable_search_threshold: 5});
+		$('#filesel').dialog('option', 'position', {my: "center", at: "center", of: window});
 	});
 }
 
+fileSelector.filter = function(regex) {
+	var files = $('#filesel').data('files')({type:{regex:regex}});
+	$('#filesel table.files').html(jade.render('filesel.files', {
+		_: _,
+		imageForFile: imageForFile,
+		files: (s.dirFirst?
+			files.filter({type:'directory'}).order(s.sortby).get().concat(
+				files.filter({type:{'!is':'directory'}}).order(s.sortby).get())
+			:files.order(s.sortby).get()).
+			map(function(i){return new LBFile(i)})
+	}));
+};
+
 fileSelector.updatePreview = function() {
 	if ($('#filesel').hasClass('preview') && $('#filesel .sel').length) {
-		var info = new LBFile($('#filesel .sel.last').data('info'));
-		console.log(info);
 		$('#filesel .preview').html(jade.render('filesel.preview',{
-			info: info,
+			info: new LBFile($('#filesel .sel.last').data('info')),
 			_: _,
 			imageForFile: imageForFile,
 			count: $('#filesel .sel').length
@@ -118,6 +135,7 @@ $(d).on('click','#filesel .files .file', function(e){
 		if (!e.ctrlKey || !$('#filesel').hasClass('multiple')) {$('#filesel .sel').removeClass('sel')}
 		$(this).addClass('sel last');
 	}
+	$('#filesel-name').val($(this).data('info').name);
 	fileSelector.updatePreview();
 });
 $(d).on('dblclick','#filesel .files .file', function(){
@@ -140,6 +158,10 @@ $(d).on('dblclick','#filesel .files .file', function(){
 	} else {
 		$('#filesel').parents('.ui-dialog').find('.ui-dialog-buttonset button.ok').click();
 	}
+});
+
+$(d).on('change','#filesel select.types', function(){
+	fileSelector.filter(eval($('option:selected',this).val()));
 });
 
 //clearInterval(refresh)

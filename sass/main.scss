@@ -223,7 +223,8 @@ h2 {
 }
 
 #filesel {
-	overflow: auto;
+	overflow: visible;
+	//height: 100%;
 	@extend %nosel;
 
 	table.top {
@@ -275,6 +276,13 @@ h2 {
 				}
 			}
 		}
+	}
+
+	.types {
+		z-index: 100;
+		font-size: 0.9em;
+		width: 125px;
+		float: right;
 	}
 
 	&.preview {

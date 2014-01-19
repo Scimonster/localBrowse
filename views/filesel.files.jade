@@ -1,0 +1,11 @@
+each f in files
+	- var classes = ['file']
+	- if (f.name.substr(0,1)=='.'||f.name.substr(-1)=='~') {classes.push('hidden')}
+	- if (!f.readable) {classes.push('restricted')}
+	tr(class=classes,data-path=f.path,data-info=JSON.stringify(f))
+		td.file-name(title=f.name)
+			img.file-img(src=imageForFile(f,false))
+			= f.name.substr(0,30)
+			!= f.name.length<30?'':_('dirlist-ellipsis')
+		td.file-size(title=f.type=='directory'?_('dirlist-filesize-items',f.items):f.size+' B')!= f.type=='directory'?_('dirlist-filesize-items',f.items):f.filesizeFormatted()
+		td.file-date(title=f.date.toLocaleString())!= f.dateFormatted(true)
