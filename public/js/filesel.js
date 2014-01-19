@@ -83,6 +83,11 @@ function fileSelector(base, options, callback) {
 		$('#filesel .types .current').text(options.types[0].name);
 		$('#filesel select.types').chosen({inherit_select_classes: true, disable_search_threshold: 5});
 		$('#filesel').dialog('option', 'position', {my: "center", at: "center", of: window});
+		$('#filesel-name').autocomplete({
+			delay: 0,
+			minLength: 0,
+			source: files().select('name')
+		});
 	}
 	if (LBFile.addSlashIfNeeded(base)==LBFile.addSlashIfNeeded(file.path)) {
 		run($('#file').data('files'));
