@@ -414,12 +414,16 @@ $(function(){ // set up jqUI elements
 	$('#new-link').click(function() {
 		jqUI.prompt(
 			{text: _('new-link-name'),title: _('new-link')},
-			function(filename){if (filename) {
-				jqUI.prompt(
-					{text: _('new-link-file'),title: _('new-link')},
-					function(linkto){$.post('/mod',{action:'link',dest:file.addSlashIfNeeded()+filename,src:linkto},load);}
-				);
-			}}
+			function(filename){
+				if (filename) {
+					fileSelector(file.path, {
+						buttonLabel: _('new-link'),
+						dialog: {title: _('new-link-file')}
+					}, function(linkto){
+						$.post('/mod',{action:'link',dest:file.addSlashIfNeeded()+filename,src:linkto.path},load);
+					});
+				}
+			}
 		);
 	});
 	load();
