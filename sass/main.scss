@@ -92,11 +92,15 @@ h2 {
 	}
 }
 
-#file.dirlist {
+%nosel {
 	cursor: default;
 	-moz-user-select: none;
 	-webkit-user-select: none;
 	user-select: none;
+}
+
+#file.dirlist {
+	@extend %nosel;
 	
 	tr.file td, tr td {
 		border-top: 1px solid gray;
@@ -220,6 +224,7 @@ h2 {
 
 #filesel {
 	overflow: auto;
+	@extend %nosel;
 
 	table.top {
 		width: 100%;
@@ -262,9 +267,9 @@ h2 {
 
 			table.files {
 				width: 100%;
+				border-spacing: 0px 1px;
 			
 				tr.file {
-					border-spacing: 0px 1px;
 					@extend %file;
 				}
 			}

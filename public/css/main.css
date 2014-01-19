@@ -106,51 +106,52 @@ h2 {
     border-spacing: 0px 1px;
     border-radius: 4px 4px 0px 0px; }
 
-#file.dirlist {
+#file.dirlist, #filesel {
   cursor: default;
   -moz-user-select: none;
   -webkit-user-select: none;
   user-select: none; }
-  #file.dirlist tr.file td, #file.dirlist tr td {
-    border-top: 1px solid gray;
-    word-break: break-all; }
-  #file.dirlist div.file {
-    height: 173px;
-    width: 123px;
-    text-align: center;
-    float: left;
-    margin: 5px;
-    overflow: hidden;
-    border: 1px solid transparent; }
-    #file.dirlist div.file span.file-name {
-      display: block;
-      font-weight: bold;
-      font-size: larger;
-      word-wrap: break-word; }
-    #file.dirlist div.file span.file-size, #file.dirlist div.file span.file-date, #file.dirlist div.file span.file-perm {
-      display: block; }
-    #file.dirlist div.file span.file-img {
-      position: relative; }
-      #file.dirlist div.file span.file-img img.file-img-link {
-        position: absolute;
-        bottom: 0px;
-        left: 0px; }
-      #file.dirlist div.file span.file-img img.file-restricted-link {
-        position: absolute;
-        bottom: 0px;
-        right: 0px; }
-  #file.dirlist #name {
-    width: 46%; }
-  #file.dirlist #size {
-    width: 10%; }
-  #file.dirlist #date {
-    width: 22%; }
-  #file.dirlist #type {
-    width: 15%; }
-  #file.dirlist td.file-perm {
-    width: 7%;
-    font-family: monospace;
-    font-size: larger; }
+
+#file.dirlist tr.file td, #file.dirlist tr td {
+  border-top: 1px solid gray;
+  word-break: break-all; }
+#file.dirlist div.file {
+  height: 173px;
+  width: 123px;
+  text-align: center;
+  float: left;
+  margin: 5px;
+  overflow: hidden;
+  border: 1px solid transparent; }
+  #file.dirlist div.file span.file-name {
+    display: block;
+    font-weight: bold;
+    font-size: larger;
+    word-wrap: break-word; }
+  #file.dirlist div.file span.file-size, #file.dirlist div.file span.file-date, #file.dirlist div.file span.file-perm {
+    display: block; }
+  #file.dirlist div.file span.file-img {
+    position: relative; }
+    #file.dirlist div.file span.file-img img.file-img-link {
+      position: absolute;
+      bottom: 0px;
+      left: 0px; }
+    #file.dirlist div.file span.file-img img.file-restricted-link {
+      position: absolute;
+      bottom: 0px;
+      right: 0px; }
+#file.dirlist #name {
+  width: 46%; }
+#file.dirlist #size {
+  width: 10%; }
+#file.dirlist #date {
+  width: 22%; }
+#file.dirlist #type {
+  width: 15%; }
+#file.dirlist td.file-perm {
+  width: 7%;
+  font-family: monospace;
+  font-size: larger; }
 
 #file.dirlist .restricted.file, #filesel .content .files-container table.files tr.restricted.file {
   background-color: #ddd;
@@ -235,9 +236,8 @@ h2 {
     height: 100%;
     float: left; }
     #filesel .content .files-container table.files {
-      width: 100%; }
-      #filesel .content .files-container table.files tr.file {
-        border-spacing: 0px 1px; }
+      width: 100%;
+      border-spacing: 0px 1px; }
   #filesel.preview .content .files-container {
     width: 55%; }
   #filesel.preview .content .preview {
