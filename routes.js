@@ -24,7 +24,7 @@ var
 exports.index = function(req, res) {
 	var scripts = ['File','Object','text','jade'].
 		map(function(f){return '/browserify/'+f+'.js'}).concat(
-			['jquery','jquery-ui.min','plugins','main','viewfile','trash','keypress','filesel'].
+			['jquery','jquery-ui.min','chosen.jquery.min','plugins','main','viewfile','trash','keypress','filesel'].
 			map(function(f){return '/js/'+f+'.js'}));
 	var sidebar = [
 		{name:_('places-home'), icon:'home', url:'~/'},
