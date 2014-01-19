@@ -13,11 +13,6 @@ function fileSelector(base, options, callback) {
 			name: '', // text to be initially placed in text input
 			_: _,
 			imageForFile: imageForFile,
-			files: (s.dirFirst?
-				files({type:'directory'}).order(s.sortby).get().concat(
-					files({type:{'!is':'directory'}}).order(s.sortby).get())
-				:files().order(s.sortby).get())
-				.map(function(i){return new LBFile(i)}),
 			dialog: {
 				title: _('filesel-title-open'),
 				close: function(e){
@@ -57,6 +52,16 @@ function fileSelector(base, options, callback) {
 				callback({name:name,selected:selected});
 			}
 		};
+		function filesFilter(){ // filter by type
+			return options.types.filter(function(reg){
+				return reg.test(this.type);
+			}, this).length;
+		}
+		options.files = (s.dirFirst?
+			files({type:'directory'}).filter(filesFilter).order(s.sortby).get().concat(
+				files({type:{'!is':'directory'}}).filter(filesFilter).order(s.sortby).get())
+			:files(filesFilter).order(s.sortby).get()).
+			map(function(i){return new LBFile(i)});
 
 		var dialog = $(jade.render('filesel',options));
 		$('.sidebar',dialog).append($('#sidebar-places li').clone().add(
