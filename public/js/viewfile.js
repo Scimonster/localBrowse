@@ -249,59 +249,56 @@ $(d).on('contextmenu','#file .file',function(e){
 		$(this).addClass('sel last');
 	}
 	var r = $('.sel').hasClass('restricted');
-	$.get('/programs/alleditors', {file: $('.file.sel').map(function(){return $(this).data('path')}).get()},
-		function(p){
-		$('<ul id="contextMenu">').appendTo('body').offset({top:e.pageY,left:e.pageX}).
-			html(jade.render('ctxMenu', {
-				list: $('.sel').length==1?[ // just one
-					{r:r,id:'open'},
-					null,
-					{r:r,id:'cut'},
-					{r:r,id:'copy'},
-					null,
-					{r:r,id:'moveTo'},
-					{r:r,id:'copyTo'},
-					{r:false,id:'makeLink',params:['']},
-					{r:r,id:'rename'},
-					null,
-					{r:r,id:'trash'},
-					null,
-					{r:false,id:'props'},
-				]:[ // more than one
-					{r:r,id:'open'},
-					null,
-					{r:r,id:'newFolder'},
-					null,
-					{r:r,id:'cut'},
-					{r:r,id:'copy'},
-					null,
-					{r:r,id:'moveTo'},
-					{r:r,id:'copyTo'},
-					{r:false,id:'makeLink',params:['s']},
-					null,
-					{r:r,id:'trash'},
-					null,
-					{r:false,id:'props'},
-				],
-				'_': _,
-				prefix: 'selfile',
-				programs: p
-			}));
-		$('#contextMenu').menu();
-		$('#contextMenu-file-cut').zclip({
-			path: 'js/ZeroClipboard.swf',
-			copy: function(){return copy($('.sel'),true)},
-			afterCopy: $.noop
-		});
-		$('#contextMenu-file-copy').zclip({
-			path: 'js/ZeroClipboard.swf',
-			copy: function(){return copy($('.sel'))},
-			afterCopy: $.noop
-		});
+	$('<ul id="contextMenu">').appendTo('body').offset({top:e.pageY,left:e.pageX}).
+		html(jade.render('ctxMenu', {
+			list: $('.sel').length==1?[ // just one
+				{r:r,id:'open'},
+				null,
+				{r:r,id:'cut'},
+				{r:r,id:'copy'},
+				null,
+				{r:r,id:'moveTo'},
+				{r:r,id:'copyTo'},
+				{r:false,id:'makeLink',params:['']},
+				{r:r,id:'rename'},
+				null,
+				{r:r,id:'trash'},
+				null,
+				{r:false,id:'props'},
+			]:[ // more than one
+				{r:r,id:'open'},
+				null,
+				{r:r,id:'newFolder'},
+				null,
+				{r:r,id:'cut'},
+				{r:r,id:'copy'},
+				null,
+				{r:r,id:'moveTo'},
+				{r:r,id:'copyTo'},
+				{r:false,id:'makeLink',params:['s']},
+				null,
+				{r:r,id:'trash'},
+				null,
+				{r:false,id:'props'},
+			],
+			'_': _,
+			prefix: 'selfile',
+			programs: programs.editorsForFile($('.file.sel').map(function(){return $(this).data('info')}).get(), true)
+		}));
+	$('#contextMenu').menu();
+	$('#contextMenu-file-cut').zclip({
+		path: 'js/ZeroClipboard.swf',
+		copy: function(){return copy($('.sel'),true)},
+		afterCopy: $.noop
+	});
+	$('#contextMenu-file-copy').zclip({
+		path: 'js/ZeroClipboard.swf',
+		copy: function(){return copy($('.sel'))},
+		afterCopy: $.noop
 	});
 });
 $(d).on('contextmenu','#file.dirlist',function(e){
-	if ($(e.target).add($(e.target).parent()).hasClass('file')) {return}
+	if ($(e.target).add($(e.target).parents('.file')).hasClass('file')) {return}
 	$('#contextMenu').remove();
 	$('<ul id="contextMenu">').appendTo('body').offset({top:e.pageY,left:e.pageX}).
 		html(jade.render('ctxMenu', {
@@ -317,29 +314,22 @@ $(d).on('contextmenu','#file.dirlist',function(e){
 });
 $(d).on('click','#contextMenu-folder-paste',function(){paste()}); // no event object
 $(d).on('click','#contextMenu-file-props',function(){
-	$.get('/programs/alleditors', {file: $('.file.sel').map(function(){return $(this).data('path')}).get()},
-		function(p){
-		$.get('/programs/alleditors', function(allp){
-			allp = {allEditors: allp};
-			allp.editorsForFile = function(){return p}; // temporary hack
-			$.post('/info/info',{file:$('.sel.last').data('path'),stat:true}, function(i){
-				i = new LBFile(i);
-				var tabs = [
-					{title: 'Basic', file: 'basic', locals: {imageForFile: imageForFile, _: _, i: i}},
-					{title: 'Permissions', file: 'perms', locals: {_: _, i: i}},
-					{title: 'Open With', file: 'openwith', locals: {_: _, i: i, programs: allp}},
-				];
-				$('body').append(jade.render('properties/index.jade', {
-					tabs: tabs.map(function(t){return {title: t.title, short: t.file}}),
-					file: i,
-					compiled: tabs.map(function(tab){return jade.render('properties/'+tab.file, tab.locals)}),
-					_: _
-				}));
-				$('#props').tabs({heightStyle:'auto'}).dialog({width:500,buttons:[
-					{text: _('props-buttons-close'), click: function(){$(this).dialog('close')}}
-				]});
-			});
-		});
+	$.post('/info/info',{file:$('.sel.last').data('path'),stat:true}, function(i){
+		i = new LBFile(i);
+		var tabs = [
+			{title: 'Basic', file: 'basic', locals: {imageForFile: imageForFile, _: _, i: i}},
+			{title: 'Permissions', file: 'perms', locals: {_: _, i: i}},
+			{title: 'Open With', file: 'openwith', locals: {_: _, i: i, programs: programs}},
+		];
+		$('body').append(jade.render('properties/index.jade', {
+			tabs: tabs.map(function(t){return {title: t.title, short: t.file}}),
+			file: i,
+			compiled: tabs.map(function(tab){return jade.render('properties/'+tab.file, tab.locals)}),
+			_: _
+		}));
+		$('#props').tabs({heightStyle:'auto'}).dialog({width:500,buttons:[
+			{text: _('props-buttons-close'), click: function(){$(this).dialog('close')}}
+		]});
 	});
 });
 
