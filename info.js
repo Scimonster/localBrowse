@@ -15,7 +15,8 @@ var fs     = require('fs-extra'),
 	prefex = require('preffy-extend'),
 	obj    = require('./Object.js'),
 	mmm    = require('mmmagic'),
-	mime   = require('mime');
+	mime   = require('mime'),
+	config = require('./config');
 
 /**
  * List of actions to run 
@@ -187,16 +188,8 @@ exports.info = function(file, cb, content, stat) {
 							finished();
 						});
 					}
-					var magic = new mmm.Magic(mmm.MAGIC_MIME_TYPE); // MIME checking dependencies
-					magic.detectFile(file, function(m_e, m_type) {
-						if (m_e || m_type=='regular file, no read permission' || m_type=='text/plain') { // Magic error, use lazy checking
-							i.type = mime.lookup(file);
-							if (i.type==mime.default_type && m_type=='text/plain') {
-								i.type = 'text/plain';
-							}
-						} else {
-							i.type = m_type;
-						}
+					exports.info.type(file, function(t){
+						i.type = t;
 						finished();
 					});
 					i.size = s.size;
@@ -254,13 +247,23 @@ exports.info = function(file, cb, content, stat) {
 }
 
 exports.info.type = function(file, cb) {
-	var mmm = require('mmmagic'), magic = new mmm.Magic(mmm.MAGIC_MIME_TYPE); // MIME checking dependencies
+	var magic = new mmm.Magic(mmm.MAGIC_MIME_TYPE), type;
 	magic.detectFile(file, function(m_e, m_type) {
-		if (m_e || m_type=='regular file, no read permission') { // Magic error, use lazy checking
-			cb(require('mime').lookup(file));
+		if (m_e || m_type=='regular file, no read permission' || m_type=='text/plain') { // Magic error, use lazy checking
+			type = mime.lookup(file);
+			if (/^application/.test(type) && config.filetypes.application_to_text.indexOf(type.substr(12)) || /^application\/.*\+?xml$/.test(type)) {
+				type = type.replace(/^application/,'text');
+				if (type=='text/x-shellscript') {
+					type = 'text/x-sh';
+				}
+			}
+			if (type==mime.default_type && m_type=='text/plain') {
+				type = 'text/plain';
+			}
 		} else {
-			cb(m_type);
+			type = m_type;
 		}
+		cb(type);
 	});
 };
 

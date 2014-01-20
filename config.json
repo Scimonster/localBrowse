@@ -3,5 +3,12 @@
 	"lang": {
 		"name": "English",
 		"code": "en"
+	},
+	"filetypes": {
+		"application_to_text": [
+			"javascript",
+			"x-sh",
+			"x-shellscript"
+		]
 	}
 }
