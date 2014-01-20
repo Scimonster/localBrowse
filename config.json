@@ -10,5 +10,10 @@
 			"x-sh",
 			"x-shellscript"
 		]
+	},
+	"programs": {
+		"defaults": {
+			"text/plain": "text"
+		}
 	}
 }

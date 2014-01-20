@@ -1,10 +1,12 @@
+mixin optgroup(label, list)
+	optgroup(label=_('props-openwith-'+label))
+		each p in list
+			option(value=p.modName,title=p.desc,selected=p.modName==defProg)= p.name
 - var openers = programs.editorsForFile(i)
 - var others = programs.allEditors.filter(function(p){return openers.map(function(pr){return pr.modName}).indexOf(p.modName)==-1})
 h4= _('props-openwith-title',i.name,i.type)
-select(size=5)
-	optgroup(label=_('props-openwith-programs'))
-		each p in openers
-			option(value=p.modName,title=p.desc)= p.name
-	optgroup(label=_('props-openwith-others'))
-		each p in others
-			option(value=p.modName,title=p.desc)= p.name
+select.openwith-program
+	+optgroup('programs', openers)
+	+optgroup('others', others)
+script(type='text/javascript').
+	$('select.openwith-program').chosen();

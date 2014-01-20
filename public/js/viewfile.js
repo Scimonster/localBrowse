@@ -18,6 +18,10 @@ function viewFile() {
 			loadProgram($('#file').data('program'));
 			return;
 		}
+		if (config.programs.defaults[f.type]) { // open in default program
+			loadProgram(config.programs.defaults[f.type]);
+			return;
+		}
 		$.get('/programs/editors?file='+file.path, function(editors){
 			if (editors.length == 1) {
 				loadProgram(editors[0].modName);
@@ -319,7 +323,7 @@ $(d).on('click','#contextMenu-file-props',function(){
 		var tabs = [
 			{title: 'Basic', file: 'basic', locals: {imageForFile: imageForFile, _: _, i: i}},
 			{title: 'Permissions', file: 'perms', locals: {_: _, i: i}},
-			{title: 'Open With', file: 'openwith', locals: {_: _, i: i, programs: programs}},
+			{title: 'Open With', file: 'openwith', locals: {_: _, i: i, programs: programs, defProg: config.programs.defaults[i.type]}},
 		];
 		$('body').append(jade.render('properties/index.jade', {
 			tabs: tabs.map(function(t){return {title: t.title, short: t.file}}),
@@ -328,7 +332,7 @@ $(d).on('click','#contextMenu-file-props',function(){
 			_: _
 		}));
 		$('#props').tabs({heightStyle:'auto'}).dialog({width:500,buttons:[
-			{text: _('props-buttons-close'), click: function(){$(this).dialog('close')}}
+			{text: _('props-buttons-close'), click: function(){$(this).dialog('close').dialog('destroy').remove()}}
 		]});
 	});
 });

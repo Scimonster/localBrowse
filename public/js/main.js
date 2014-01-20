@@ -18,8 +18,16 @@ var
 	iconset = [], // deprecated, probably
 	toPaste = {}, // fromPath=>toPath
 	LBFile = require('./File.js'), // LBFile class, containing file methods
-	obj = require('./Object.js'); // object helpers
-$.get('/info/localbrowseCWD',function(cwd){getDirContents(cwd+'/public/img/fatcow/16x16',{cont:false,simple:true},function(i){iconset = i().get()})});
+	obj = require('./Object.js'),
+	config; // object helpers
+$.get('/info/localbrowseCWD',function(cwd){
+	getDirContents(cwd+'/public/img/fatcow/16x16',{cont:false,simple:true},function(i){
+		iconset = i().get();
+	});
+});
+$.get('/config',function(conf){
+	config = conf;
+});
 
 LBFile.prototype.resolve = function() {
 	// Get a full absolute path from a URL-path

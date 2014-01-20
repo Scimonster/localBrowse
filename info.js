@@ -251,7 +251,7 @@ exports.info.type = function(file, cb) {
 	magic.detectFile(file, function(m_e, m_type) {
 		if (m_e || m_type=='regular file, no read permission' || m_type=='text/plain') { // Magic error, use lazy checking
 			type = mime.lookup(file);
-			if (/^application/.test(type) && config.filetypes.application_to_text.indexOf(type.substr(12)) || /^application\/.*\+?xml$/.test(type)) {
+			if (/^application/.test(type) && config.filetypes.application_to_text.indexOf(type.substr(12))!=-1 || /^application\/.*\+?xml$/.test(type)) {
 				type = type.replace(/^application/,'text');
 				if (type=='text/x-shellscript') {
 					type = 'text/x-sh';
