@@ -2,6 +2,7 @@ var
 	w = window, // shortcuts
 	d = document,
 	bytes = 0, requests = 0, // development - bytes transferred
+	activeAjax = 0,
 	s = { // settings
 		sortby: 'name', // in directory list view, sort by this
 		asec: true, // show in ascending order
@@ -537,4 +538,10 @@ $(d).ajaxSuccess(function(e, xhr, settings){
 	console.log(settings.url+'?'+settings.data+': '+b)
 	console.log(bytes);
 	console.log('average: '+(bytes/requests));
+});
+$(d).ajaxComplete(function(){
+	activeAjax--;
+});
+$(d).ajaxSend(function(){
+	activeAjax++;
 });
