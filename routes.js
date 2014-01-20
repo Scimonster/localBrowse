@@ -25,7 +25,8 @@ exports.index = function(req, res) {
 	var scripts = ['File','Object','text','jade'].
 		map(function(f){return '/browserify/'+f+'.js'}).concat(
 			['jquery','jquery-ui.min','chosen.jquery.min','plugins','main','viewfile','trash','keypress','filesel'].
-			map(function(f){return '/js/'+f+'.js'}));
+			map(function(f){return '/js/'+f+'.js'})).
+		concat(['/browserify/programs.js']);
 	var sidebar = [
 		{name:_('places-home'), icon:'home', url:'~/'},
 		{name:_('places-docs'), icon:'document', url:'~/Document/'},
@@ -132,8 +133,8 @@ exports.browserify.jade = function(req, res) {
 					if (typeof obj[i]=='object') {
 						js += gen(obj[i], path.join(dir, i));
 					}
-				} else {
-					js += 'jade.files['+JSON.stringify(path.join(dir, i))+'] = '
+				} else if (/\.jade$/.test(i)) {
+					js += 'jade.files['+JSON.stringify(path.join(dir, i))+'] = ';
 					js += jade.compileFileClient(path.join(dir, i));
 					js += ';\n';
 				}
@@ -141,6 +142,16 @@ exports.browserify.jade = function(req, res) {
 			return js;
 		}
 	});
+};
+
+/**
+ * GET local programs
+ * @param {Object} req Express request object
+ * @param {Object} res Express response object
+ */
+exports.browserify.programs = function(req, res) {
+	res.header('Content-Type', 'text/javascript');
+	res.send(require('./programs/client'));
 };
 
 /**

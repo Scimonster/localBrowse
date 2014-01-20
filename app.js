@@ -37,6 +37,7 @@ app.get('/browserify/File.js', routes.browserify.File);
 app.get('/browserify/Object.js', routes.browserify.Object);
 app.get('/browserify/text.js', routes.browserify.text);
 app.get('/browserify/jade.js', routes.browserify.jade);
+app.get('/browserify/programs.js', routes.browserify.programs);
 
 // info for parsing
 app.get('/info/:action/*', routes.info.routes.get);
