@@ -8,18 +8,19 @@
   "dependencies": {
     "express": "3.x",
     "jade": "1.x",
-    "mmmagic": "*",
-    "mime": "*",
-    "fs-extra": "*",
-    "taffy": "*",
-    "uglify-js": "*",
-    "browserify": "*",
-    "extend": "*",
-    "preffy-extend": "*",
-    "escape-html": "*",
-    "put-selector": "Scimonster/put-selector"
+    "mmmagic": "",
+    "mime": "",
+    "fs-extra": "",
+    "taffy": "",
+    "uglify-js": "",
+    "browserify": "",
+    "extend": "",
+    "preffy-extend": "",
+    "escape-html": "",
+    "put-selector": "Scimonster/put-selector",
+    "json-fn": ""
   },
   "devDependencies": {
-    "jsdoc": "*"
+    "jsdoc": ""
   }
 }
