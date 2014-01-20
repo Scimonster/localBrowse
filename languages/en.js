@@ -19,6 +19,7 @@ var en = {
 		"index-new-dir": "directory",
 		"index-new-file": "file",
 		"index-new-link": "link",
+		"index-new-download": "download",
 		"index-search": "search",
 		// index-loc-*: headers in location sidebar
 		"index-loc-tree": "Tree",
@@ -148,10 +149,13 @@ var en = {
 		"new-dir": "New directory",
 		"new-file": "New file",
 		"new-link": "New link",
+		"new-download": "New download",
 		"new-dir-name": "Name of new directory",
 		"new-file-name": "Name of new file",
 		"new-link-name": "Name of new link",
 		"new-link-file": "File to link to",
+		"new-download-location": "URL to download from",
+		"new-download-name": "Name of downloaded file",
 
 		// ajaxerror-*: if we have an error
 		"ajaxerror": "Connection Error",

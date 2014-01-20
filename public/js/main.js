@@ -427,6 +427,24 @@ $(function(){ // set up jqUI elements
 			}
 		);
 	});
+	$('#new-download').click(function() {
+		jqUI.prompt(
+			{text: _('new-download-location'),title: _('new-download')},
+			function(loc){
+				if (loc) {
+					jqUI.prompt({
+						text: _('new-download-name'),
+						title: _('new-download'),
+						value: LBFile.path.basename(loc)
+					}, function(filename){
+						if (filename) {
+							$.post('/download', {url: loc, dest: file.addSlashIfNeeded()+filename}, load);
+						}
+					});
+				}
+			}
+		);
+	});
 	load();
 	loadBookmarks();
 	$('#new-bookmark').click(addBookmark).button();
