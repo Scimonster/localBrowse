@@ -57,8 +57,6 @@ app.post('/programs/alleditors', routes.programs);
 app.get('/config', routes.config.get);
 app.post('/config', routes.config.post);
 
-app.post('/download', routes.download);
-
 http.createServer(app).listen(app.get('port'), function() {
 	console.log('Express server listening on port ' + app.get('port'));
 });

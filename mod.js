@@ -6,7 +6,7 @@
  * @requre fs-extra
  */
 
-var fs = require('fs-extra');
+var fs = require('fs-extra'), http = require('http');
 
 /**
  * POST requests to /mod
@@ -45,6 +45,30 @@ exports.mkfile = function(req, res) {
 		}
 	});
 };
+
+/**
+ * Download a file from a remote server
+ */
+ // http://stackoverflow.com/a/17676794/3187556
+exports.download = function(req, res) {
+	var request = http.get(req.body.url, function(response){
+		var file = fs.createWriteStream(req.body.dest);
+		response.pipe(file);
+		file.on('finish', function(){
+			file.close();
+			res.send(true);
+		});
+		file.on('error', function(e){
+			res.send(false);
+			console.log('error writing file '+req.body.dest+' having downloaded from url '+req.body.url);
+			console.log(e);
+		});
+	}).on('error', function(e){
+		res.send(false);
+		console.log('error downloading from url '+req.body.url);
+		console.log(e);
+	});
+}
 
 /**
  * Create a symlink

@@ -438,7 +438,7 @@ $(function(){ // set up jqUI elements
 						value: LBFile.path.basename(loc)
 					}, function(filename){
 						if (filename) {
-							$.post('/download', {url: loc, dest: file.addSlashIfNeeded()+filename}, load);
+							$.post('/mod', {action: 'download', url: loc, dest: file.addSlashIfNeeded()+filename}, $.noop);
 						}
 					});
 				}
