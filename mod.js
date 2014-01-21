@@ -41,7 +41,7 @@ exports.mkfile = function(req, res) {
 				res.send(!!written);
 			});
 		} else {
-			res.send(!!e); // send success
+			res.send(!e); // send success
 		}
 	});
 };
@@ -77,7 +77,7 @@ exports.download = function(req, res) {
  */
 exports.link = function(req, res) {
 	fs.symlink(req.body.src, req.body.dest, function(e) {
-		res.send(!!e);
+		res.send(!e);
 	});
 };
 
@@ -165,4 +165,15 @@ exports.move = function(req, res, copy) {
 
 exports.copy = function(req, res) {
 	exports.move(req, res, true);
+};
+
+/**
+ * chmod a file
+ * @param {Object} req Express request object
+ * @param {Object} res Express response object
+ */
+exports.chmod = function(req, res) {
+	fs.chmod(req.body.file, req.body.mode, function(e) {
+		res.send(!e);
+	});
 };

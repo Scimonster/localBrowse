@@ -273,6 +273,7 @@ exports.search = function(req, res) {
 /**
  * GET/POST configuration items
  */
+fs.jsonfile.spaces = '\t';
 exports.config = {};
 exports.config.get = function(req, res) {
 	res.send(req.query.item?req.query.item.split('.').reduce(function(o,n){return o[n]}, config):config);
