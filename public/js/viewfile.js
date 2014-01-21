@@ -364,26 +364,16 @@ $(d).on('click','#contextMenu-file-props',function(){
 		$('#props').tabs({
 			heightStyle: 'auto',
 			activate: function(e, ui){
-				tabs.forEach(function(tab){
-					if (tab.file == ui.newPanel.attr('id').substr(6)) {
-						(tab.load || $.noop)();
-					}
-				});
+				(tabs[$(this).tabs('option','active')].load || $.noop)();
 			},
 			create: function(e, ui){
-				tabs.forEach(function(tab){
-					if (tab.file == ui.panel.attr('id').substr(6)) {
-						(tab.load || $.noop)();
-					}
-				});
+				(tabs[$(this).tabs('option','active')].load || $.noop)();
 			}
 		}).dialog({
 			width: 500,
 			buttons: [
 				{text: _('props-buttons-close'), click: function(){
-					tabs.forEach(function(tab){
-						tab.close();
-					});
+					(tabs[$(this).tabs('option','active')].close || $.noop)();
 					$(this).dialog('close').dialog('destroy').remove();
 				}}
 			]
