@@ -6,7 +6,7 @@
  * @requre fs-extra
  */
 
-var fs = require('fs-extra'), http = require('http');
+var fs = require('fs-extra'), http = require('http'), obj = require('./Object');
 
 /**
  * POST requests to /mod
@@ -157,8 +157,8 @@ exports.move = function(req, res, copy) {
 		});
 	}
 	function done() {
-		if (pasted.length===req.body.files.length) {
-			res.send(pasted.filter(function(i){return i})); // remove null entries
+		if (pasted.length===Object.keys(req.body.files).length) {
+			res.send(obj.filter(pasted,true)); // remove null entries
 		}
 	}
 };
