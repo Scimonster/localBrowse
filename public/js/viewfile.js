@@ -321,9 +321,28 @@ $(d).on('click','#contextMenu-file-props',function(){
 	$.post('/info/info',{file:$('.sel.last').data('path'),stat:true}, function(i){
 		i = new LBFile(i);
 		var tabs = [
-			{title: 'Basic', file: 'basic', locals: {imageForFile: imageForFile, _: _, i: i}},
-			{title: 'Permissions', file: 'perms', locals: {_: _, i: i}},
-			{title: 'Open With', file: 'openwith', locals: {_: _, i: i, programs: programs, defProg: config.programs.defaults[i.type]}},
+			{
+				title: 'Basic',
+				file: 'basic',
+				locals: {imageForFile: imageForFile, _: _, i: i},
+				close: $.noop
+			},
+			{
+				title: 'Permissions',
+				file: 'perms',
+				locals: {_: _, i: i},
+				close: $.noop
+			},
+			{
+				title: 'Open With',
+				file: 'openwith',
+				locals: {_: _, i: i, programs: programs, defProg: config.programs.defaults[i.type]},
+				close: function(){
+					$.post('/config', {newVal: $(':selected','select.openwith-program').val(), item: 'programs.defaults.'+i.type}, function(conf){
+						config = conf;
+					});
+				}
+			},
 		];
 		$('body').append(jade.render('properties/index.jade', {
 			tabs: tabs.map(function(t){return {title: t.title, short: t.file}}),
@@ -332,7 +351,12 @@ $(d).on('click','#contextMenu-file-props',function(){
 			_: _
 		}));
 		$('#props').tabs({heightStyle:'auto'}).dialog({width:500,buttons:[
-			{text: _('props-buttons-close'), click: function(){$(this).dialog('close').dialog('destroy').remove()}}
+			{text: _('props-buttons-close'), click: function(){
+				tabs.forEach(function(tab){
+					tab.close();
+				});
+				$(this).dialog('close').dialog('destroy').remove();
+			}}
 		]});
 	});
 });

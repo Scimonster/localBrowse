@@ -5,7 +5,7 @@ mixin optgroup(label, list)
 - var openers = programs.editorsForFile(i)
 - var others = programs.allEditors.filter(function(p){return openers.map(function(pr){return pr.modName}).indexOf(p.modName)==-1})
 h4= _('props-openwith-title',i.name,i.type)
-select.openwith-program
+select.openwith-program(style='width:100%')
 	+optgroup('programs', openers)
 	+optgroup('others', others)
 script(type='text/javascript').
