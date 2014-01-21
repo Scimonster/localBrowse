@@ -11,7 +11,7 @@ table
 		td= _('props-perms-owner-data', i.owner.name, i.owner.full)
 	tr
 		td= _('props-perms-access')
-		td
+		td.permSel
 			+permList(i, 1)
 	tr(height=15)
 	tr
@@ -19,7 +19,7 @@ table
 		td= i.group.name
 	tr
 		td= _('props-perms-access')
-		td
+		td.permSel
 			+permList(i, 2)
 	tr(height=15)
 	tr
@@ -27,11 +27,11 @@ table
 		td
 	tr
 		td= _('props-perms-access')
-		td
+		td.permSel
 			+permList(i, 3)
 	tr(height=15)
 	tr
 		td= _('props-perms-exec')
 		td
-			input(type="checkbox", checked=i.executable, id='props-perms-exec-box')
+			input#props-perms-exec-box(type="checkbox", checked=i.executable)
 			label(for='props-perms-exec-box')= _('props-perms-exec-box')

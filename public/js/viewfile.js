@@ -331,7 +331,17 @@ $(d).on('click','#contextMenu-file-props',function(){
 				title: 'Permissions',
 				file: 'perms',
 				locals: {_: _, i: i},
-				close: $.noop
+				close: function(){
+					$.post('/mod', {
+						action: 'chmod',
+						file: i.path,
+						mode: $(':selected','td.permSel select').map(function(){
+							console.log($(this).val())
+							console.log($('#props-perms-exec-box').is(':checked'))
+							return parseInt($(this).val())+crit.b_to_bin($('#props-perms-exec-box').is(':checked'));
+						}).get().join('')
+					}, $.noop);
+				}
 			},
 			{
 				title: 'Open With',
@@ -341,7 +351,8 @@ $(d).on('click','#contextMenu-file-props',function(){
 					$.post('/config', {newVal: $(':selected','select.openwith-program').val(), item: 'programs.defaults.'+i.type}, function(conf){
 						config = conf;
 					});
-				}
+				},
+				load: function(){$('select.openwith-program').chosen()}
 			},
 		];
 		$('body').append(jade.render('properties/index.jade', {
@@ -350,14 +361,33 @@ $(d).on('click','#contextMenu-file-props',function(){
 			compiled: tabs.map(function(tab){return jade.render('properties/'+tab.file, tab.locals)}),
 			_: _
 		}));
-		$('#props').tabs({heightStyle:'auto'}).dialog({width:500,buttons:[
-			{text: _('props-buttons-close'), click: function(){
+		$('#props').tabs({
+			heightStyle: 'auto',
+			activate: function(e, ui){
 				tabs.forEach(function(tab){
-					tab.close();
+					if (tab.file == ui.newPanel.attr('id').substr(6)) {
+						(tab.load || $.noop)();
+					}
 				});
-				$(this).dialog('close').dialog('destroy').remove();
-			}}
-		]});
+			},
+			create: function(e, ui){
+				tabs.forEach(function(tab){
+					if (tab.file == ui.panel.attr('id').substr(6)) {
+						(tab.load || $.noop)();
+					}
+				});
+			}
+		}).dialog({
+			width: 500,
+			buttons: [
+				{text: _('props-buttons-close'), click: function(){
+					tabs.forEach(function(tab){
+						tab.close();
+					});
+					$(this).dialog('close').dialog('destroy').remove();
+				}}
+			]
+		});
 	});
 });
 
