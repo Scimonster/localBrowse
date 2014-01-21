@@ -325,7 +325,13 @@ $(d).on('click','#contextMenu-file-props',function(){
 				title: 'Basic',
 				file: 'basic',
 				locals: {imageForFile: imageForFile, _: _, i: i},
-				close: $.noop
+				close: function(){
+					if ($('#props-basic-name').val() != i.name) {
+						var f = {};
+						f[i.path] = i.dir + $('#props-basic-name').val();
+						$.post('/mod', {action: 'move', files: f}, $.noop);
+					}
+				}
 			},
 			{
 				title: 'Permissions',
