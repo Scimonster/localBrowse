@@ -218,6 +218,10 @@ exports.info = function(file, cb, content, stat) {
 			i.realpath = rp;
 			finished();
 		});
+		exports.perms(path.dirname(file), 1, function(w) { // parent writable?
+			i.parentWritable = w;
+			finished();
+		});
 	});
 	/**
 	 * Executes the callback function if all asynchronous actions have completed
@@ -226,6 +230,7 @@ exports.info = function(file, cb, content, stat) {
 		if (
 			!sent &&
 			typeof i.writable !== 'undefined' &&
+			typeof i.parentWritable !== 'undefined' &&
 			typeof i.readable !== 'undefined' &&
 			typeof i.executable !== 'undefined' &&
 			typeof i.date !== 'undefined' &&

@@ -23,6 +23,7 @@ function LBFile(path) {
 	this.items = null;
 	this.link = null;
 	this.owner = {is:false};
+	this.parentWritable = false;
 	this.path = path; // except path
 	this.perm = '0000',
 	this.readable = false;
