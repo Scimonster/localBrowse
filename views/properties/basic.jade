@@ -4,7 +4,7 @@ table
 			img(src=imageForFile(i,true))
 		td= _('props-basic-name')
 		td
-			input#props-basic-name(type="text",value=i.name)
+			input#props-basic-name(type="text",value=i.name,readonly=!i.parentWritable)
 	tr
 		td= _('props-basic-type')
 		td= _(i.type)

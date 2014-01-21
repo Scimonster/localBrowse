@@ -1,5 +1,5 @@
 mixin permList(i,c)
-	select
+	select(disabled=!i.parentWritable)
 		option(value=6, selected=parseInt(i.perm[c])>=6)= _('props-perms-access-rw')
 		option(value=4, selected=parseInt(i.perm[c])>=4&&parseInt(i.perm[c])<6)= _('props-perms-access-r')
 		option(value=2, selected=parseInt(i.perm[c])>=2&&parseInt(i.perm[c])<4)= _('props-perms-access-w')
@@ -33,5 +33,5 @@ table
 	tr
 		td= _('props-perms-exec')
 		td
-			input#props-perms-exec-box(type="checkbox", checked=i.executable)
+			input#props-perms-exec-box(type="checkbox", checked=i.executable, disabled=!i.parentWritable)
 			label(for='props-perms-exec-box')= _('props-perms-exec-box')
