@@ -2,7 +2,7 @@ mixin item(i)
 	if i===null
 		li
 	else
-		li(class=i.r=="true"?'ui-state-disabled':'',id='contextMenu-file-'+i.id)
+		li(class=i.r?'ui-state-disabled':'',id='contextMenu-'+ns+'-'+i.id)
 			if i.params
 				a!= _.apply(null,['ctxm-'+prefix+'-'+i.id].concat(i.params))
 			else

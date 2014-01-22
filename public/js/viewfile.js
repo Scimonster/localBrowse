@@ -285,8 +285,9 @@ $(d).on('contextmenu','#file .file',function(e){
 				null,
 				{r:false,id:'props'},
 			],
-			'_': _,
+			_: _,
 			prefix: 'selfile',
+			ns: 'file',
 			programs: programs.editorsForFile($('.file.sel').map(function(){return $(this).data('info')}).get(), true)
 		}));
 	$('#contextMenu').menu();
@@ -313,12 +314,13 @@ $(d).on('contextmenu','#file.dirlist',function(e){
 				{r:false,id:'props'}
 			],
 			prefix: 'dirlist',
-			'_': _})).
+			ns: 'folder',
+			_: _})).
 		appendTo('body').menu().offset({top:e.pageY,left:e.pageX});
 });
 $(d).on('click','#contextMenu-folder-paste',function(){paste()}); // no event object
-$(d).on('click','#contextMenu-file-props',function(){
-	$.post('/info/info',{file:$('.sel.last').data('path'),stat:true}, function(i){
+$(d).on('click','#contextMenu-file-props,#contextMenu-folder-props',function(){
+	$.post('/info/info',{file:/folder/.test(this.id)?file.path:$('.sel.last').data('path'),stat:true}, function(i){
 		i = new LBFile(i);
 		var tabs = [
 			{
@@ -380,9 +382,12 @@ $(d).on('click','#contextMenu-file-props',function(){
 			buttons: [
 				{text: _('props-buttons-close'), click: function(){
 					(tabs[$(this).tabs('option','active')].close || $.noop)();
-					$(this).dialog('close').dialog('destroy').remove();
+					$(this).dialog('close');
 				}}
-			]
+			],
+			close: function(){
+				$(this).dialog('destroy').remove();
+			}
 		});
 	});
 });
