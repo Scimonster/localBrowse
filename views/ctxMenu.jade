@@ -3,10 +3,7 @@ mixin item(i)
 		li
 	else
 		li(class=i.r?'ui-state-disabled':'',id='contextMenu-'+ns+'-'+i.id)
-			if i.params
-				a!= _.apply(null,['ctxm-'+prefix+'-'+i.id].concat(i.params))
-			else
-				a!= _('ctxm-'+prefix+'-'+i.id)
+			a!= i.params?_.apply(null,[i.label||'ctxm-'+prefix+'-'+i.id].concat(i.params)):_(i.label||'ctxm-'+prefix+'-'+i.id)
 			if i.id=='open' && prefix=='selfile'
 				ul
 					- each p in programs
