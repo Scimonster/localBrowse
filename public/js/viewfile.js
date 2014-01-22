@@ -395,9 +395,10 @@ $(d).on('click','#contextMenu-file-moveTo,#contextMenu-file-copyTo',function(){
 	var sel = $('#file .file.sel').map(function(){return $(this).data('path')}).get(), id = this.id.substr(17,4);
 	fileSelector(file.path, {
 		types: [{name:_('filetype-dir'),reg:/^directory$/}],
-		buttonLabel: _('filesel-button-'+id)
-	}, function(loc){
-		paste(sel,loc.path,id=='move');
+		buttonLabel: _('filesel-button-'+id),
+		nosel: true
+	}, function(dir,parent){
+		paste(sel,dir?dir.path:parent,id=='move');
 	});
 });
 
