@@ -48,7 +48,7 @@ function fileSelector(base, options, callback) {
 				}
 				console.log(selected)
 			} else {
-				selected = null;
+				selected = options.multiple?[]:new LBFile();
 			}
 			$(this).dialog('close').dialog('destroy').remove();
 			callback(selected,LBFile.path.join(base,name));
@@ -100,16 +100,10 @@ function fileSelector(base, options, callback) {
 }
 
 fileSelector.filter = function(regex) {
-	var files = $('#filesel').data('files')({type:{regex:regex}});
-	$('#filesel table.files').html(jade.render('filesel.files', {
-		_: _,
-		imageForFile: imageForFile,
-		files: (s.dirFirst?
-			files.filter({type:'directory'}).order(s.sortby).get().concat(
-				files.filter({type:{'!is':'directory'}}).order(s.sortby).get())
-			:files.order(s.sortby).get()).
-			map(function(i){return new LBFile(i)})
-	}));
+	var otherfiles = $('#filesel').data('files')({type:{'!regex':regex}}).select('name');
+	$('#filesel table.files .file').filter(function(){
+		return otherfiles.indexOf($(this).data('info').name)>-1;
+	}).addClass('disabled');
 };
 
 fileSelector.updatePreview = function() {
@@ -129,6 +123,7 @@ fileSelector.updatePreview = function() {
 
 
 $(d).on('click','#filesel .files .file', function(e){
+	if ($(this).hasClass('disabled')) {return}
 	if ($(this).hasClass('sel')) {
 		if ($('#filesel').hasClass('multiple') && e.ctrlKey && $('#filesel .sel').length>1) {
 			$(this).removeClass('sel');

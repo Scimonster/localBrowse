@@ -239,6 +239,8 @@ h2 {
     #filesel .content .files-container table.files {
       width: 100%;
       border-spacing: 0px 1px; }
+      #filesel .content .files-container table.files tr.file.disabled {
+        background-color: gray; }
   #filesel .types {
     z-index: 100;
     font-size: 0.9em;

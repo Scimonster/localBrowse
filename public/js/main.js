@@ -430,7 +430,9 @@ $(function(){ // set up jqUI elements
 						buttonLabel: _('new-link'),
 						title: _('new-link-file')
 					}, function(linkto){
-						$.post('/mod',{action:'link',dest:file.addSlashIfNeeded()+filename,src:linkto.path},load);
+						if (linkto) {
+							$.post('/mod',{action:'link',dest:file.addSlashIfNeeded()+filename,src:linkto.path},refresh);
+						}
 					});
 				}
 			}
@@ -532,14 +534,14 @@ function refresh(){
 		getDirContents(file.path,function(f){
 			var selList, selLast, scroll;
 			listDir(f,function(){
-				selList = $('.sel').map(function(){
-					return $(this).find('.file-name').text();
+				selList = $('#file .sel').map(function(){
+					return $(this).data('info').name;
 				}).get();
-				selLast = $('.sel.last .file-name').text();
+				selLast = $('#file .sel.last').length?$('#file .sel.last').data('info').name:'';
 				scroll = {top:$('#file').scrollTop(),left:$('#file').scrollLeft()};
 			},function(){
-				$('.file').filter(function(){return selList.indexOf($(this).find('.file-name').text())>-1}).addClass('sel');
-				$('.file').filter(function(){return $(this).find('.file-name').text()==selLast}).addClass('last');
+				$('#file .file').filter(function(){return selList.indexOf($(this).data('info').name)>-1}).addClass('sel');
+				$('#file .file').filter(function(){return $(this).data('info').name==selLast}).addClass('last');
 				$('#file').scrollTop(scroll.top).scrollLeft(scroll.left);
 			});
 		})

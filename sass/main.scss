@@ -273,6 +273,10 @@ h2 {
 			
 				tr.file {
 					@extend %file;
+
+					&.disabled {
+						background-color: gray;
+					}
 				}
 			}
 		}

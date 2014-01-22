@@ -398,8 +398,10 @@ $(d).on('click','#contextMenu-file-moveTo,#contextMenu-file-copyTo',function(){
 		buttonLabel: _('filesel-button-'+id),
 		nosel: true
 	}, function(dir,parent){
-		paste(sel,dir?dir.path:parent,id=='move');
-		refresh();
+		if (dir) {
+			paste(sel,dir.exists?dir.path:parent,id=='move');
+			refresh();
+		}
 	});
 });
 $(d).on('click','#contextMenu-file-makeLink',function(){
@@ -408,18 +410,20 @@ $(d).on('click','#contextMenu-file-makeLink',function(){
 		types: [{name:_('filetype-dir'),reg:/^directory$/}],
 		nosel: true
 	}, function(dir,parent){
-		var complete = -1;
-		sel.forEach(function(f,i){
-			$.post('/mod', {
-				action: 'link',
-				dest: LBFile.addSlashIfNeeded(dir?dir.path:parent)+f.name,
-				src: f.path
-			}, function(){
-				if (++complete==i) {
-					refresh();
-				}
+		if (dir) {
+			var complete = -1;
+			sel.forEach(function(f,i){
+				$.post('/mod', {
+					action: 'link',
+					dest: LBFile.addSlashIfNeeded(dir.exists?dir.path:parent)+f.name,
+					src: f.path
+				}, function(){
+					if (++complete==i) {
+						refresh();
+					}
+				});
 			});
-		});
+		}
 	});
 });
 
