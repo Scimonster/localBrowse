@@ -175,10 +175,11 @@ function copy(files,cut) {
 	return files.join('\n');
 }
 
-function paste(files,destination) {
+function paste(files,destination,cut) {
 	// Reads files from the copy buffer and copies them to the CWD
 
-	files = files || sessionStorage.getItem('copy').split('\n');
+	cut         = cut         || sessionStorage.getItem('cut')==="true";
+	files       = files       || sessionStorage.getItem('copy').split('\n');
 	destination = destination || file.path;
 	function run(files,destination,cb) { // recursive function to paste all files and dirs
 		var recurse = 0; // recursion depth
@@ -276,7 +277,7 @@ function paste(files,destination) {
 		}
 	}
 	run(files,destination,function(){
-		$.post('/mod',{action:(sessionStorage.getItem('cut')==="true"?'move':'copy'),files:toPaste},function(pasted){
+		$.post('/mod',{action:cut?'move':'copy',files:toPaste},function(pasted){
 			pasted = pasted.filter(function(item){return (new LBFile(item)).dir===file.addSlashIfNeeded()}); // in this dir
 			$('.file').removeClass('sel last').filter(function(){
 				return pasted.indexOf($(this).data('path'))>-1;

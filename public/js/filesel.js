@@ -3,57 +3,58 @@ function fileSelector(base, options, callback) {
 		callback = options;
 		options = {};
 	}
-	function run(files){
-		options = $.extend(true, {
-			types: [{name:_('filetype-all'),reg:/.*/}], // MIMEtypes to accept
-			multiple: false, // let multiple files be selected
-			preview: true, // show a little info about the file
-			nosel: false, // allow dialog to be closed without a file having been selected
-			buttonLabel: _('filesel-button-open'), // text to be shown on OK button
-			name: '', // text to be initially placed in text input
-			title: _('filesel-title-open'), // title of dialog
-			_: _,
-			imageForFile: imageForFile,
-			dialog: {
-				close: function(e){
-					if (e.currentTarget) { // clicked X in corner
-						callback(null);
-					}
-				},
-				modal: true,
-				minHeight: 600,
-				minWidth: 600,
-				height: $(window).height()/1.1,
-				width: $(window).width()/1.5,
-				position: { my: "center", at: "center", of: window }
-			}
-		}, options, {dialog: {buttons: []}});
-		options.dialog.title = options.title
-		options.dialog.buttons[0] = {text: _('filesel-button-cancel'), click: function() {
-			$(this).dialog('close').dialog('destroy').remove();
-			callback(null);
-		}};
-		options.dialog.buttons[1] = {
-			text: options.buttonLabel,
-			icons: {primary: 'ui-icon-check'},
-			disabled: !options.nosel,
-			class: 'ok',
-			click: function() {
-				var selected = $('#filesel .files .file.sel'), name = $('#filesel-name').val();
-				if (selected.length) {
-					if (options.multiple) { // we need an array, even if just one was selected
-						selected = selected.map(function(){return new LBFile($(this).data('info'))}).get();
-					} else {
-						selected = new LBFile(selected.data('info'));
-					}
-					console.log(selected)
-				} else {
-					selected = null;
+	options = $.extend(true, {
+		types: [{name:_('filetype-all'),reg:/.*/}], // MIMEtypes to accept
+		multiple: false, // let multiple files be selected
+		preview: true, // show a little info about the file
+		nosel: false, // allow dialog to be closed without a file having been selected
+		buttonLabel: _('filesel-button-open'), // text to be shown on OK button
+		name: '', // text to be initially placed in text input
+		title: _('filesel-title-open'), // title of dialog
+		_: _,
+		imageForFile: imageForFile,
+		dialog: {
+			close: function(e){
+				if (e.currentTarget) { // clicked X in corner
+					callback(null);
 				}
-				$(this).dialog('close').dialog('destroy').remove();
-				callback(selected,LBFile.path.join(base,name));
+			},
+			modal: true,
+			minHeight: 600,
+			minWidth: 600,
+			height: $(window).height()/1.1,
+			width: $(window).width()/1.5,
+			position: { my: "center", at: "center", of: window }
+		},
+		beforereplace: $.noop
+	}, options, {dialog: {buttons: []}});
+	options.dialog.title = options.title
+	options.dialog.buttons[0] = {text: _('filesel-button-cancel'), click: function() {
+		$(this).dialog('close').dialog('destroy').remove();
+		callback(null);
+	}};
+	options.dialog.buttons[1] = {
+		text: options.buttonLabel,
+		icons: {primary: 'ui-icon-check'},
+		disabled: !options.nosel,
+		class: 'ok',
+		click: function() {
+			var selected = $('#filesel .files .file.sel'), name = $('#filesel-name').val();
+			if (selected.length) {
+				if (options.multiple) { // we need an array, even if just one was selected
+					selected = selected.map(function(){return new LBFile($(this).data('info'))}).get();
+				} else {
+					selected = new LBFile(selected.data('info'));
+				}
+				console.log(selected)
+			} else {
+				selected = null;
 			}
-		};
+			$(this).dialog('close').dialog('destroy').remove();
+			callback(selected,LBFile.path.join(base,name));
+		}
+	};
+	function run(files){
 		options.files = (s.dirFirst?
 			files({type:'directory'}).order(s.sortby).get().concat(
 				files({type:{'!is':'directory'}}).order(s.sortby).get())
@@ -70,6 +71,7 @@ function fileSelector(base, options, callback) {
 		$('.sidebar',dialog).append($('#sidebar-places li').clone().add(
 			$('#sidebar-bookmarks li').clone().each(function(){$('span[title]',this).remove()})
 		));
+		options.beforereplace();
 		dialog = $(dialog).dialog(options.dialog).height($(window).height()/1.5);
 		// no idea why the height suddenly stopped working
 		$('button.newfolder',dialog).button();
@@ -88,6 +90,7 @@ function fileSelector(base, options, callback) {
 			minLength: 0,
 			source: files().select('name')
 		});
+		fileSelector.filter(options.types[0].reg);
 	}
 	if (LBFile.addSlashIfNeeded(base)==LBFile.addSlashIfNeeded(file.path)) {
 		run($('#file').data('files'));
@@ -149,27 +152,38 @@ $(d).on('click','#filesel .files .file', function(e){
 	$('#filesel-name').val($(this).data('info').name);
 	fileSelector.updatePreview();
 });
-$(d).on('dblclick','#filesel .files .file', function(){
-	if ($(this).data('info').type=='directory') { // "cd" to the dir
-		var info = [
-			$(this).data('path'),
-			{
-				types: $('#filesel').data('types'),
-				multiple: $('#filesel').hasClass('multiple'),
-				preview: $('#filesel').hasClass('preview'),
-				nosel: $('#filesel').hasClass('nosel'),
-				buttonLabel: $('#filesel').parents('.ui-dialog').
-					find('.ui-dialog-buttonset button.ok').button('option','label'),
-				name: $('#filesel-name').val()
-			},
-			$('#filesel').data('callback'),
-		];
-		$('#filesel').dialog('close').dialog('destroy').remove();
-		fileSelector.apply(null,info);
-	} else {
-		$('#filesel').parents('.ui-dialog').find('.ui-dialog-buttonset button.ok').click();
+(function(){ // to avoid polluting with relaod()
+	function reload(loc) {
+			var info = [
+				loc,
+				{
+					types: $('#filesel').data('types'),
+					multiple: $('#filesel').hasClass('multiple'),
+					preview: $('#filesel').hasClass('preview'),
+					nosel: $('#filesel').hasClass('nosel'),
+					buttonLabel: $('#filesel').parents('.ui-dialog').
+						find('.ui-dialog-buttonset button.ok').button('option','label'),
+					name: $('#filesel-name').val(),
+					beforereplace: function(){
+						$('#filesel').dialog('close').dialog('destroy').remove();
+					}
+				},
+				$('#filesel').data('callback'),
+			];
+			fileSelector.apply(null,info);
 	}
-});
+	$(d).on('dblclick','#filesel .files .file', function(){
+		if ($(this).data('info').type=='directory') { // "cd" to the dir
+			reload($(this).data('path'));
+		} else {
+			$('#filesel').parents('.ui-dialog').find('.ui-dialog-buttonset button.ok').click();
+		}
+	});
+	$(d).on('click', '#filesel .top .pathbar a', function(){
+		reload($(this).attr('href').substr(1));
+		return false;
+	});
+})();
 
 $(d).on('change','#filesel select.types', function(){
 	fileSelector.filter(eval($('option:selected',this).val()));

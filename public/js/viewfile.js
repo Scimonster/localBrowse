@@ -391,6 +391,15 @@ $(d).on('click','#contextMenu-file-props,#contextMenu-folder-props',function(){
 		});
 	});
 });
+$(d).on('click','#contextMenu-file-moveTo,#contextMenu-file-copyTo',function(){
+	var sel = $('#file .file.sel').map(function(){return $(this).data('path')}).get(), id = this.id.substr(17,4);
+	fileSelector(file.path, {
+		types: [{name:_('filetype-dir'),reg:/^directory$/}],
+		buttonLabel: _('filesel-button-'+id)
+	}, function(loc){
+		paste(sel,loc.path,id=='move');
+	});
+});
 
 function imageForFile(f,big) {
 	if (f.type=='directory') {return 'img/fatcow/'+(big?'32x32':'16x16')+'/folder.png'}

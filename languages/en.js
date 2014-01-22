@@ -185,8 +185,11 @@ var en = {
 
 		// filesel-*: items in the file open/save dialog
 		"filesel-title-open": "Choose file to open",
+		"filesel-title-location": "Choose a location",
 		"filesel-button-open": "Open",
 		"filesel-button-save": "Save",
+		"filesel-button-copy": "Copy",
+		"filesel-button-move": "Move",
 		"filesel-button-cancel": "Cancel",
 		"filesel-top-name": "Name:",
 		"filesel-top-pathbar": "Location:",
@@ -196,6 +199,7 @@ var en = {
 
 		// filetype-*: Types of files
 		"filetype-all": "All",
+		"filetype-dir": "Directory",
 
 	}
 };
