@@ -186,6 +186,7 @@ var en = {
 		// filesel-*: items in the file open/save dialog
 		"filesel-title-open": "Choose file to open",
 		"filesel-title-location": "Choose a location",
+		"filesel-button-ok": "OK",
 		"filesel-button-open": "Open",
 		"filesel-button-save": "Save",
 		"filesel-button-copy": "Copy",

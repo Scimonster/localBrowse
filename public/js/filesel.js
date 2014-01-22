@@ -8,9 +8,9 @@ function fileSelector(base, options, callback) {
 		multiple: false, // let multiple files be selected
 		preview: true, // show a little info about the file
 		nosel: false, // allow dialog to be closed without a file having been selected
-		buttonLabel: _('filesel-button-open'), // text to be shown on OK button
+		buttonLabel: _('filesel-button-ok'), // text to be shown on OK button
 		name: '', // text to be initially placed in text input
-		title: _('filesel-title-open'), // title of dialog
+		title: _('filesel-title-location'), // title of dialog
 		_: _,
 		imageForFile: imageForFile,
 		dialog: {
@@ -188,5 +188,3 @@ $(d).on('click','#filesel .files .file', function(e){
 $(d).on('change','#filesel select.types', function(){
 	fileSelector.filter(eval($('option:selected',this).val()));
 });
-
-//clearInterval(refresh)

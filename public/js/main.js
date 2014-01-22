@@ -527,7 +527,7 @@ $(d).on('click','#sidebar-tree span.ui-icon',function sbTreeExpand(e) {
 	}
 });
 $(d).on('contextmenu',false);
-var refresh = setInterval(function(){
+function refresh(){
 	if ($('#file.dirlist').length && type!='search') {
 		getDirContents(file.path,function(f){
 			var selList, selLast, scroll;
@@ -557,7 +557,8 @@ var refresh = setInterval(function(){
 			}
 		});
 	}
-},10000);
+}
+refresh.interval = setInterval(refresh,10000);
 $(d).ajaxSuccess(function(e, xhr, settings){
 	var b = parseInt(xhr.getResponseHeader('Content-Length'));
 	bytes += b;

@@ -331,7 +331,7 @@ $(d).on('click','#contextMenu-file-props,#contextMenu-folder-props',function(){
 					if ($('#props-basic-name').val() != i.name) {
 						var f = {};
 						f[i.path] = i.dir + $('#props-basic-name').val();
-						$.post('/mod', {action: 'move', files: f}, $.noop);
+						$.post('/mod', {action: 'move', files: f}, refresh);
 					}
 				}
 			},
@@ -348,7 +348,7 @@ $(d).on('click','#contextMenu-file-props,#contextMenu-folder-props',function(){
 							console.log($('#props-perms-exec-box').is(':checked'))
 							return parseInt($(this).val())+crit.b_to_bin($('#props-perms-exec-box').is(':checked'));
 						}).get().join('')
-					}, $.noop);
+					}, refresh);
 				}
 			},
 			{
@@ -399,6 +399,27 @@ $(d).on('click','#contextMenu-file-moveTo,#contextMenu-file-copyTo',function(){
 		nosel: true
 	}, function(dir,parent){
 		paste(sel,dir?dir.path:parent,id=='move');
+		refresh();
+	});
+});
+$(d).on('click','#contextMenu-file-makeLink',function(){
+	var sel = $('#file .file.sel').map(function(){return $(this).data('info')}).get();
+	fileSelector(file.path, {
+		types: [{name:_('filetype-dir'),reg:/^directory$/}],
+		nosel: true
+	}, function(dir,parent){
+		var complete = -1;
+		sel.forEach(function(f,i){
+			$.post('/mod', {
+				action: 'link',
+				dest: LBFile.addSlashIfNeeded(dir?dir.path:parent)+f.name,
+				src: f.path
+			}, function(){
+				if (++complete==i) {
+					refresh();
+				}
+			});
+		});
 	});
 });
 
