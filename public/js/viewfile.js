@@ -426,6 +426,23 @@ $(d).on('click','#contextMenu-file-makeLink',function(){
 		}
 	});
 });
+$(d).on('click','#contextMenu-file-rename',function(){
+	$('#file .file.sel.last').addClass('renaming');
+	clearInterval(refresh.interval);
+	var nameContainer = $('td.file-name span, span.file-name', '#file .file.sel.last');
+	nameContainer.html('<input type="text" name="file-name" value="'+$('#file .sel.last').data('info').name+'" />');
+	$('input', nameContainer).focus();
+});
+$(d).on('keypress','#file .file .file-name input',function(e){
+	if (e.which==13||e.which==10) { // enter
+		var f = {};
+		f[$('#file .file.renaming').data('path')] = $('#file .file.renaming').data('info').dir+$(this).val();
+		$.post('/mod', {action:'move', files: f}, function(){
+			refresh.interval = setInterval(refresh,10000);
+			refresh();
+		});
+	}
+});
 
 function imageForFile(f,big) {
 	if (f.type=='directory') {return 'img/fatcow/'+(big?'32x32':'16x16')+'/folder.png'}
@@ -436,3 +453,10 @@ function imageForFile(f,big) {
 		else {return 'img/fatcow/'+(big?'32x32':'16x16')+'/document_empty.png'}
 	}
 }
+
+
+/*
+('Untitled Folder '+(function(d){return d.count()?d.order('name asec').get().map(function(name,i){return i==0?true:name.name.substr(16)==i+1}).concat(false).indexOf(false)+1:''})(db({name:{regex:/^Untitled Folder\s*(\d*|)$/}}))).trim()
+
+get name of new untitlde folder
+*/

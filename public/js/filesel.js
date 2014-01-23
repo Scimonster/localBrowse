@@ -178,6 +178,22 @@ $(d).on('click','#filesel .files .file', function(e){
 		reload($(this).attr('href').substr(1));
 		return false;
 	});
+	$(d).on('click', '#filesel td.create button.newfolder', function(){
+		jqUI.prompt(
+			{
+				text: _('new-dir-name'),
+				title: _('new-dir')
+			},
+			function(filename){
+				if (filename) {
+					$.post(
+						'/mod',{action:'mkdir',file:LBFile.addSlashIfNeeded($('#filesel').data('base'))+filename},
+						function(){reload(LBFile.addSlashIfNeeded($('#filesel').data('base'))+filename)}
+					);
+				}
+			}
+		);
+	});
 })();
 
 $(d).on('change','#filesel select.types', function(){
