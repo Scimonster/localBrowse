@@ -443,6 +443,16 @@ $(d).on('keypress','#file .file .file-name input',function(e){
 		});
 	}
 });
+$(d).on('click', '#contextMenu-folder-newFolder', function(){
+	$.post('/mod', {
+		action: 'mkdir',
+		file: file.addSlashIfNeeded()+('Untitled Folder '+(function(d){
+			return d.count()?d.order('name asec').get().map(function(name,i){
+				return i==0?true:name.name.substr(16)==i+1;
+			}).concat(false).indexOf(false)+1:'';
+		})($('#file').data('files')({name:{regex:/^Untitled Folder\s*(\d*|)$/}}))).trim()
+	}, refresh);
+});
 
 function imageForFile(f,big) {
 	if (f.type=='directory') {return 'img/fatcow/'+(big?'32x32':'16x16')+'/folder.png'}
@@ -453,10 +463,3 @@ function imageForFile(f,big) {
 		else {return 'img/fatcow/'+(big?'32x32':'16x16')+'/document_empty.png'}
 	}
 }
-
-
-/*
-('Untitled Folder '+(function(d){return d.count()?d.order('name asec').get().map(function(name,i){return i==0?true:name.name.substr(16)==i+1}).concat(false).indexOf(false)+1:''})(db({name:{regex:/^Untitled Folder\s*(\d*|)$/}}))).trim()
-
-get name of new untitlde folder
-*/
