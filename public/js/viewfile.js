@@ -427,11 +427,7 @@ $(d).on('click','#contextMenu-file-makeLink',function(){
 	});
 });
 $(d).on('click','#contextMenu-file-rename',function(){
-	$('#file .file.sel.last').addClass('renaming');
-	clearInterval(refresh.interval);
-	var nameContainer = $('td.file-name span, span.file-name', '#file .file.sel.last');
-	nameContainer.html('<input type="text" name="file-name" value="'+$('#file .sel.last').data('info').name+'" />');
-	$('input', nameContainer).focus();
+	$(w).trigger($.Event('keydown',{which:113}));
 });
 $(d).on('keypress','#file .file .file-name input',function(e){
 	if (e.which==13||e.which==10) { // enter

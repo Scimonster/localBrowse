@@ -124,6 +124,13 @@ $(w).keydown(function(e){
 			case 35: // end
 				end();
 				break;
+			case 113: // q, i.e. f2
+				$('#file .file.sel.last').addClass('renaming');
+				clearInterval(refresh.interval);
+				var nameContainer = $('td.file-name span, span.file-name', '#file .file.sel.last');
+				nameContainer.html('<input type="text" name="file-name" value="'+$('#file .sel.last').data('info').name+'" />');
+				$('input', nameContainer).focus();
+				break;
 		}
 	}
 });
