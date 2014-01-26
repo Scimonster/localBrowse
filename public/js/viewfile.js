@@ -36,7 +36,7 @@ function viewFile() {
 			$('#ajax-loader').remove();
 		}
 	});
-	$('#sidebar-tree').data('file',[file.path])
+	$('#sidebar-tree').data('file',[file.path]);
 	sidebarTree(file.path);
 	if (trash) {file.update(file.relative())}
 }
@@ -355,8 +355,10 @@ $(d).on('click','#contextMenu-file-props,#contextMenu-folder-props',function(){
 				file: 'openwith',
 				locals: {_: _, i: i, programs: programs, defProg: config.programs.defaults[i.type]},
 				close: function(){
-					$.post('/config', {newVal: $(':selected','select.openwith-program').val(), item: 'programs.defaults.'+i.type}, function(conf){
-						config = conf;
+					$.post('/config',
+						{newVal: $(':selected','select.openwith-program').val(), item: 'programs.defaults.'+i.type},
+						function(conf){
+							config = conf;
 					});
 				},
 				load: function(){$('select.openwith-program').chosen()}

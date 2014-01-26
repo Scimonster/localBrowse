@@ -2,7 +2,7 @@ $(w).keydown(function(e){
 	var keycode = e.which, key = String.fromCharCode(keycode);
 	if (key=='n' && e.ctrlKey) {$('#new').click(); e.preventDefault();}
 	if (
-		$(e.target).parents('#file').add(e.target).is('#file.dirlist') &&
+		$('#file.dirlist').length && !$('.ui-dialog').length && 
 		!$(e.target).is('#file .file .file-name input')) {
 	// list of files (table = list, div = tiles)
 		var sel = $('.sel.last'),
@@ -154,9 +154,15 @@ $(d).on('keypress','#file .file .file-name input',function(e){
 	if (e.which==13||e.which==10) { // enter
 		var f = {};
 		f[$('#file .file.renaming').data('path')] = $('#file .file.renaming').data('info').dir+$(this).val();
-		$.post('/mod', {action:'move', files: f}, function(){
-			refresh.interval = setInterval(refresh,10000);
-			refresh();
+		paste.run([
+			$('#file .file.renaming').data('path')
+		], [
+			$('#file .file.renaming').data('info').dir+$(this).val()
+		], function(toPaste){
+			$.post('/mod',{action:'move',files:toPaste},function(){
+				refresh.interval = setInterval(refresh,10000);
+				refresh();
+			});
 		});
 	}
 });
