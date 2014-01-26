@@ -135,7 +135,7 @@ function loadProgram(program) {
 		$('#file').data('program', program);
 		$('#file').data('modDate', file.date.getTime()); // for checking if it was modified
 		$('#file').addClass('fileview');
-		$.getJSON('/programs/' + program + '/buttons?file=' + encodeURIComponent(file.path), function (buttons) {
+		function loadButtons(buttons) {
 			$('#toolbar-left').children().remove();
 			buttons.forEach(function (b) {
 				if (b instanceof Array) { // a buttonset
@@ -153,7 +153,12 @@ function loadProgram(program) {
 
 			$.getScript('/programs/' + program + '/index.js');
 			$('#ajax-loader').remove();
-		});
+		}
+		if (programs.all[program].client) { // render buttons on client (nothing too difficult)
+			programs.generateButtons(programs.all[program].buttons, file, loadButtons);
+		} else {
+			$.getJSON('/programs/' + program + '/buttons?file=' + encodeURIComponent(file.path), loadButtons);
+		}
 	});
 }
 

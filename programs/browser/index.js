@@ -21,6 +21,8 @@ exports.mimetypes = [/.*\/.*/];
 exports.desc = 'View the file with the browser\'s default program';
 exports.name = 'Browser viewer';
 
+exports.client = true;
+
 exports.routes = {};
 exports.routes.file = function (req, res) {
 	res.sendfile(req.query.file);

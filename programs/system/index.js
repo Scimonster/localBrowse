@@ -24,6 +24,7 @@ exports.desc = 'Open the file with the system\'s default program';
 exports.name = 'System program';
 
 exports.noShow = true;
+exports.client = true;
 
 exports.routes = {};
 exports.routes['index.js'] = function (req, res) {

@@ -47,11 +47,12 @@ programs.generateButtons = function(buttonFunction, file, cb) {\n\
 			} else {\n\
 				b.elem = put(button.elem);\n\
 			}\n\
-			if (button.icons) {\n\
-				b.icons = button.icons;\n\
-			}\n\
+			b.elem = b.elem.outerHTML;\n\
 		}\n\
-		b.elem = b.elem.toString().trim();\n\
+		if (button.icons) {\n\
+			b.icons = button.icons;\n\
+		}\n\
+		b.elem = b.elem.trim();\n\
 		return b;\n\
 	}\n\
 };";
