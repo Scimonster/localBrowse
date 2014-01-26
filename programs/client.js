@@ -21,7 +21,7 @@ programs.editorsForFile = function(file, showAll) {\n\
 			return regex.test(file.type);\n\
 		}).length && (showAll || !p.noShow);\n\
 	}).map(function(p){\n\
-		return {modName: p.modName, name: p.name, desc: p.desc};\n\
+		return p.modName;//{modName: p.modName, name: p.name, desc: p.desc};\n\
 	});\n\
 };\n\
 \n\

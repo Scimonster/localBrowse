@@ -38,7 +38,7 @@ exports.editorsForFile = function(file, showAll) {
 			return regex.test(file.type);
 		}).length && (showAll || !p.noShow);
 	}).map(function(p){
-		return {modName: p.modName, name: p.name, desc: p.desc};
+		return p.modName;//{modName: p.modName, name: p.name, desc: p.desc};
 	});
 };
 

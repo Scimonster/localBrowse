@@ -7,8 +7,8 @@ mixin item(i)
 			if i.id=='open' && prefix=='selfile'
 				ul
 					- each p in programs
-						li(title=_('program-'+p.modName+'-desc'),data-program=p.modName)
-							a= _('program-'+p.modName+'-name')
+						li(title=_('program-'+p+'-desc'),data-program=p)
+							a= _('program-'+p+'-name')
 
 - each i in list
 	+item(i)

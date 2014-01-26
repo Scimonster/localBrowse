@@ -22,20 +22,19 @@ function viewFile() {
 			loadProgram(config.programs.defaults[f.type]);
 			return;
 		}
-		$.get('/programs/editors?file='+file.path, function(editors){
-			if (editors.length == 1) {
-				loadProgram(editors[0].modName);
-				$('#ajax-loader').remove();
-			} else {
-				$('#file').remove();
-				$('<ul id="file" class="program-selector">').appendTo('#file-container').append(editors.map(function(editor){
-					return $('<li>').attr({'data-program':editor.modName, title: editor.desc}).append('<a>').
-						children('a').attr('href',location.hash).text(editor.name).parent();
-				})).menu();
-				$('#message').text(_('messages-openwith'));
-				$('#ajax-loader').remove();
-			}
-		});
+		var editors = programs.editorsForFile(file);
+		if (editors.length == 1) {
+			loadProgram(editors[0]);
+			$('#ajax-loader').remove();
+		} else {
+			$('#file').remove();
+			$('<ul id="file" class="program-selector">').appendTo('#file-container').append(editors.map(function(editor){
+				return $('<li>').attr({'data-program':editor, title: _('program-'+editor+'-desc')}).append('<a>').
+					children('a').attr('href',location.hash).text(_('program-'+editor+'-name')).parent();
+			})).menu();
+			$('#message').text(_('messages-openwith'));
+			$('#ajax-loader').remove();
+		}
 	});
 	$('#sidebar-tree').data('file',[file.path])
 	sidebarTree(file.path);
