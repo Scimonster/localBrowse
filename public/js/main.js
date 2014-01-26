@@ -46,6 +46,10 @@ LBFile.prototype.relative = function () {
 function load() {
 	// This function runs when a new file/dir is loaded, and at startup.
 
+	if (location.hash[1]=='['&&location.hash[location.hash.length-1]==']') {
+		return;
+	}
+
 	// Start by identifying the file.
 	file = new LBFile(location.hash.substr(1));
 	if (location.hash.substr(1) == '') { // nothing was specified, so use homedir

@@ -171,12 +171,14 @@ $(d).on('click', 'li#contextMenu-file-open ul li a', function () {
 		cd($('.sel').data('path'), function () {
 			loadProgram(p);
 		});
-	} else { // open in new tabs
+	} else if (programs.all[p].tabs) { // open in new tabs
 		// BROKEN
 		$('.sel').each(function () {
 			$('<a target="_blank" href="/?program=' + p + '#' + $(this).data('path') + '">')[0].click();
 		});
 		cd('..', load); // hack against a bug
+	} else {
+		location.hash = JSON.stringify($('.sel').map(function(){return $(this).data('path')}).get());
 	}
 });
 $(d).on('click', '#fullDirSize', function () {

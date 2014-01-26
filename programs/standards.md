@@ -16,7 +16,7 @@ The `var name = ` is optional, but allows for easier inclusion of the module's n
 
 ### `html` - Function
 This is a function taking two parameters, both required:
-* `file`: an instance of `LBFile` (from `./File.js`)
+* `file`: an instance of `LBFile` (from `./File.js`) OR an array of `LBFile`s, if `exports.tabs` is true
 * `cb`: a callback function to be passed a single string
 The string passed to the callback will be inserted into `#file-container`. A string **must** be passed to it, or else the URL will never return!
 
@@ -48,7 +48,7 @@ The route `/programs/YOUR PROGRAM NAME/html` is reserved for outputting the call
 
 ### `buttons` - Functions
 This function creates the barebones for the buttons in `#toolbar-left`. It is passed to parameters:
-* `file`: an instance of `LBFile` (from `./File.js`)
+* `file`: an instance of `LBFile` (from `./File.js`) OR an array of `LBFile`s, if `exports.tabs` is true
 * `cb`: a callback function to be passed an array
 
 The array that gets passed to `cb` can contain a mix of arrays and objects. Arrays are to be buttonsets, while plain objects are buttons. Buttonset arrays should only contain objects for buttons.
@@ -65,6 +65,12 @@ An element describer is a string either formatted as an HTML element creatable b
 
 ### `noShow` - Boolean [Optional]
 If you don't want your program to appear in the list, only directly from the "open" menu (such as the system opener program), set `exports.noShow` to `true`, or a truthy value. Otherwise, you can leave it unset, or false (or falsy).
+
+### `client` - Boolean [Optional]
+If your `buttons` function does not require any Node-specific features, and can be rendered by the client, set `exports.client` to `true`, or a truthy value. Otherwise, you can leave it unset, or false (or falsy).
+
+### `tabs` - Boolean
+Some programs can open multiple files at once, in however way they want. Other programs can only support a single file at a time. If your program must be opened in multiple browser tabs for multiple files, set `exports.tabs` to a truthy value. Otherwise, set it to a falsy value.
 
 ## JavaScript
 After loading the HTML, localBrowse will attempt to run the script at `/programs/YOUR PROGRAM NAME/index.js` with `jQuery.getScript()`. This script should exist, and be where save data is stored. You can expose this script with code like this (assuming your script is located in `./scripts/index.js`):
