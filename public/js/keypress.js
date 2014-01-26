@@ -1,10 +1,25 @@
 $(w).keydown(function(e){
 	var keycode = e.which, key = String.fromCharCode(keycode);
 	if (key=='n' && e.ctrlKey) {$('#new').click(); e.preventDefault();}
-	if ($('#file.dirlist').length) { // list of files (table = list, div = tiles)
-		var sel = $('.sel.last'), fileList = $('div.file').filter(':visible'), tilesPerRow = fileList.index(fileList.filter(function(){return $(this).offset().top>fileList.first().offset().top}).first());
-		function scrollUp() {if ($.abovethetop("#file", ".sel.last", {threshold : 0}).length) {$('#file').animate({'scrollTop':$('.sel.last').position().top})}}
-		function scrollDown() {if ($.belowthefold("#file", ".sel.last", {threshold : 0}).length) {$('#file').animate({'scrollTop':$('.sel.last').position().top-$('.sel.last').height()})}}
+	if (
+		$(e.target).parents('#file').add(e.target).is('#file.dirlist') &&
+		!$(e.target).is('#file .file .file-name input')) {
+	// list of files (table = list, div = tiles)
+		var sel = $('.sel.last'),
+			fileList = $('div.file').filter(':visible'),
+			tilesPerRow = fileList.index(fileList.filter(function(){
+				return $(this).offset().top>fileList.first().offset().top;
+			}).first());
+		function scrollUp() {
+			if ($.abovethetop("#file", ".sel.last", {threshold : 0}).length) {
+				$('#file').animate({'scrollTop':$('.sel.last').position().top});
+			}
+		}
+		function scrollDown() {
+			if ($.belowthefold("#file", ".sel.last", {threshold : 0}).length) {
+				$('#file').animate({'scrollTop':$('.sel.last').position().top-$('.sel.last').height()});
+			}
+		}
 		function left() {
 			var sel = $('.sel.last'); // some need their own because it gets called multiple times here
 			e.preventDefault();
@@ -128,9 +143,20 @@ $(w).keydown(function(e){
 				$('#file .file.sel.last').addClass('renaming');
 				clearInterval(refresh.interval);
 				var nameContainer = $('td.file-name span, span.file-name', '#file .file.sel.last');
-				nameContainer.html('<input type="text" name="file-name" value="'+$('#file .sel.last').data('info').name+'" />');
+				nameContainer.html(
+					'<input type="text" name="file-name" value="'+$('#file .sel.last').data('info').name+'" />');
 				$('input', nameContainer).focus();
 				break;
 		}
+	}
+});
+$(d).on('keypress','#file .file .file-name input',function(e){
+	if (e.which==13||e.which==10) { // enter
+		var f = {};
+		f[$('#file .file.renaming').data('path')] = $('#file .file.renaming').data('info').dir+$(this).val();
+		$.post('/mod', {action:'move', files: f}, function(){
+			refresh.interval = setInterval(refresh,10000);
+			refresh();
+		});
 	}
 });

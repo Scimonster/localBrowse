@@ -429,16 +429,6 @@ $(d).on('click','#contextMenu-file-makeLink',function(){
 $(d).on('click','#contextMenu-file-rename',function(){
 	$(w).trigger($.Event('keydown',{which:113}));
 });
-$(d).on('keypress','#file .file .file-name input',function(e){
-	if (e.which==13||e.which==10) { // enter
-		var f = {};
-		f[$('#file .file.renaming').data('path')] = $('#file .file.renaming').data('info').dir+$(this).val();
-		$.post('/mod', {action:'move', files: f}, function(){
-			refresh.interval = setInterval(refresh,10000);
-			refresh();
-		});
-	}
-});
 $(d).on('click', '#contextMenu-folder-newFolder', function(){
 	$.post('/mod', {
 		action: 'mkdir',
