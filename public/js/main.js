@@ -44,9 +44,29 @@ LBFile.prototype.relative = function () {
 };
 
 function load() {
-	// This function runs when a new file/dir is loaded, and at startup.
+	// This function runs when a new file/dir is loaded.
 
 	if (location.hash[1]=='['&&location.hash[location.hash.length-1]==']') {
+		file = JSON.parse(location.hash.substr(1)).map(function(f){return new LBFile(f);});
+		type = null;
+		$('#file').html('').attr('class','');
+		var done = 0;
+		file.forEach(function(f,i){
+			$.getJSON('info/info' + f.resolve(), function (fil) {
+				if (fil.path == '/') {
+					fil.name = _('path-root');
+				}
+				file[i] = new LBFile(fil);
+				if (done++==file.length) {
+					if (getUrlVars(location.search).program) { // a program was set via URL
+						loadProgram(getUrlVars(location.search).program);
+					}
+					if (location.search) { // we've done what's needed, now clear it
+						history.replaceState(null, document.title, '/' + location.hash);
+					}
+				}
+			});
+		});
 		return;
 	}
 

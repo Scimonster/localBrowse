@@ -127,10 +127,14 @@ function listDir(files, beforeLoad, afterLoad) {
 }
 
 function loadProgram(program) {
+	if (!programs.all[program].tabs && !Array.isArray(file)) {
+		file = [file];
+	}
+	console.log(file)
 	if (!$('#ajax-loader').length) {
 		$('<div id="ajax-loader"><img src="img/ajax-loader.gif">').appendTo('#content');
 	}
-	$('#file-container').load('/programs/' + program + '/html?file=' + encodeURIComponent(file.path), function () {
+	$('#file-container').load('/programs/' + program + '/html', {file: Array.isArray(file)?file.map(function(f){return f.path;}):file.path}, function () {
 		$('#message').html(_('messages-file-editingwith', _('program-' + program)) + (file.writable ? '' : _('messages-file-readonly')) + (file.name.substr(-1) == '~' ? _('messages-file-backup') : ''));
 		$('#file').data('program', program);
 		$('#file').data('modDate', file.date.getTime()); // for checking if it was modified
@@ -157,7 +161,7 @@ function loadProgram(program) {
 		if (programs.all[program].client) { // render buttons on client (nothing too difficult)
 			programs.generateButtons(programs.all[program].buttons, file, loadButtons);
 		} else {
-			$.getJSON('/programs/' + program + '/buttons?file=' + encodeURIComponent(file.path), loadButtons);
+			$.getJSON('/programs/' + program + '/buttons', {file: Array.isArray(file)?file.map(function(f){return f.path;}):file.path}, loadButtons);
 		}
 	});
 }
@@ -167,16 +171,18 @@ $(d).on('click', 'ul#file li a', function () {
 });
 $(d).on('click', 'li#contextMenu-file-open ul li a', function () {
 	var p = $(this).parent().data('program');
-	if ($('.sel').length == 1) { // open in this tab
-		cd($('.sel').data('path'), function () {
-			loadProgram(p);
-		});
-	} else if (programs.all[p].tabs) { // open in new tabs
-		// BROKEN
-		$('.sel').each(function () {
-			$('<a target="_blank" href="/?program=' + p + '#' + $(this).data('path') + '">')[0].click();
-		});
-		cd('..', load); // hack against a bug
+	if (programs.all[p].tabs) {
+		if ($('.sel').length == 1) { // open in this tab
+			cd($('.sel').data('path'), function () {
+				loadProgram(p);
+			});
+		} else if (programs.all[p].tabs) { // open in new tabs
+			// BROKEN
+			$('.sel').each(function () {
+				$('<a target="_blank" href="/?program=' + p + '#' + $(this).data('path') + '">')[0].click();
+			});
+			cd('..', load); // hack against a bug
+		}
 	} else {
 		location.hash = JSON.stringify($('.sel').map(function(){return $(this).data('path')}).get());
 	}

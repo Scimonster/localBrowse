@@ -229,6 +229,7 @@ exports.programs = function (req, res) {
 			}
 			break;
 		case 'html':
+			req.query.file = req.query.file || req.body.file;
 			if (programs.all[req.params.program].tabs) {
 				info.info(req.query.file, function (i) {
 					programs.all[req.params.program].html(i, function (html) {
@@ -250,6 +251,7 @@ exports.programs = function (req, res) {
 			}
 			break;
 		case 'buttons':
+			req.query.file = req.query.file || req.body.file;
 			if (programs.all[req.params.program].tabs) {
 				info.info(req.query.file, function (i) {
 					programs.generateButtons(programs.all[req.params.program].buttons, i, function (buttons) {
