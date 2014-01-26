@@ -25,18 +25,21 @@ The `messages` objects from all programs are compiled and added to the native me
 ```json
 { "en": { "program-text": "text editor" } }
 ```
-The only required message is `"program-"+name` in English.
+There are 3 required messages in English:
+* `"program-"+name`
+* `""program-"+name+"-name"`
+* `""program-"+name+"-desc"`
 
 Program-specific messages should be namespaced.
 
 ### `mimetypes` - Array
 This should be an array of regular expressions (as instances of `RegExp`) to match the MIMEType of a file against. If any match, your program can open the file.
 
-### `name` - String
-The human-readable-name of your program that will be displayed in the program options list.
+### `name` - String - **deprecated**
+The human-readable-name of your program that will be displayed in the program options list. This is deprecated in favor of the `program-NAME-name` message (see above).
 
-### `desc` - String
-A short description of your program that will be displayed in a tooltip for the `name`.
+### `desc` - String - **deprecated**
+A short description of your program that will be displayed in a tooltip for the `name`. This is deprecated in favor of the `program-NAME-desc` message (see above).
 
 ### `routes` - Object of Functions
 Your program can provide a web interface besides the plain HTML from `html`. This is done through the `routes` object. Each key in the object is used as the request function for `/programs/YOUR PROGRAM NAME/KEY IN OBJECT`. The functions are passed two arguments: `req` and `res`. These are the same as any Express `req`/`res` objects. Both GET and POST requests are supported.

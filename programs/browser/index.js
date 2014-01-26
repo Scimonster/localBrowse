@@ -11,8 +11,10 @@ exports.html = function(file, cb) {
 
 exports.messages = {en: {}};
 exports.messages.en["program-"+name] = "default browser viewing";
+exports.messages.en["program-"+name+"-name"] = "Browser viewer";
+exports.messages.en["program-"+name+"-desc"] = "View the file with the browser\'s default program";
 
-exports.mimetypes = [/.*/];
+exports.mimetypes = [/.*\/.*/];
 
 exports.desc = 'View the file with the browser\'s default program';
 exports.name = 'Browser viewer';

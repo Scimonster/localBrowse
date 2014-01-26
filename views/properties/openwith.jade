@@ -1,7 +1,7 @@
 mixin optgroup(label, list)
 	optgroup(label=_('props-openwith-'+label))
 		each p in list
-			option(value=p.modName,title=p.desc,selected=p.modName==defProg)= p.name
+			option(value=p.modName,title=_('program-'+p.modName+'-desc'),selected=p.modName==defProg)= _('program-'+p.modName+'-name')
 - var openers = programs.editorsForFile(i)
 - var others = programs.allEditors.filter(function(p){return openers.map(function(pr){return pr.modName}).indexOf(p.modName)==-1})
 h4= _('props-openwith-title',i.name,i.type)

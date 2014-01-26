@@ -12,6 +12,8 @@ exports.html = function(file, cb) {
 
 exports.messages = {en: {}};
 exports.messages.en["program-"+name] = "system program";
+exports.messages.en["program-"+name+"-name"] = "System program";
+exports.messages.en["program-"+name+"-desc"] = "Open the file with the system\'s default program";
 
 exports.mimetypes = [/.*/];
 
