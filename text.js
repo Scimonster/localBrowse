@@ -4,7 +4,8 @@
  * @license {@link LICENSE} (AGPL)
  * @module text
  */
-var obj = require('./Object.js'), extend = require('extend');
+var obj = require('./Object.js'),
+	extend = require('extend');
 /**
  * Create a function to get system messages
  * @param {string} lang A language code to get for
@@ -12,10 +13,11 @@ var obj = require('./Object.js'), extend = require('extend');
  */
 function gettext(lang) {
 	var messages = {}, fallbacks = [lang];
+
 	function getlang(lang) {
 		if (!messages.hasOwnProperty(lang)) {
 			try { // test for messages in this language
-				messages[lang] = require('./languages/'+lang);
+				messages[lang] = require('./languages/' + lang);
 				fallbacks.push.apply(fallbacks, messages[lang].fallbacks);
 				messages[lang] = messages[lang].messages;
 			} catch (e) { // no langlist
@@ -29,16 +31,22 @@ function gettext(lang) {
 	getlang(lang);
 	// if we've made it this far, we have a langlist
 	// resolve fallbacks
-	while (!fallbacks.every(function(fb){return getlang(fb)})) {}
+	while (!fallbacks.every(function (fb) {
+		return getlang(fb);
+	})) {}
 	fallbacks = obj.unique(fallbacks);
-	messages = extend.apply(null, [true, {}].concat(fallbacks.reverse().map(function(fb){return messages[fb]})));
+	messages = extend.apply(null, [true, {}].concat(fallbacks.reverse().map(function (fb) {
+		return messages[fb];
+	})));
 	return function _(message) {
 		function replace(str, params) {
 			// takes a str in format of "replacement 1: $1, replacement 2: $2"
 			if (typeof str != 'string') {
 				return str;
 			}
-			return str.replace(/\$(\d)/g, function(match, num){return params[num-1]});
+			return str.replace(/\$(\d)/g, function (match, num) {
+				return params[num - 1];
+			});
 		}
 
 		if (message) { // if we have a message
@@ -51,8 +59,8 @@ function gettext(lang) {
 			return messages;
 		}
 	};
-};
+}
 module.exports = gettext;
-module.exports.load = function() {
+module.exports.load = function () {
 	return gettext(require('./config').lang.code);
 };

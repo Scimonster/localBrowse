@@ -5,12 +5,12 @@
  */
 
 var express = require('express'),
-	routes = require('./routes'),
-	mod = require('./mod'),
-	http = require('http'),
-	path = require('path'),
-	config = require('./config'),
-	app = express();
+    routes = require('./routes'),
+    mod = require('./mod'),
+    http = require('http'),
+    path = require('path'),
+    config = require('./config'),
+    app = express();
 
 // all environments
 app.set('port', config.port);
@@ -25,7 +25,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // development only
 if ('development' == app.get('env')) {
-	app.use(express.errorHandler());
+    app.use(express.errorHandler());
 }
 
 // end user's page
@@ -58,6 +58,6 @@ app.post('/programs/alleditors', routes.programs);
 app.get('/config', routes.config.get);
 app.post('/config', routes.config.post);
 
-http.createServer(app).listen(app.get('port'), function() {
-	console.log('Express server listening on port ' + app.get('port'));
+http.createServer(app).listen(app.get('port'), function () {
+    console.log('Express server listening on port ' + app.get('port'));
 });

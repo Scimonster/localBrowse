@@ -1,1 +1,3 @@
-$('#file').data('save', function(cb){cb(file.path, $('#file').val())});
+$('#file').data('save', function (cb) {
+	cb(file.path, $('#file').val());
+});
