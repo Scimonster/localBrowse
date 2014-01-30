@@ -246,7 +246,7 @@ exports.programs = function (req, res) {
 								res.send(html);
 							});
 						}
-					});
+					}, true, true);
 				});
 			}
 			break;
@@ -269,7 +269,7 @@ exports.programs = function (req, res) {
 							});
 						}
 					});
-				});
+				}, true, true);
 			}
 			break;
 		default:

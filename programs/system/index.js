@@ -10,7 +10,7 @@ exports.html = function (files, cb) {
 	files.forEach(function(file){
 		spawn('xdg-open', [file.path]);
 	});
-	cb('');
+	cb(files);
 };
 
 exports.messages = {
