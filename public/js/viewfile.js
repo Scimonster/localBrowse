@@ -130,15 +130,22 @@ function loadProgram(program) {
 	if (!programs.all[program].tabs && !Array.isArray(file)) {
 		file = [file];
 	}
-	console.log(file)
+	console.log(file);
 	if (!$('#ajax-loader').length) {
 		$('<div id="ajax-loader"><img src="img/ajax-loader.gif">').appendTo('#content');
 	}
-	$('#file-container').load('/programs/' + program + '/html', {file: Array.isArray(file)?file.map(function(f){return f.path;}):file.path}, function () {
-		$('#message').html(_('messages-file-editingwith', _('program-' + program)) + (file.writable ? '' : _('messages-file-readonly')) + (file.name.substr(-1) == '~' ? _('messages-file-backup') : ''));
+	$('#file-container').load('/programs/' + program + '/html', {
+		file: Array.isArray(file) ? file.map(function (f) {
+			return f.path;
+		}) : file.path
+	}, function () {
+		$('#message').html(_('messages-file-editingwith', _('program-' + program)) + (Array.isArray(file) ? '' : (file.writable ? '' : _('messages-file-readonly')) + (file.name.substr(-1) == '~' ? _('messages-file-backup') : '')));
 		$('#file').data('program', program);
-		$('#file').data('modDate', file.date.getTime()); // for checking if it was modified
+		if (!Array.isArray(file)) {
+			$('#file').data('modDate', file.date.getTime());
+		} // for checking if it was modified
 		$('#file').addClass('fileview');
+
 		function loadButtons(buttons) {
 			$('#toolbar-left').children().remove();
 			buttons.forEach(function (b) {
@@ -161,7 +168,11 @@ function loadProgram(program) {
 		if (programs.all[program].client) { // render buttons on client (nothing too difficult)
 			programs.generateButtons(programs.all[program].buttons, file, loadButtons);
 		} else {
-			$.getJSON('/programs/' + program + '/buttons', {file: Array.isArray(file)?file.map(function(f){return f.path;}):file.path}, loadButtons);
+			$.getJSON('/programs/' + program + '/buttons', {
+				file: Array.isArray(file) ? file.map(function (f) {
+					return f.path;
+				}) : file.path
+			}, loadButtons);
 		}
 	});
 }
@@ -171,6 +182,7 @@ $(d).on('click', 'ul#file li a', function () {
 });
 $(d).on('click', 'li#contextMenu-file-open ul li a', function () {
 	var p = $(this).parent().data('program');
+	console.log(programs.all[p])
 	if (programs.all[p].tabs) {
 		if ($('.sel').length == 1) { // open in this tab
 			cd($('.sel').data('path'), function () {
@@ -181,10 +193,12 @@ $(d).on('click', 'li#contextMenu-file-open ul li a', function () {
 			$('.sel').each(function () {
 				$('<a target="_blank" href="/?program=' + p + '#' + $(this).data('path') + '">')[0].click();
 			});
-			cd('..', load); // hack against a bug
+			//cd('..', load); // hack against a bug
 		}
 	} else {
-		location.hash = JSON.stringify($('.sel').map(function(){return $(this).data('path')}).get());
+		location.href = '/?program='+p+'#'+JSON.stringify($('.sel').map(function () {
+			return $(this).data('path');
+		}).get());
 	}
 });
 $(d).on('click', '#fullDirSize', function () {
@@ -347,7 +361,7 @@ $(d).on('contextmenu', '#file .file', function (e) {
 		null, {
 			r: false,
 			id: 'props'
-		} ] : [ // more than one
+		}] : [ // more than one
 		{
 			r: r,
 			id: 'open'
@@ -381,7 +395,7 @@ $(d).on('contextmenu', '#file .file', function (e) {
 		null, {
 			r: false,
 			id: 'props'
-		} ],
+		}],
 		_: _,
 		prefix: 'selfile',
 		ns: 'file',
@@ -500,9 +514,9 @@ $(d).on('click', '#contextMenu-file-props,#contextMenu-folder-props', function (
 				});
 			},
 			load: function () {
-				$('select.openwith-program').chosen()
+				$('select.openwith-program').chosen();
 			}
-		} ];
+		}];
 		$('body').append(jade.render('properties/index.jade', {
 			tabs: tabs.map(function (t) {
 				return {

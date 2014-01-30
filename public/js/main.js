@@ -67,6 +67,10 @@ function load() {
 				}
 			});
 		});
+		if (getUrlVars(location.search).program) { // a program was set via URL
+			loadProgram(getUrlVars(location.search).program);
+			document.title = _('program-'+getUrlVars(location.search).program+'-name');
+		}
 		return;
 	}
 
