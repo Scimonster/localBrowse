@@ -342,7 +342,7 @@ exports.fileListInfo = function (files, cb, content, cwd) {
 
     function finished() {
         if (files.length === fileList.length) { // all present
-            cb(fileList);
+            cb(new LBFile.FileList(fileList));
         }
     }
 };
@@ -424,8 +424,8 @@ actions.dir = function (req, res) {
             d,
 
             function (files) {
-                res.send(files);
-            }, // unfortunately, res.send doesn't like to be passed
+                res.send(files.array());
+            },
             content,
             req.file);
         }

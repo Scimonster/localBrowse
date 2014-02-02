@@ -236,11 +236,13 @@ LBFile.FileList = function (list) {
 		}).join(pathMod.delimiter),
 
 		date: list.reduce(function (one, two) {
-			return one.date < two.date ? two.date : one.date;
-		}),
+			return one.date < two.date ? two : one;
+		}).date,
 		perm: list.reduce(function (one, two) {
-			return '0' + (one.perm[1] < two.perm[1] ? one : two).perm[1] + (one.perm[2] < two.perm[2] ? one : two).perm[2] + (one.perm[3] < two.perm[3] ? one : two).perm[3];
-		}),
+			return {
+				perm: '0' + (one.perm[1] < two.perm[1] ? one : two).perm[1] + (one.perm[2] < two.perm[2] ? one : two).perm[2] + (one.perm[3] < two.perm[3] ? one : two).perm[3]
+			};
+		}).perm,
 
 		owner: list.every(function (f) {
 			return f.owner.name == list[0].owner.name;
@@ -255,9 +257,9 @@ LBFile.FileList = function (list) {
 			return f.type.split('/')[0] == list[0].type.split('/')[0];
 		}) ? list[0].type.split('/')[0] + '/*' : undefined,
 
-		size: list.reduce(function (one, two) {
-			return one.size + two.size;
-		})
+		size: list.length == 1 ? list[0].size : list.reduce(function (one, two) {
+			return one + two.size;
+		}, 0)
 	});
 
 	this.name = this.ext = '';
