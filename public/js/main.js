@@ -47,7 +47,7 @@ function load() {
 	// This function runs when a new file/dir is loaded.
 
 	if (location.hash[1]=='['&&location.hash[location.hash.length-1]==']') {
-		file = JSON.parse(location.hash.substr(1)).map(function(f){return new LBFile(f);});
+		file = new LBFile.FileList(JSON.parse(location.hash.substr(1)));
 		type = null;
 		$('#file').html('').attr('class','');
 		var done = 0;
@@ -57,6 +57,7 @@ function load() {
 					fil.name = _('path-root');
 				}
 				file[i] = new LBFile(fil);
+				file.update();
 				if (done++==file.length) {
 					if (getUrlVars(location.search).program) { // a program was set via URL
 						loadProgram(getUrlVars(location.search).program);

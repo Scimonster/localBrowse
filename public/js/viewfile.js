@@ -127,17 +127,12 @@ function listDir(files, beforeLoad, afterLoad) {
 }
 
 function loadProgram(program) {
-	if (!programs.all[program].tabs && !Array.isArray(file)) {
-		file = [file];
-	}
 	console.log(file);
 	if (!$('#ajax-loader').length) {
 		$('<div id="ajax-loader"><img src="img/ajax-loader.gif">').appendTo('#content');
 	}
 	$('#file-container').load('/programs/' + program + '/html', {
-		file: Array.isArray(file) ? file.map(function (f) {
-			return f.path;
-		}) : file.path
+		file: type ? file.path : file.paths()
 	}, function () {
 		$('#message').html(_('messages-file-editingwith', _('program-' + program)) + (Array.isArray(file) ? '' : (file.writable ? '' : _('messages-file-readonly')) + (file.name.substr(-1) == '~' ? _('messages-file-backup') : '')));
 		$('#file').data('program', program);

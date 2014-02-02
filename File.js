@@ -211,6 +211,35 @@ LBFile.FileList = function (list) {
 	extend(this, list);
 	this.length = list.length;
 
+	this.update();
+};
+
+LBFile.FileList.deepestCommonParent = function dcp() {
+	var paths = prepare(Array.of.apply(null, Array.isArray(arguments[0]) ? arguments[0] : arguments).map(function (p) {
+		return LBFile.removeSlashIfNeeded(p).split(pathMod.sep);
+	}));
+
+	function prepare(paths) {
+		var least = paths.reduce(function (sh, val) {
+			return val.length < sh ? val.length : sh;
+		}, paths[0].length);
+
+		return paths.map(function (p) {
+			return p.slice(0, least);
+		});
+	}
+
+	return paths.every(function (p) {
+		return p[p.length - 1] == paths[0][paths[0].length - 1];
+	}) ? LBFile.addSlashIfNeeded(paths[0].join(pathMod.sep)) : dcp.apply(null, paths.map(function (p) {
+		return p.slice(0, -1).join(pathMod.sep);
+	}));
+};
+
+LBFile.FileList.prototype = Object.create(LBFile.prototype);
+
+LBFile.FileList.prototype.update = function(){
+	var list = this.array();
 	LBFile.call(this, {
 		exists: list.every(function (f) {
 			return f.exists;
@@ -266,33 +295,14 @@ LBFile.FileList = function (list) {
 	this.dir = LBFile.FileList.deepestCommonParent(this.path.split(pathMod.delimiter));
 };
 
-LBFile.FileList.deepestCommonParent = function dcp() {
-	var paths = prepare(Array.of.apply(null, Array.isArray(arguments[0]) ? arguments[0] : arguments).map(function (p) {
-		return LBFile.removeSlashIfNeeded(p).split(pathMod.sep);
-	}));
-
-	function prepare(paths) {
-		var least = paths.reduce(function (sh, val) {
-			return val.length < sh ? val.length : sh;
-		}, paths[0].length);
-
-		return paths.map(function (p) {
-			return p.slice(0, least);
-		});
-	}
-
-	return paths.every(function (p) {
-		return p[p.length - 1] == paths[0][paths[0].length - 1];
-	}) ? LBFile.addSlashIfNeeded(paths[0].join(pathMod.sep)) : dcp.apply(null, paths.map(function (p) {
-		return p.slice(0, -1).join(pathMod.sep);
-	}));
-};
-
-LBFile.FileList.prototype = Object.create(LBFile.prototype);
-
 LBFile.FileList.prototype.map = Array.prototype.map;
 LBFile.FileList.prototype.filter = Array.prototype.filter;
 LBFile.FileList.prototype.forEach = Array.prototype.forEach;
+
+LBFile.FileList.prototype.push = function(){
+	Array.prototype.push.apply(this, arguments);
+	this.update();
+};
 
 LBFile.FileList.prototype.array = function () {
 	return this.map(function (f) {
