@@ -23,7 +23,13 @@ exports.tabs = false;
 exports.client = true;
 
 exports.routes = {};
+exports.routes['index.js'] = function (req, res) {
+	res.sendfile(path.join(__dirname, 'scripts.index.js'));
+};
 
 exports.buttons = function (f, cb) {
-	cb([]);
+	cb([{
+		elem: '#saveAs',
+		message: 'fileview-button-saveas'
+	}]);
 };
