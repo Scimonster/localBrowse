@@ -192,7 +192,7 @@ $(d).on('click', '#filesel .files .file', function (e) {
     $('#filesel-name').val($(this).data('info').name);
     fileSelector.updatePreview();
 });
-(function () { // to avoid polluting with relaod()
+(function () { // to avoid polluting with reload()
     function reload(loc) {
         var info = [
         loc, {
@@ -218,7 +218,7 @@ $(d).on('click', '#filesel .files .file', function (e) {
         }
     });
     $(d).on('click', '#filesel .top .pathbar a', function () {
-        reload($(this).attr('href').substr(1));
+        reload(JSON.parse($(this).attr('href').substr(1)).file);
         return false;
     });
     $(d).on('click', '#filesel td.create button.newfolder', function () {

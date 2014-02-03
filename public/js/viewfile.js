@@ -30,8 +30,8 @@ function viewFile() {
 			loadProgram(config.programs.defaults[f.type]);
 			return;
 		}
-		if (getUrlVars(location.search).program) { // a program was set via URL
-			loadProgram(getUrlVars(location.search).program);
+		if (url.program) { // a program was set via URL
+			loadProgram(url.program);
 			return;
 		}
 		var editors = programs.editorsForFile(file);
@@ -45,7 +45,9 @@ function viewFile() {
 					'data-program': editor,
 					title: _('program-' + editor + '-desc')
 				}).append('<a>').
-				children('a').attr('href', location.hash).text(_('program-' + editor + '-name')).parent();
+				children('a').attr('href', '#' + encodeURIComponent(JSON.stringify($.extend(url, {
+					program: editor
+				})))).text(_('program-' + editor + '-name')).parent();
 			})).menu();
 			$('#message').text(_('messages-openwith'));
 			$('#ajax-loader').remove();
@@ -119,7 +121,7 @@ function listDir(files, beforeLoad, afterLoad) {
 			return new LBFile(i);
 		})
 	}));
-	$('#show_hide_hidden,#show_hide_restricted').change();
+	$('#show_hide_hidden, #show_hide_restricted').change();
 	if (!s.dirTiles) {
 		if (!s.asec) {
 			$('#file tr').reverse();
@@ -143,11 +145,12 @@ function loadProgram(program) {
 	if (file.length) {
 		if (programs.all[program].tabs) {
 			if (file.length > 1) { // open in new tabs
-				// BROKEN
 				file.forEach(function (f) {
-					$('<a target="_blank" href="/?program=' + program + '#' + f.path + '">')[0].click();
+					$('<a target="_blank" href="#' + encodeURIComponent(JSON.stringify({
+						program: program,
+						file: f.path
+					})) + '">')[0].click();
 				});
-				//cd('..', load); // hack against a bug
 				return;
 			}
 		} else {
@@ -201,7 +204,7 @@ function loadProgram(program) {
 }
 
 $(d).on('click', 'ul#file li a', function () {
-	loadProgram($(this).parent().data('program'));
+	//loadProgram($(this).parent().data('program'));
 });
 $(d).on('click', 'li#contextMenu-file-open ul li a', function () {
 	var p = $(this).parent().data('program');
@@ -212,16 +215,20 @@ $(d).on('click', 'li#contextMenu-file-open ul li a', function () {
 				loadProgram(p);
 			});
 		} else if (programs.all[p].tabs) { // open in new tabs
-			// BROKEN
 			$('.sel').each(function () {
-				$('<a target="_blank" href="/?program=' + p + '#' + $(this).data('path') + '">')[0].click();
+				$('<a target="_blank" href="#' + encodeURIComponent(JSON.stringify({
+					program: p,
+					file: $(this).data('path')
+				})) + '">')[0].click();
 			});
-			//cd('..', load); // hack against a bug
 		}
 	} else {
-		location.href = '/?program=' + p + '#' + JSON.stringify($('.sel').map(function () {
-			return $(this).data('path');
-		}).get());
+		location.hash = JSON.stringify({
+			program: p,
+			file: $('.sel').map(function () {
+				return $(this).data('path');
+			}).get()
+		});
 	}
 });
 $(d).on('click', '#fullDirSize', function () {
@@ -275,7 +282,9 @@ $(d).on('click', '#file th', function () {
 	($('#file.trash').length ? listTrash : listDir)($('#file').data('files'));
 });
 $(d).on('dblclick', '#file .file', function () {
-	location.hash = $(this).data('path');
+	location.hash = JSON.stringify({
+		file: $(this).data('path')
+	});
 });
 $(d).on('click', '#file .file', function (e) {
 	if ($(this).hasClass('sel')) {
@@ -334,7 +343,9 @@ $(d).on('click', '#saveAs', function () {
 					content: content
 				}, function () {
 					$('#message').html(_('messages-file-saved-as', name));
-					location.hash = "#" + name;
+					location.hash = JSON.stringify({
+						file: name
+					});
 				});
 			}
 		});
@@ -607,14 +618,14 @@ $(d).on('click', '#contextMenu-file-makeLink', function () {
 		nosel: true
 	}, function (dir, parent) {
 		if (dir) {
-			var complete = -1;
+			var complete = 0;
 			sel.forEach(function (f, i) {
 				$.post('/mod', {
 					action: 'link',
 					dest: LBFile.addSlashIfNeeded(dir.exists ? dir.path : parent) + f.name,
 					src: f.path
 				}, function () {
-					if (++complete == i) {
+					if (complete++ == i) {
 						refresh();
 					}
 				});

@@ -49,7 +49,7 @@ html
 						ul
 							each obj in sidebar
 								li
-									a(href='#'+obj.url, style='font-weight: bold;')
+									a(href='#'+JSON.stringify({file: obj.url}), style='font-weight: bold;')
 										if obj.icon
 											span.ui-icon(class='ui-icon-'+obj.icon)
 										else
