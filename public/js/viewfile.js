@@ -106,7 +106,7 @@ function listDir(files, beforeLoad, afterLoad) {
 		$('<' + (s.dirTiles ? 'div' : 'table') + ' id="file" class="dirlist">').appendTo('#file-container');
 	}
 	$('#file').html(jade.render('dir.' + (s.dirTiles ? 'tiles' : 'list'), {
-		base: type == 'search' ? LBFile.addSlashIfNeeded(cwd) : file.addSlashIfNeeded(),
+		base: file.addSlashIfNeeded(),
 		imageForFile: imageForFile,
 			'_': _,
 		files: (s.dirFirst ? files({

@@ -7,7 +7,7 @@
 var _ = require('./text').load(),
 	programs = require('./programs'),
 	info = require('./info'),
-	search = require('./search'),
+	search = require('./search').search,
 	LBFile = require('./File.js'),
 	obj = require('./Object.js'),
 	jade = require('jade'),
