@@ -283,8 +283,8 @@ LBFile.FileList.prototype.update = function(){
 		type: list.every(function (f) {
 			return f.type == list[0].type;
 		}) ? list[0].type : list.every(function (f) {
-			return f.type.split('/')[0] == list[0].type.split('/')[0];
-		}) ? list[0].type.split('/')[0] + '/*' : undefined,
+			return (f.type||'').split('/')[0] == (list[0].type||'').split('/')[0];
+		}) ? (list[0].type||'*').split('/')[0] + '/*' : undefined,
 
 		size: list.length == 1 ? list[0].size : list.reduce(function (one, two) {
 			return one + two.size;

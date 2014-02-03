@@ -46,38 +46,31 @@ LBFile.prototype.relative = function () {
 function load() {
 	// This function runs when a new file/dir is loaded.
 
-	if (location.hash[1]=='['&&location.hash[location.hash.length-1]==']') {
+	if (location.hash[1] == '[' && location.hash[location.hash.length - 1] == ']') {
 		file = new LBFile.FileList(JSON.parse(location.hash.substr(1)));
 		type = null;
-		$('#file').html('').attr('class','');
+		$('#file').html('').attr('class', '');
 		var done = 0;
-		file.forEach(function(f,i){
+		file.forEach(function (f, i) {
 			$.getJSON('info/info' + f.resolve(), function (fil) {
 				if (fil.path == '/') {
 					fil.name = _('path-root');
 				}
 				file[i] = new LBFile(fil);
 				file.update();
-				if (done++==file.length) {
-					if (getUrlVars(location.search).program) { // a program was set via URL
-						loadProgram(getUrlVars(location.search).program);
-					}
-					if (location.search) { // we've done what's needed, now clear it
-						history.replaceState(null, document.title, '/' + location.hash);
-					}
+				if (++done == file.length) {
+					viewFile();
 				}
 			});
 		});
-		if (getUrlVars(location.search).program) { // a program was set via URL
-			loadProgram(getUrlVars(location.search).program);
-			document.title = _('program-'+getUrlVars(location.search).program+'-name');
-		}
+		pathbar(file.dir + '...', '#filepath', 53);
+		$('#filepath a:last').attr('href', '#').attr('title', file.path);
 		return;
 	}
 
 	// Start by identifying the file.
 	file = new LBFile(location.hash.substr(1));
-	if (location.hash.substr(1) == '') { // nothing was specified, so use homedir
+	if (location.hash.substr(1) === '') { // nothing was specified, so use homedir
 		file = new LBFile(LBFile.addSlashIfNeeded(homeroot));
 	}
 	if (file.path !== location.hash.substr(1)) { // it was normalized
@@ -157,7 +150,7 @@ function pathbar(path, element, height) {
 	// Create a pathbar of a certain filepath
 
 	path = path.split('/'), parts = [];
-	if (path[path.length - 1] == '') {
+	if (path[path.length - 1] === '') {
 		path.pop();
 	}
 	$(element).buttonset('destroy');

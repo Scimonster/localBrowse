@@ -9,14 +9,14 @@
  */
 
 var fs = require('fs-extra'),
-    LBFile = require('./File.js'),
-    path = require('path'),
-    spawn = require('child_process').spawn,
-    prefex = require('preffy-extend'),
-    obj = require('./Object.js'),
-    mmm = require('mmmagic'),
-    mime = require('mime'),
-    config = require('./config');
+	LBFile = require('./File.js'),
+	path = require('path'),
+	spawn = require('child_process').spawn,
+	prefex = require('preffy-extend'),
+	obj = require('./Object.js'),
+	mmm = require('mmmagic'),
+	mime = require('mime'),
+	config = require('./config');
 
 /**
  * List of actions to run 
@@ -29,9 +29,9 @@ var actions = exports.actions = {};
  * @param {Object} res Express response object
  */
 actions.exists = function (req, res) {
-    fs.exists(req.file, function (e) {
-        res.send(e);
-    });
+	fs.exists(req.file, function (e) {
+		res.send(e);
+	});
 };
 
 /**
@@ -41,36 +41,36 @@ actions.exists = function (req, res) {
  * @param {function} cb Callback to execute upon finish. Takes 1 parameter: return value {boolean}
  */
 exports.perms = function (file, type, cb) {
-    if (typeof file === 'string') { // filename
-        fs.stat(file, function (err, stat) {
-            if (err) {
-                cb(false);
-            }
-            run(stat);
-        });
-    } else { // stat
-        run(file);
-    }
+	if (typeof file === 'string') { // filename
+		fs.stat(file, function (err, stat) {
+			if (err) {
+				cb(false);
+			}
+			run(stat);
+		});
+	} else { // stat
+		run(file);
+	}
 
-    function pad(strNum, count) {
-        // pad a number to a specified length
-        strNum = strNum.toString();
-        if (strNum.length == count) {
-            return strNum;
-        } else {
-            return pad('0' + strNum, count);
-        }
-    }
+	function pad(strNum, count) {
+		// pad a number to a specified length
+		strNum = strNum.toString();
+		if (strNum.length == count) {
+			return strNum;
+		} else {
+			return pad('0' + strNum, count);
+		}
+	}
 
-    function run(stat) {
-        var mode = stat.mode.toString(8).split('').map(function (m) {
-            return pad(parseInt(m).toString(2), 3);
-        }); // create padded binary representations of perms
-        cb( !! (
-        parseInt(mode[4][type]) || // other
-        (parseInt(mode[2][type]) && process.getuid() === stat.uid) || // user
-        (parseInt(mode[3][type]) && process.getgid() === stat.gid))); // group
-    }
+	function run(stat) {
+		var mode = stat.mode.toString(8).split('').map(function (m) {
+			return pad(parseInt(m).toString(2), 3);
+		}); // create padded binary representations of perms
+		cb( !! (
+		parseInt(mode[4][type]) || // other
+		(parseInt(mode[2][type]) && process.getuid() === stat.uid) || // user
+		(parseInt(mode[3][type]) && process.getgid() === stat.gid))); // group
+	}
 };
 
 /**
@@ -79,9 +79,9 @@ exports.perms = function (file, type, cb) {
  * @param {Object} res Express response object
  */
 actions.writable = function (req, res) {
-    exports.perms(req.file, 1, function (w) {
-        res.send(w);
-    });
+	exports.perms(req.file, 1, function (w) {
+		res.send(w);
+	});
 };
 
 /**
@@ -90,9 +90,9 @@ actions.writable = function (req, res) {
  * @param {Object} res Express response object
  */
 actions.readable = function (req, res) {
-    exports.perms(req.file, 0, function (r) {
-        res.send(r);
-    });
+	exports.perms(req.file, 0, function (r) {
+		res.send(r);
+	});
 };
 
 /**
@@ -103,170 +103,170 @@ actions.readable = function (req, res) {
  * @param {fs.Stats} [stat=false] Add {@code stat} property to returned object with stat results
  */
 exports.info = function (file, cb, content, stat) {
-    var i = {
-        path: path.resolve(file)
-    }, sent = false;
-    fs.exists(file, function (e) { // check existence
-        i.exists = e;
-        if (!e) {
-            cb(new LBFile(i));
-            return; // doesn't exist, so quit
-        }
-        fs.stat(file, function (e, s) { // get stat
-            if (stat) {
-                i.stat = s; // add the stat in if we want it
-            }
+	var i = {
+		path: path.resolve(file)
+	}, sent = false;
+	fs.exists(file, function (e) { // check existence
+		i.exists = e;
+		if (!e) {
+			cb(new LBFile(i));
+			return; // doesn't exist, so quit
+		}
+		fs.stat(file, function (e, s) { // get stat
+			if (stat) {
+				i.stat = s; // add the stat in if we want it
+			}
 
-            function passwd_err() {
-                if (!i.owner) {
-                    i.owner = {
-                        id: s.uid,
-                        name: '',
-                        full: '',
-                        is: process.getuid() === s.uid
-                    };
-                    finished();
-                }
-            }
+			function passwd_err() {
+				if (!i.owner) {
+					i.owner = {
+						id: s.uid,
+						name: '',
+						full: '',
+						is: process.getuid() === s.uid
+					};
+					finished();
+				}
+			}
 
-            function group_err() {
-                if (!i.group) {
-                    i.group = i.group || {
-                        id: s.gid,
-                        name: '',
-                        is: process.getgid() === s.gid
-                    };
-                    finished();
-                }
-            }
-            try {
-                var passwd = spawn('getent', ['passwd', s.uid]);
-                passwd.stdout.on('data', function (data) {
-                    data = data.toString().split(':');
-                    i.owner = {
-                        id: s.uid,
-                        name: data[0],
-                        full: data[4],
-                        is: process.getuid() === s.uid
-                    };
-                    finished();
-                });
-                passwd.stderr.on('data', passwd_err);
-                passwd.on('close', passwd_err);
-            } catch (e) {
-                passwd_err();
-            }
-            try {
-                var group = spawn('getent', ['group', s.gid]);
-                group.stdout.on('data', function (data) {
-                    data = data.toString().split(':');
-                    i.group = {
-                        id: s.gid,
-                        name: data[0],
-                        is: process.getgid() === s.gid
-                    };
-                    finished();
-                });
-                group.stderr.on('data', group_err);
-                group.on('close', group_err);
-            } catch (e) {
-                group_err();
-            }
-            exports.perms(s, 1, function (w) { // writable?
-                i.writable = w;
-                finished();
-            });
-            exports.perms(s, 2, function (e) { // writable?
-                i.executable = e;
-                finished();
-            });
-            exports.perms(s, 0, function (r) { // readable?
-                i.readable = r;
-                fs.lstat(file, function (e, ls) { // check if it's a link
-                    i.isLink = ls.isSymbolicLink();
-                    if (i.isLink) {
-                        fs.readlink(file, function (e, l) {
-                            i.link = l;
-                            finished();
-                        });
-                    } else {
-                        finished();
-                    }
-                });
-                i.type = s.isDirectory() ? 'directory' : '';
-                if (!i.type) { // is file
-                    if (r && !s.isDirectory() && content) {
-                        fs.readFile(file, 'utf8', function (f_e, f) {
-                            i.cont = f_e ? null : f;
-                            finished();
-                        });
-                    }
-                    exports.info.type(file, function (t) {
-                        i.type = t;
-                        finished();
-                    });
-                    i.size = s.size;
-                } else if (r) { // is dir
-                    fs.readdir(file, function (d_e, d) {
-                        i.size = s.size;
-                        i.items = d_e ? 0 : d.length;
-                        finished();
-                    });
-                } else {
-                    i.size = null;
-                    i.items = null;
-                    if (content) {
-                        i.cont = null;
-                    }
-                    finished();
-                }
-                finished();
-            });
-            i.date = s.mtime;
-            i.perm = parseInt(s.mode.toString(8), 10).toString(10).substr(2);
-            // get the value as an octal number, turn it to decimal, turn it to string, and chop off the first couple characters
-            finished();
-        });
-        fs.realpath(file, function (rp_e, rp) {
-            i.realpath = rp;
-            finished();
-        });
-        exports.perms(path.dirname(file), 1, function (w) { // parent writable?
-            i.parentWritable = w;
-            finished();
-        });
-    });
-    /**
-     * Executes the callback function if all asynchronous actions have completed
-     */
-    function finished() {
-        if (!sent && typeof i.writable !== 'undefined' && typeof i.parentWritable !== 'undefined' && typeof i.readable !== 'undefined' && typeof i.executable !== 'undefined' && typeof i.date !== 'undefined' && typeof i.size !== 'undefined' && (i.type == 'directory' ? typeof i.items !== 'undefined' : true) && typeof i.perm !== 'undefined' && typeof i.owner !== 'undefined' && typeof i.group !== 'undefined' && typeof i.type !== 'undefined' && i.type !== '' && typeof i.isLink !== 'undefined' && (!i.isLink || typeof i.link !== 'undefined') && typeof i.realpath !== 'undefined' && (content && i.type != 'directory' ? typeof i.cont !== 'undefined' : true) && (stat ? typeof i.stat !== 'undefined' : true)) {
-            cb(new LBFile(i));
-            sent = true;
-        }
-    }
+			function group_err() {
+				if (!i.group) {
+					i.group = i.group || {
+						id: s.gid,
+						name: '',
+						is: process.getgid() === s.gid
+					};
+					finished();
+				}
+			}
+			try {
+				var passwd = spawn('getent', ['passwd', s.uid]);
+				passwd.stdout.on('data', function (data) {
+					data = data.toString().split(':');
+					i.owner = {
+						id: s.uid,
+						name: data[0],
+						full: data[4],
+						is: process.getuid() === s.uid
+					};
+					finished();
+				});
+				passwd.stderr.on('data', passwd_err);
+				passwd.on('close', passwd_err);
+			} catch (e) {
+				passwd_err();
+			}
+			try {
+				var group = spawn('getent', ['group', s.gid]);
+				group.stdout.on('data', function (data) {
+					data = data.toString().split(':');
+					i.group = {
+						id: s.gid,
+						name: data[0],
+						is: process.getgid() === s.gid
+					};
+					finished();
+				});
+				group.stderr.on('data', group_err);
+				group.on('close', group_err);
+			} catch (e) {
+				group_err();
+			}
+			exports.perms(s, 1, function (w) { // writable?
+				i.writable = w;
+				finished();
+			});
+			exports.perms(s, 2, function (e) { // writable?
+				i.executable = e;
+				finished();
+			});
+			exports.perms(s, 0, function (r) { // readable?
+				i.readable = r;
+				fs.lstat(file, function (e, ls) { // check if it's a link
+					i.isLink = ls.isSymbolicLink();
+					if (i.isLink) {
+						fs.readlink(file, function (e, l) {
+							i.link = l;
+							finished();
+						});
+					} else {
+						finished();
+					}
+				});
+				i.type = s.isDirectory() ? 'directory' : '';
+				if (!i.type) { // is file
+					if (r && !s.isDirectory() && content) {
+						fs.readFile(file, 'utf8', function (f_e, f) {
+							i.cont = f_e ? null : f;
+							finished();
+						});
+					}
+					exports.info.type(file, function (t) {
+						i.type = t;
+						finished();
+					});
+					i.size = s.size;
+				} else if (r) { // is dir
+					fs.readdir(file, function (d_e, d) {
+						i.size = s.size;
+						i.items = d_e ? 0 : d.length;
+						finished();
+					});
+				} else {
+					i.size = null;
+					i.items = null;
+					if (content) {
+						i.cont = null;
+					}
+					finished();
+				}
+				finished();
+			});
+			i.date = s.mtime;
+			i.perm = parseInt(s.mode.toString(8), 10).toString(10).substr(2);
+			// get the value as an octal number, turn it to decimal, turn it to string, and chop off the first couple characters
+			finished();
+		});
+		fs.realpath(file, function (rp_e, rp) {
+			i.realpath = rp;
+			finished();
+		});
+		exports.perms(path.dirname(file), 1, function (w) { // parent writable?
+			i.parentWritable = w;
+			finished();
+		});
+	});
+	/**
+	 * Executes the callback function if all asynchronous actions have completed
+	 */
+	function finished() {
+		if (!sent && typeof i.writable !== 'undefined' && typeof i.parentWritable !== 'undefined' && typeof i.readable !== 'undefined' && typeof i.executable !== 'undefined' && typeof i.date !== 'undefined' && typeof i.size !== 'undefined' && (i.type == 'directory' ? typeof i.items !== 'undefined' : true) && typeof i.perm !== 'undefined' && typeof i.owner !== 'undefined' && typeof i.group !== 'undefined' && typeof i.type !== 'undefined' && i.type !== '' && typeof i.isLink !== 'undefined' && (!i.isLink || typeof i.link !== 'undefined') && typeof i.realpath !== 'undefined' && (content && i.type != 'directory' ? typeof i.cont !== 'undefined' : true) && (stat ? typeof i.stat !== 'undefined' : true)) {
+			cb(new LBFile(i));
+			sent = true;
+		}
+	}
 };
 
 exports.info.type = function (file, cb) {
-    var magic = new mmm.Magic(mmm.MAGIC_MIME_TYPE),
-        type;
-    magic.detectFile(file, function (m_e, m_type) {
-        if (m_e || m_type == 'regular file, no read permission' || m_type == 'text/plain') { // Magic error, use lazy checking
-            type = mime.lookup(file);
-            if (/^application/.test(type) && config.filetypes.application_to_text.indexOf(type.substr(12)) != -1 || /^application\/.*\+?xml$/.test(type)) {
-                type = type.replace(/^application/, 'text');
-                if (type == 'text/x-shellscript') {
-                    type = 'text/x-sh';
-                }
-            }
-            if (type == mime.default_type && m_type == 'text/plain') {
-                type = 'text/plain';
-            }
-        } else {
-            type = m_type;
-        }
-        cb(type);
-    });
+	var magic = new mmm.Magic(mmm.MAGIC_MIME_TYPE),
+		type;
+	magic.detectFile(file, function (m_e, m_type) {
+		if (m_e || m_type == 'regular file, no read permission' || m_type == 'text/plain') { // Magic error, use lazy checking
+			type = mime.lookup(file);
+			if (/^application/.test(type) && config.filetypes.application_to_text.indexOf(type.substr(12)) != -1 || /^application\/.*\+?xml$/.test(type)) {
+				type = type.replace(/^application/, 'text');
+				if (type == 'text/x-shellscript') {
+					type = 'text/x-sh';
+				}
+			}
+			if (type == mime.default_type && m_type == 'text/plain') {
+				type = 'text/plain';
+			}
+		} else {
+			type = m_type;
+		}
+		cb(type);
+	});
 };
 
 /**
@@ -275,16 +275,16 @@ exports.info.type = function (file, cb) {
  * @param {Object} res Express response object
  */
 actions.info = function (req, res) {
-    var content = req.body && req.body.content,
-        stat = req.body && req.body.stat;
-    exports.info(
-    req.file,
+	var content = req.body && req.body.content,
+		stat = req.body && req.body.stat;
+	exports.info(
+	req.file,
 
-    function (i) {
-        res.send(i);
-    },
-    content,
-    stat);
+	function (i) {
+		res.send(i);
+	},
+	content,
+	stat);
 };
 
 /**
@@ -293,9 +293,17 @@ actions.info = function (req, res) {
  * @param {Object} res Express response object
  */
 actions.infoDate = function (req, res) {
-    fs.stat(req.file, function (e, s) {
-        res.send((e ? 0 : s.mtime.getTime()).toString(10)); // UNIX epoch offset time in ms as string, so as not to send some crazy status
-    });
+	var latestDate = 0, done = 0;
+	req.file.split(path.delimiter).forEach(function (file, i, arr) {
+		fs.stat(file, function (e, s) {
+			var d = (e ? 0 : s.mtime.getTime()).toString(10);
+			// UNIX epoch offset time in ms as string, so as not to send some crazy status
+			latestDate = latestDate < d ? d : latestDate;
+			if (++done === arr.length) {
+				res.send(latestDate);
+			}
+		});
+	});
 };
 actions['info.date'] = actions.infoDate;
 
@@ -305,7 +313,7 @@ actions['info.date'] = actions.infoDate;
  * @param {Object} res Express response object
  */
 actions.echo = function (req, res) {
-    res.sendfile(req.file);
+	res.sendfile(req.file);
 };
 
 /**
@@ -314,9 +322,9 @@ actions.echo = function (req, res) {
  * @param {Object} res Express response object
  */
 actions.isDir = function (req, res) {
-    fs.stat(req.file, function (e, s) {
-        res.send(e ? false : s.isDirectory());
-    });
+	fs.stat(req.file, function (e, s) {
+		res.send(e ? false : s.isDirectory());
+	});
 };
 
 /**
@@ -327,24 +335,24 @@ actions.isDir = function (req, res) {
  * @todo Add CWD option to avoid hacks like used in {@link module:info~dir dir}
  */
 exports.fileListInfo = function (files, cb, content, cwd) {
-    cwd = cwd || '/';
-    cwd = cwd.toString();
-    var fileList = []; // final list, will be passed to cb once populated
-    if (files.length == 0) {
-        finished();
-    }
-    files.forEach(function (f) {
-        exports.info(path.join(cwd, f), function (i) { // get info on current one
-            fileList.push(i);
-            finished();
-        }, content);
-    });
+	cwd = cwd || '/';
+	cwd = cwd.toString();
+	var fileList = []; // final list, will be passed to cb once populated
+	if (files.length == 0) {
+		finished();
+	}
+	files.forEach(function (f) {
+		exports.info(path.join(cwd, f), function (i) { // get info on current one
+			fileList.push(i);
+			finished();
+		}, content);
+	});
 
-    function finished() {
-        if (files.length === fileList.length) { // all present
-            cb(new LBFile.FileList(fileList));
-        }
-    }
+	function finished() {
+		if (files.length === fileList.length) { // all present
+			cb(new LBFile.FileList(fileList));
+		}
+	}
 };
 
 /**
@@ -354,24 +362,24 @@ exports.fileListInfo = function (files, cb, content, cwd) {
  * @param {boolean} [cont=false] Same as {@code cont} parameter to {@link module:info~info info}
  */
 exports.dir = function (files, cb, cont, cwd) {
-    if (typeof files === 'string') { // filepath
-        cwd = files;
-        fs.readdir(cwd, function (e, d) {
-            if (e) {
-                cb({
-                    error: e.code === 'EACCES' ? 'perms' : 'exist'
-                }); // send correct error
-            } else {
-                run(d);
-            }
-        });
-    } else {
-        run(files);
-    }
+	if (typeof files === 'string') { // filepath
+		cwd = files;
+		fs.readdir(cwd, function (e, d) {
+			if (e) {
+				cb({
+					error: e.code === 'EACCES' ? 'perms' : 'exist'
+				}); // send correct error
+			} else {
+				run(d);
+			}
+		});
+	} else {
+		run(files);
+	}
 
-    function run(f) {
-        exports.fileListInfo(f, cb, cont, cwd);
-    }
+	function run(f) {
+		exports.fileListInfo(f, cb, cont, cwd);
+	}
 };
 
 /**
@@ -380,56 +388,56 @@ exports.dir = function (files, cb, cont, cwd) {
  * @param {Object} res Express response object
  */
 actions.dir = function (req, res) {
-    var content = req.body.cont == "true",
-        simple = req.body.simple == "true",
-        dirsOnly = req.body.dirsOnly == "true";
-    fs.readdir(req.file, function (e, d) {
-        if (e) { // can't leave this up to dir() because then we'd have an unresolved error
-            res.send({
-                error: e.code === 'EACCES' ? 'perms' : 'exist'
-            });
-        } else if (simple) {
-            if (dirsOnly) {
-                var files = [];
-                d.forEach(function (f) {
-                    if (f[0] == '.') {
-                        files.push({
-                            name: f,
-                            dir: false
-                        });
-                        fin();
-                    } else {
-                        fs.stat(path.join(req.file, f), function (e, s) {
-                            files.push({
-                                name: f,
-                                dir: e ? false : s.isDirectory()
-                            });
-                            fin();
-                        });
-                    }
-                });
+	var content = req.body.cont == "true",
+		simple = req.body.simple == "true",
+		dirsOnly = req.body.dirsOnly == "true";
+	fs.readdir(req.file, function (e, d) {
+		if (e) { // can't leave this up to dir() because then we'd have an unresolved error
+			res.send({
+				error: e.code === 'EACCES' ? 'perms' : 'exist'
+			});
+		} else if (simple) {
+			if (dirsOnly) {
+				var files = [];
+				d.forEach(function (f) {
+					if (f[0] == '.') {
+						files.push({
+							name: f,
+							dir: false
+						});
+						fin();
+					} else {
+						fs.stat(path.join(req.file, f), function (e, s) {
+							files.push({
+								name: f,
+								dir: e ? false : s.isDirectory()
+							});
+							fin();
+						});
+					}
+				});
 
-                function fin() {
-                    if (files.length == d.length) {
-                        res.send(files.filter(function (f) {
-                            return f.dir;
-                        }));
-                    }
-                }
-            } else {
-                res.send(d);
-            }
-        } else {
-            exports.dir(
-            d,
+				function fin() {
+					if (files.length == d.length) {
+						res.send(files.filter(function (f) {
+							return f.dir;
+						}));
+					}
+				}
+			} else {
+				res.send(d);
+			}
+		} else {
+			exports.dir(
+			d,
 
-            function (files) {
-                res.send(files.array());
-            },
-            content,
-            req.file);
-        }
-    });
+			function (files) {
+				res.send(files.array());
+			},
+			content,
+			req.file);
+		}
+	});
 };
 
 /**
@@ -440,48 +448,48 @@ actions.dir = function (req, res) {
  * @param {function} cb Callback function, taking 1 parameter: size (in bytes) of the directory
  */
 exports.dirSize = function (dir, depth, cb) {
-    var async_running = 0,
-        file_counter = 1,
-        total = 0;
+	var async_running = 0,
+		file_counter = 1,
+		total = 0;
 
-    function again(current_dir, depth) {
-        return fs.lstat(current_dir, function (err, stat) {
-            if (err) {
-                file_counter--;
-                return;
-            }
-            if (stat.isFile()) {
-                file_counter--;
-                total += stat.size;
-            } else if (stat.isDirectory() && depth) {
-                file_counter--;
-                async_running++;
-                fs.readdir(current_dir, function (err, files) {
-                    var file, _i, _len, _results;
-                    async_running--;
-                    if (err) {
-                        return;
-                    }
-                    file_counter += files.length;
-                    if (file_counter === 0 && async_running === 0) {
-                        cb(total);
-                    }
-                    _results = [];
-                    for (_i = 0, _len = files.length; _i < _len; _i++) {
-                        file = files[_i];
-                        _results.push(again(path.join(current_dir, file), depth - 1));
-                    }
-                    return _results;
-                });
-            } else {
-                file_counter--;
-            }
-            if (file_counter === 0 && async_running === 0) {
-                cb(total);
-            }
-        });
-    }
-    again(dir, depth);
+	function again(current_dir, depth) {
+		return fs.lstat(current_dir, function (err, stat) {
+			if (err) {
+				file_counter--;
+				return;
+			}
+			if (stat.isFile()) {
+				file_counter--;
+				total += stat.size;
+			} else if (stat.isDirectory() && depth) {
+				file_counter--;
+				async_running++;
+				fs.readdir(current_dir, function (err, files) {
+					var file, _i, _len, _results;
+					async_running--;
+					if (err) {
+						return;
+					}
+					file_counter += files.length;
+					if (file_counter === 0 && async_running === 0) {
+						cb(total);
+					}
+					_results = [];
+					for (_i = 0, _len = files.length; _i < _len; _i++) {
+						file = files[_i];
+						_results.push(again(path.join(current_dir, file), depth - 1));
+					}
+					return _results;
+				});
+			} else {
+				file_counter--;
+			}
+			if (file_counter === 0 && async_running === 0) {
+				cb(total);
+			}
+		});
+	}
+	again(dir, depth);
 };
 
 /**
@@ -490,13 +498,13 @@ exports.dirSize = function (dir, depth, cb) {
  * @param {Object} res Express response object
  */
 actions.dirSize = function (req, res) {
-    var depth = (req.body && req.body.depth) || 3; // get depth from POST, otherwise 3
-    exports.dirSize(
-    req.file,
-    depth === 0 ? Infinity : depth, // a depth of 0 means infinite depth
-    function (s) {
-        res.send(s.toString());
-    }); // again to prevent a crazy HTTP status being sent
+	var depth = (req.body && req.body.depth) || 3; // get depth from POST, otherwise 3
+	exports.dirSize(
+	req.file,
+	depth === 0 ? Infinity : depth, // a depth of 0 means infinite depth
+	function (s) {
+		res.send(s.toString());
+	}); // again to prevent a crazy HTTP status being sent
 };
 
 /**
@@ -506,40 +514,40 @@ actions.dirSize = function (req, res) {
  * @param {function} cb Callback taking 1 parameter, the tree object
  */
 exports.tree = function tree(dir, depth, cb) {
-    if (typeof depth == 'function') {
-        cb = depth;
-        depth = 3;
-    }
-    fs.readdir(dir, function (e, d) {
-        if (e) {
-            cb({});
-            return;
-        }
-        var files = {}, async = d.length;
+	if (typeof depth == 'function') {
+		cb = depth;
+		depth = 3;
+	}
+	fs.readdir(dir, function (e, d) {
+		if (e) {
+			cb({});
+			return;
+		}
+		var files = {}, async = d.length;
 
-        function stat(f, i) {
-            fs.stat(path.join(dir, f), function (e, s) {
-                files[f] = e ? false : s.isDirectory();
-                if (files[f] && depth - 1) {
-                    tree(path.join(dir, f), depth - 1, function (t) {
-                        files[f] = t;
-                        async--;
-                        fin();
-                    });
-                } else {
-                    async--;
-                    fin();
-                }
-            });
-        }
+		function stat(f, i) {
+			fs.stat(path.join(dir, f), function (e, s) {
+				files[f] = e ? false : s.isDirectory();
+				if (files[f] && depth - 1) {
+					tree(path.join(dir, f), depth - 1, function (t) {
+						files[f] = t;
+						async--;
+						fin();
+					});
+				} else {
+					async--;
+					fin();
+				}
+			});
+		}
 
-        function fin() {
-            if (!async) {
-                cb(files);
-            }
-        }
-        d.forEach(stat);
-    });
+		function fin() {
+			if (!async) {
+				cb(files);
+			}
+		}
+		d.forEach(stat);
+	});
 };
 
 /**
@@ -548,13 +556,13 @@ exports.tree = function tree(dir, depth, cb) {
  * @param {Object} res Express response object
  */
 actions.tree = function (req, res) {
-    var depth = (req.body && req.body.depth) || 3; // get depth from POST, otherwise 3
-    exports.tree(
-    req.file,
-    depth === 0 ? Infinity : depth, // a depth of 0 means infinite depth
-    function (s) {
-        res.send(s);
-    });
+	var depth = (req.body && req.body.depth) || 3; // get depth from POST, otherwise 3
+	exports.tree(
+	req.file,
+	depth === 0 ? Infinity : depth, // a depth of 0 means infinite depth
+	function (s) {
+		res.send(s);
+	});
 };
 
 /**
@@ -563,34 +571,34 @@ actions.tree = function (req, res) {
  * @param {function} cb Callback taking 1 parameter, the tree object
  */
 exports.treeParents = function treeParents(dir, cb) {
-    if (typeof dir == 'string') {
-        dir = [dir];
-    }
-    if (!Array.isArray(dir)) {
-        throw new Error('non-array given to info.tree');
-    }
-    dir = dir.map(function (d) {
-        return path.resolve(d);
-    });
-    var ret = [];
-    dir.forEach(function (d) {
-        exports.tree(d, 1, function (t) {
-            if (d == '/') {
-                cb(t);
-            } else {
-                treeParents(path.dirname(d), function (tp) {
-                    obj.filter(path.dirname(d).split('/'), true).reduce(function (o, n) {
-                        return o[n];
-                    }, tp)[path.basename(d)] = t;
-                    ret.push(tp);
-                    if (ret.length == dir.length) {
-                        cb(prefex.apply(null, [
-                            ['object'], true, {}].concat(ret)));
-                    }
-                });
-            }
-        });
-    });
+	if (typeof dir == 'string') {
+		dir = [dir];
+	}
+	if (!Array.isArray(dir)) {
+		throw new Error('non-array given to info.tree');
+	}
+	dir = dir.map(function (d) {
+		return path.resolve(d);
+	});
+	var ret = [];
+	dir.forEach(function (d) {
+		exports.tree(d, 1, function (t) {
+			if (d == '/') {
+				cb(t);
+			} else {
+				treeParents(path.dirname(d), function (tp) {
+					obj.filter(path.dirname(d).split('/'), true).reduce(function (o, n) {
+						return o[n];
+					}, tp)[path.basename(d)] = t;
+					ret.push(tp);
+					if (ret.length == dir.length) {
+						cb(prefex.apply(null, [
+							['object'], true, {}].concat(ret)));
+					}
+				});
+			}
+		});
+	});
 };
 
 /**
@@ -599,10 +607,10 @@ exports.treeParents = function treeParents(dir, cb) {
  * @param {Object} res Express response object
  */
 actions.treeParents = function (req, res) {
-    exports.treeParents(
-    req.file,
+	exports.treeParents(
+	req.file,
 
-    function (s) {
-        res.send(s);
-    });
+	function (s) {
+		res.send(s);
+	});
 };

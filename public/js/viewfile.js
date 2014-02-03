@@ -7,6 +7,10 @@ function viewFile() {
 		file.update(file.resolve());
 		trash = true;
 	}
+	if (file instanceof LBFile.FileList) {
+		run(file);
+		return;
+	}
 	// Check if the requested file exists
 	$.post('info/info', 'content=true&file=' + file.path, function (f) {
 		f = file = new LBFile(f);
@@ -14,6 +18,10 @@ function viewFile() {
 			getDirContents(file.path, listDir);
 			return;
 		}
+		run(f);
+	});
+
+	function run(f) {
 		if ($('#file').data('program')) { // reloaded on change, because data is cleared in load()
 			loadProgram($('#file').data('program'));
 			return;
@@ -38,7 +46,7 @@ function viewFile() {
 			$('#message').text(_('messages-openwith'));
 			$('#ajax-loader').remove();
 		}
-	});
+	}
 	$('#sidebar-tree').data('file', [file.path]);
 	sidebarTree(file.path);
 	if (trash) {
@@ -127,18 +135,29 @@ function listDir(files, beforeLoad, afterLoad) {
 }
 
 function loadProgram(program) {
-	console.log(file);
+	if (file.length) {
+		if (programs.all[program].tabs) {
+			if (file.length > 1) { // open in new tabs
+				// BROKEN
+				file.forEach(function (f) {
+					$('<a target="_blank" href="/?program=' + program + '#' + f.path + '">')[0].click();
+				});
+				//cd('..', load); // hack against a bug
+				return;
+			}
+		} else {
+			document.title = _('program-' + program + '-name');
+		}
+	}
 	if (!$('#ajax-loader').length) {
 		$('<div id="ajax-loader"><img src="img/ajax-loader.gif">').appendTo('#content');
 	}
 	$('#file-container').load('/programs/' + program + '/html', {
-		file: type ? file.path : file.paths()
+		file: file instanceof LBFile.FileList ? file.paths() : file.path
 	}, function () {
-		$('#message').html(_('messages-file-editingwith', _('program-' + program)) + (Array.isArray(file) ? '' : (file.writable ? '' : _('messages-file-readonly')) + (file.name.substr(-1) == '~' ? _('messages-file-backup') : '')));
+		$('#message').html(_('messages-file-editingwith', _('program-' + program)) + (file.writable ? '' : _('messages-file-readonly')) + (file.name.substr(-1) == '~' ? _('messages-file-backup') : ''));
 		$('#file').data('program', program);
-		if (!Array.isArray(file)) {
-			$('#file').data('modDate', file.date.getTime());
-		} // for checking if it was modified
+		$('#file').data('modDate', file.date.getTime()); // for checking if it was modified
 		$('#file').addClass('fileview');
 
 		function loadButtons(buttons) {
@@ -164,9 +183,7 @@ function loadProgram(program) {
 			programs.generateButtons(programs.all[program].buttons, file, loadButtons);
 		} else {
 			$.getJSON('/programs/' + program + '/buttons', {
-				file: Array.isArray(file) ? file.map(function (f) {
-					return f.path;
-				}) : file.path
+				file: file instanceof LBFile.FileList ? file.paths() : file.path
 			}, loadButtons);
 		}
 	});
@@ -191,7 +208,7 @@ $(d).on('click', 'li#contextMenu-file-open ul li a', function () {
 			//cd('..', load); // hack against a bug
 		}
 	} else {
-		location.href = '/?program='+p+'#'+JSON.stringify($('.sel').map(function () {
+		location.href = '/?program=' + p + '#' + JSON.stringify($('.sel').map(function () {
 			return $(this).data('path');
 		}).get());
 	}
@@ -604,7 +621,7 @@ $(d).on('click', '#contextMenu-folder-newFolder', function () {
 		action: 'mkdir',
 		file: file.addSlashIfNeeded() + ('Untitled Folder ' + (function (d) {
 			return d.count() ? d.order('name asec').get().map(function (name, i) {
-				return i == 0 ? true : name.name.substr(16) == i + 1;
+				return i === 0 ? true : name.name.substr(16) == i + 1;
 			}).concat(false).indexOf(false) + 1 : '';
 		})($('#file').data('files')({
 			name: {
