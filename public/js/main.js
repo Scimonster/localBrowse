@@ -88,7 +88,7 @@ function load() {
 			search(location.hash.substr(8));
 		} else {
 			// If it's a file or dir, load it
-			if (getUrlVars(location.search).program) { // a program was set via URL
+			if (getUrlVars(location.search).program && type !== 'directory') { // a program was set via URL
 				loadProgram(getUrlVars(location.search).program);
 			} else {
 				viewFile();

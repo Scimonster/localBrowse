@@ -30,6 +30,10 @@ function viewFile() {
 			loadProgram(config.programs.defaults[f.type]);
 			return;
 		}
+		if (getUrlVars(location.search).program) { // a program was set via URL
+			loadProgram(getUrlVars(location.search).program);
+			return;
+		}
 		var editors = programs.editorsForFile(file);
 		if (editors.length == 1) {
 			loadProgram(editors[0]);
@@ -135,6 +139,7 @@ function listDir(files, beforeLoad, afterLoad) {
 }
 
 function loadProgram(program) {
+	var changed = false;
 	if (file.length) {
 		if (programs.all[program].tabs) {
 			if (file.length > 1) { // open in new tabs
@@ -146,8 +151,11 @@ function loadProgram(program) {
 				return;
 			}
 		} else {
-			document.title = _('program-' + program + '-name');
+			document.title = _('title', _('program-' + program + '-name'));
 		}
+	} else if (!programs.all[program].tabs) {
+		file = new LBFile.FileList([file]);
+		changed = true;
 	}
 	if (!$('#ajax-loader').length) {
 		$('<div id="ajax-loader"><img src="img/ajax-loader.gif">').appendTo('#content');
@@ -178,6 +186,9 @@ function loadProgram(program) {
 
 			$.getScript('/programs/' + program + '/index.js');
 			$('#ajax-loader').remove();
+			if (changed) {
+				file = file[0];
+			}
 		}
 		if (programs.all[program].client) { // render buttons on client (nothing too difficult)
 			programs.generateButtons(programs.all[program].buttons, file, loadButtons);
