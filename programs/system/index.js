@@ -6,9 +6,11 @@
 var path = require('path'),
 	spawn = require('child_process').spawn;
 var name = exports.modName = path.basename(__dirname);
-exports.html = function (file, cb) {
-	spawn('xdg-open', [file.path]);
-	cb('');
+exports.html = function (files, cb) {
+	files.forEach(function(file){
+		spawn('xdg-open', [file.path]);
+	});
+	cb(files);
 };
 
 exports.messages = {
@@ -23,6 +25,7 @@ exports.mimetypes = [/.*/];
 exports.desc = 'Open the file with the system\'s default program';
 exports.name = 'System program';
 
+exports.tabs = false;
 exports.noShow = true;
 exports.client = true;
 

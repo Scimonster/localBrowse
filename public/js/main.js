@@ -3,7 +3,7 @@ var w = window, // shortcuts
 	bytes = 0,
 	requests = 0, // development - bytes transferred
 	activeAjax = 0,
-	s = { // settings
+	s = { // settings (will be replaced with config)
 		sortby: 'name', // in directory list view, sort by this
 		asec: true, // show in ascending order
 		dirFirst: true, // show directories first
@@ -14,11 +14,12 @@ var w = window, // shortcuts
 	},
 	file, // an LBFile of the current file
 	type, // dir, trash, search, file
+	url, // the URL as JSON
 	bookmarks, // array of bookmarks
 	iconset = [], // deprecated, probably
 	LBFile = require('./File.js'), // LBFile class, containing file methods
-	obj = require('./Object.js'),
-	config; // object helpers
+	obj = require('./Object.js'), // object helpers
+	config; // configuration
 $.get('/info/localbrowseCWD', function (cwd) {
 	getDirContents(cwd + '/public/img/fatcow/16x16', {
 		cont: false,
@@ -44,15 +45,56 @@ LBFile.prototype.relative = function () {
 };
 
 function load() {
-	// This function runs when a new file/dir is loaded, and at startup.
+	// This function runs when a new file/dir is loaded.
+
+	if (location.hash.substr(1) === '') {
+		location.hash = JSON.stringify({
+			file: homeroot
+		});
+		return;
+	}
+	if (location.hash[1] === '/') {
+		location.hash = JSON.stringify({
+			file: location.hash.substr(1)
+		});
+		return;
+	}
+	if (location.hash[1] === '%') {
+		location.hash = decodeURIComponent(location.hash.substr(1));
+		return;
+	}
+	url = JSON.parse(location.hash.substr(1));
+	file = url.file;
+	if (Array.isArray(file)) {
+		file = new LBFile.FileList(file);
+		type = null;
+		$('#file').html('').attr('class', '');
+		var done = 0;
+		file.forEach(function (f, i) {
+			$.getJSON('info/info' + f.resolve(), function (fil) {
+				if (fil.path == '/') {
+					fil.name = _('path-root');
+				}
+				file[i] = new LBFile(fil);
+				file.update();
+				if (++done == file.length) {
+					viewFile();
+				}
+			});
+		});
+		pathbar(file.dir + '...', '#filepath', 53);
+		$('#filepath a:last').attr('href', '#').attr('title', file.path);
+		return;
+	}
 
 	// Start by identifying the file.
-	file = new LBFile(location.hash.substr(1));
-	if (location.hash.substr(1) == '') { // nothing was specified, so use homedir
+	file = new LBFile(file);
+	if (url.file === '') { // nothing was specified, so use homedir
 		file = new LBFile(LBFile.addSlashIfNeeded(homeroot));
 	}
-	if (file.path !== location.hash.substr(1)) { // it was normalized
-		location.hash = file.path;
+	if (file.path !== url.file) { // it was normalized
+		url.file = file.path;
+		location.hash = JSON.stringify(url);
 		return;
 	}
 
@@ -63,11 +105,11 @@ function load() {
 			getDirContents('~/.local/share/Trash/files', listTrash);
 		} else if (type == 'search') {
 			// Load search
-			search(location.hash.substr(8));
+			search();
 		} else {
 			// If it's a file or dir, load it
-			if (getUrlVars(location.search).program) { // a program was set via URL
-				loadProgram(getUrlVars(location.search).program);
+			if (url.program && type !== 'directory') { // a program was set via URL
+				loadProgram(url.program);
 			} else {
 				viewFile();
 			}
@@ -85,12 +127,13 @@ function cd(loc, cb) {
 		loc = file.dir;
 	}
 	file = new LBFile(loc);
-	if (file.path !== location.hash.substr(1)) { // it was normalized
+	if (file.path !== url.file) { // it was normalized
 		noload = true;
-		location.hash = file.path;
+		url.file = file.path;
+		location.hash = JSON.stringify(url);
 	}
 	// Find out if it's a file or dir.
-	type = /^search/.test(loc) ? 'search' : (loc == 'trash' ? 'trash' : '');
+	type = url.action || (loc == 'trash' ? 'trash' : '');
 	// first test if it's search, then trash, otherwise leave it for later
 	if (!type) {
 		$.getJSON('info/info' + file.resolve(), function (f) {
@@ -102,7 +145,6 @@ function cd(loc, cb) {
 			finishLoading();
 		});
 	} else {
-		file = new LBFile(f);
 		finishLoading();
 	}
 
@@ -128,18 +170,22 @@ function pathbar(path, element, height) {
 	// Create a pathbar of a certain filepath
 
 	path = path.split('/'), parts = [];
-	if (path[path.length - 1] == '') {
+	if (path[path.length - 1] === '') {
 		path.pop();
 	}
 	$(element).buttonset('destroy');
 	$(element).html('');
 	if (!path[0]) {
-		$(element).append('<a href="#/">/</a>');
+		$(element).append('<a href="#' + encodeURIComponent(JSON.stringify({
+			file: '/'
+		})) + '">/</a>');
 		path = path.slice(1);
 	}
 	path.forEach(function (par) {
 		parts[parts.length] = par;
-		$(element).append('<a href="#/' + parts.join('/') + '/">' + par + '</a>');
+		$(element).append('<a href="#' + encodeURIComponent(JSON.stringify({
+			file: '/' + parts.join('/') + '/'
+		})) + '">' + par + '</a>');
 	});
 	$(element).buttonset();
 	var i = 0;
@@ -151,20 +197,19 @@ function pathbar(path, element, height) {
 		$(element).append('<a>...</a>');
 		path.slice(i).forEach(function (par) {
 			parts[parts.length] = par;
-			$(element).append('<a href="#/' + parts.join('/') + '/">' + par + '</a>');
+			$(element).append('<a href="#' + encodeURIComponent(JSON.stringify({
+				file: '/' + parts.join('/') + '/'
+			})) + '">' + par + '</a>');
 		});
 		$(element).buttonset();
 	}
 }
 
-function search(term) {
+function search() {
 	// This function loads and displays search results
 
-	if (typeof cwd == "undefined") {
-		cwd = homeroot;
-	}
 	$('<div id="ajax-loader"><img src="img/ajax-loader.gif">').appendTo('#content');
-	$.post('/search', 'term=' + encodeURIComponent(term) + '&cwd=' + encodeURIComponent(cwd), function (results) {
+	$.post('/search', 'term=' + encodeURIComponent(url.term) + '&cwd=' + encodeURIComponent(file.path), function (results) {
 		listDir(TAFFY(results));
 		$('#ajax-loader').remove();
 	});
@@ -310,7 +355,9 @@ function loadBookmarks() {
 	$('#sidebar-bookmarks').html('');
 	$.each(bookmarks, function (i, b) {
 		$('#sidebar-bookmarks').append(
-			'<li><a href="#' + b[0] + '" title="' + b[0] + '">' +
+			'<li><a href="#' + encodeURIComponent(JSON.stringify({
+			file: b[0]
+		})) + '" title="' + b[0] + '">' +
 			'<span class="ui-icon ui-icon-' + (b[1] == 'directory' ? 'folder-collapsed' : 'document') + '"></span>' + (new LBFile(b[0])).name + '</a>' +
 			'<span class="ui-icon ui-icon-squaresmall-close" title="' + _('index-loc-bookmarks-remove') + '" data-index="' + i + '"></span>' +
 			'</li>');
@@ -354,7 +401,9 @@ function sidebarTree(f) {
 				var f = LBFile.addSlashIfNeeded(k) + i + '/';
 				a += '<li data-path="' + f + '">' +
 					'<span class="ui-icon ui-icon-folder-' + (typeof v == 'object' ? 'open' : 'collapsed') + '"></span>' +
-					'<a href="#' + f + '">' + i + '</a>' + (typeof v == 'object' ? '<ul>' + m(v, f) + '</ul>' : '') + '</li>';
+					'<a href="#' + encodeURIComponent(JSON.stringify({
+					file: f
+				})) + '">' + i + '</a>' + (typeof v == 'object' ? '<ul>' + m(v, f) + '</ul>' : '') + '</li>';
 			});
 			return a;
 		})(tree, '/'));
@@ -431,8 +480,11 @@ $(function () { // set up jqUI elements
 				title: _('search-title')
 			}, function (term) {
 				if (term) {
-					w.cwd = file.path;
-					location.hash = '#search/' + term;
+					location.hash = JSON.stringify({
+						file: file.path,
+						action: 'search',
+						term: term
+					});
 				}
 			});
 		}
@@ -469,7 +521,9 @@ $(function () { // set up jqUI elements
 			},
 
 			function () {
-				location.hash = LBFile.addSlashIfNeeded(location.hash) + filename;
+				location.hash = JSON.stringify({
+					file: LBFile.addSlashIfNeeded(location.hash) + filename
+				});
 			});
 		});
 	});
@@ -514,7 +568,7 @@ $(function () { // set up jqUI elements
 							action: 'download',
 							url: loc,
 							dest: file.addSlashIfNeeded() + filename
-						}, $.noop);
+						}, refresh);
 					}
 				});
 			}

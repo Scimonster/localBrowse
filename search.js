@@ -35,7 +35,7 @@ exports.search = function (term, cb, cwd) {
 			i.forEach(function (f) {
 				f.name = f.name.substr(2); // ...remove leading `./`
 			});
-			cb(i);
+			cb(i.array());
 		},
 		false,
 		cwd);

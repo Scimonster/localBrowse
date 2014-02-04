@@ -299,8 +299,16 @@ actions.info = function (req, res) {
  * @param {Object} res Express response object
  */
 actions.infoDate = function (req, res) {
-	fs.stat(req.file, function (e, s) {
-		res.send((e ? 0 : s.mtime.getTime()).toString(10)); // UNIX epoch offset time in ms as string, so as not to send some crazy status
+	var latestDate = 0, done = 0;
+	req.file.split(path.delimiter).forEach(function (file, i, arr) {
+		fs.stat(file, function (e, s) {
+			var d = (e ? 0 : s.mtime.getTime()).toString(10);
+			// UNIX epoch offset time in ms as string, so as not to send some crazy status
+			latestDate = latestDate < d ? d : latestDate;
+			if (++done === arr.length) {
+				res.send(latestDate);
+			}
+		});
 	});
 };
 actions['info.date'] = actions.infoDate;
@@ -348,7 +356,7 @@ exports.fileListInfo = function (files, cb, content, cwd) {
 
 	function finished() {
 		if (files.length === fileList.length) { // all present
-			cb(fileList);
+			cb(new LBFile.FileList(fileList));
 		}
 	}
 };
@@ -430,8 +438,8 @@ actions.dir = function (req, res) {
 			d,
 
 			function (files) {
-				res.send(files);
-			}, // unfortunately, res.send doesn't like to be passed
+				res.send(files.array());
+			},
 			content,
 			req.file);
 		}

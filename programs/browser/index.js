@@ -21,6 +21,7 @@ exports.mimetypes = [/.*\/.*/];
 exports.desc = 'View the file with the browser\'s default program';
 exports.name = 'Browser viewer';
 
+exports.tabs = true;
 exports.client = true;
 
 exports.routes = {};

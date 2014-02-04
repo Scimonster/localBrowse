@@ -7,7 +7,7 @@
 var _ = require('./text').load(),
 	programs = require('./programs'),
 	info = require('./info'),
-	search = require('./search'),
+	search = require('./search').search,
 	LBFile = require('./File.js'),
 	obj = require('./Object.js'),
 	jade = require('jade'),
@@ -229,18 +229,48 @@ exports.programs = function (req, res) {
 			}
 			break;
 		case 'html':
-			info.info(req.query.file, function (i) {
-				programs.all[req.params.program].html(i, function (html) {
-					res.send(html);
+			req.query.file = req.query.file || req.body.file;
+			if (programs.all[req.params.program].tabs) {
+				info.info(req.query.file, function (i) {
+					programs.all[req.params.program].html(i, function (html) {
+						res.send(html);
+					});
+				}, true, true);
+			} else {
+				var infoList = [];
+				req.query.file.forEach(function(f){
+					info.info(f, function (i) {
+						infoList.push(i);
+						if (infoList.length==req.query.file.length) {
+							programs.all[req.params.program].html(infoList, function (html) {
+								res.send(html);
+							});
+						}
+					}, true, true);
 				});
-			}, true, true);
+			}
 			break;
 		case 'buttons':
-			info.info(req.query.file, function (i) {
-				programs.generateButtons(programs.all[req.params.program].buttons, i, function (buttons) {
-					res.send(buttons);
-				});
-			}, true, true);
+			req.query.file = req.query.file || req.body.file;
+			if (programs.all[req.params.program].tabs) {
+				info.info(req.query.file, function (i) {
+					programs.generateButtons(programs.all[req.params.program].buttons, i, function (buttons) {
+						res.send(buttons);
+					});
+				}, true, true);
+			} else {
+				var infoList = [];
+				req.query.file.forEach(function(f){
+					info.info(f, function (i) {
+						infoList.push(i);
+						if (infoList.length==req.query.file.length) {
+							programs.generateButtons(programs.all[req.params.program].buttons, infoList, function (buttons) {
+								res.send(buttons);
+							});
+						}
+					});
+				}, true, true);
+			}
 			break;
 		default:
 			if (typeof programs.all[req.params.program].routes[req.params.action] == 'function') {

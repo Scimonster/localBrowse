@@ -7,6 +7,10 @@ function viewFile() {
 		file.update(file.resolve());
 		trash = true;
 	}
+	if (file instanceof LBFile.FileList) {
+		run(file);
+		return;
+	}
 	// Check if the requested file exists
 	$.post('info/info', 'content=true&file=' + file.path, function (f) {
 		f = file = new LBFile(f);
@@ -14,12 +18,20 @@ function viewFile() {
 			getDirContents(file.path, listDir);
 			return;
 		}
+		run(f);
+	});
+
+	function run(f) {
 		if ($('#file').data('program')) { // reloaded on change, because data is cleared in load()
 			loadProgram($('#file').data('program'));
 			return;
 		}
 		if (config.programs.defaults[f.type]) { // open in default program
 			loadProgram(config.programs.defaults[f.type]);
+			return;
+		}
+		if (url.program) { // a program was set via URL
+			loadProgram(url.program);
 			return;
 		}
 		var editors = programs.editorsForFile(file);
@@ -33,12 +45,14 @@ function viewFile() {
 					'data-program': editor,
 					title: _('program-' + editor + '-desc')
 				}).append('<a>').
-				children('a').attr('href', location.hash).text(_('program-' + editor + '-name')).parent();
+				children('a').attr('href', '#' + encodeURIComponent(JSON.stringify($.extend(url, {
+					program: editor
+				})))).text(_('program-' + editor + '-name')).parent();
 			})).menu();
 			$('#message').text(_('messages-openwith'));
 			$('#ajax-loader').remove();
 		}
-	});
+	}
 	$('#sidebar-tree').data('file', [file.path]);
 	sidebarTree(file.path);
 	if (trash) {
@@ -92,7 +106,7 @@ function listDir(files, beforeLoad, afterLoad) {
 		$('<' + (s.dirTiles ? 'div' : 'table') + ' id="file" class="dirlist">').appendTo('#file-container');
 	}
 	$('#file').html(jade.render('dir.' + (s.dirTiles ? 'tiles' : 'list'), {
-		base: type == 'search' ? LBFile.addSlashIfNeeded(cwd) : file.addSlashIfNeeded(),
+		base: file.addSlashIfNeeded(),
 		imageForFile: imageForFile,
 			'_': _,
 		files: (s.dirFirst ? files({
@@ -107,7 +121,7 @@ function listDir(files, beforeLoad, afterLoad) {
 			return new LBFile(i);
 		})
 	}));
-	$('#show_hide_hidden,#show_hide_restricted').change();
+	$('#show_hide_hidden, #show_hide_restricted').change();
 	if (!s.dirTiles) {
 		if (!s.asec) {
 			$('#file tr').reverse();
@@ -127,14 +141,36 @@ function listDir(files, beforeLoad, afterLoad) {
 }
 
 function loadProgram(program) {
+	var changed = false;
+	if (file.length) {
+		if (programs.all[program].tabs) {
+			if (file.length > 1) { // open in new tabs
+				file.forEach(function (f) {
+					$('<a target="_blank" href="#' + encodeURIComponent(JSON.stringify({
+						program: program,
+						file: f.path
+					})) + '">')[0].click();
+				});
+				return;
+			}
+		} else {
+			document.title = _('title', _('program-' + program + '-name'));
+		}
+	} else if (!programs.all[program].tabs) {
+		file = new LBFile.FileList([file]);
+		changed = true;
+	}
 	if (!$('#ajax-loader').length) {
 		$('<div id="ajax-loader"><img src="img/ajax-loader.gif">').appendTo('#content');
 	}
-	$('#file-container').load('/programs/' + program + '/html?file=' + encodeURIComponent(file.path), function () {
+	$('#file-container').load('/programs/' + program + '/html', {
+		file: file instanceof LBFile.FileList ? file.paths() : file.path
+	}, function () {
 		$('#message').html(_('messages-file-editingwith', _('program-' + program)) + (file.writable ? '' : _('messages-file-readonly')) + (file.name.substr(-1) == '~' ? _('messages-file-backup') : ''));
 		$('#file').data('program', program);
 		$('#file').data('modDate', file.date.getTime()); // for checking if it was modified
 		$('#file').addClass('fileview');
+
 		function loadButtons(buttons) {
 			$('#toolbar-left').children().remove();
 			buttons.forEach(function (b) {
@@ -153,30 +189,46 @@ function loadProgram(program) {
 
 			$.getScript('/programs/' + program + '/index.js');
 			$('#ajax-loader').remove();
+			if (changed) {
+				file = file[0];
+			}
 		}
 		if (programs.all[program].client) { // render buttons on client (nothing too difficult)
 			programs.generateButtons(programs.all[program].buttons, file, loadButtons);
 		} else {
-			$.getJSON('/programs/' + program + '/buttons?file=' + encodeURIComponent(file.path), loadButtons);
+			$.getJSON('/programs/' + program + '/buttons', {
+				file: file instanceof LBFile.FileList ? file.paths() : file.path
+			}, loadButtons);
 		}
 	});
 }
 
 $(d).on('click', 'ul#file li a', function () {
-	loadProgram($(this).parent().data('program'));
+	//loadProgram($(this).parent().data('program'));
 });
 $(d).on('click', 'li#contextMenu-file-open ul li a', function () {
 	var p = $(this).parent().data('program');
-	if ($('.sel').length == 1) { // open in this tab
-		cd($('.sel').data('path'), function () {
-			loadProgram(p);
+	console.log(programs.all[p])
+	if (programs.all[p].tabs) {
+		if ($('.sel').length == 1) { // open in this tab
+			cd($('.sel').data('path'), function () {
+				loadProgram(p);
+			});
+		} else if (programs.all[p].tabs) { // open in new tabs
+			$('.sel').each(function () {
+				$('<a target="_blank" href="#' + encodeURIComponent(JSON.stringify({
+					program: p,
+					file: $(this).data('path')
+				})) + '">')[0].click();
+			});
+		}
+	} else {
+		location.hash = JSON.stringify({
+			program: p,
+			file: $('.sel').map(function () {
+				return $(this).data('path');
+			}).get()
 		});
-	} else { // open in new tabs
-		// BROKEN
-		$('.sel').each(function () {
-			$('<a target="_blank" href="/?program=' + p + '#' + $(this).data('path') + '">')[0].click();
-		});
-		cd('..', load); // hack against a bug
 	}
 });
 $(d).on('click', '#fullDirSize', function () {
@@ -230,7 +282,9 @@ $(d).on('click', '#file th', function () {
 	($('#file.trash').length ? listTrash : listDir)($('#file').data('files'));
 });
 $(d).on('dblclick', '#file .file', function () {
-	location.hash = $(this).data('path');
+	location.hash = JSON.stringify({
+		file: $(this).data('path')
+	});
 });
 $(d).on('click', '#file .file', function (e) {
 	if ($(this).hasClass('sel')) {
@@ -289,7 +343,9 @@ $(d).on('click', '#saveAs', function () {
 					content: content
 				}, function () {
 					$('#message').html(_('messages-file-saved-as', name));
-					location.hash = "#" + name;
+					location.hash = JSON.stringify({
+						file: name
+					});
 				});
 			}
 		});
@@ -339,7 +395,7 @@ $(d).on('contextmenu', '#file .file', function (e) {
 		null, {
 			r: false,
 			id: 'props'
-		} ] : [ // more than one
+		}] : [ // more than one
 		{
 			r: r,
 			id: 'open'
@@ -373,7 +429,7 @@ $(d).on('contextmenu', '#file .file', function (e) {
 		null, {
 			r: false,
 			id: 'props'
-		} ],
+		}],
 		_: _,
 		prefix: 'selfile',
 		ns: 'file',
@@ -492,9 +548,9 @@ $(d).on('click', '#contextMenu-file-props,#contextMenu-folder-props', function (
 				});
 			},
 			load: function () {
-				$('select.openwith-program').chosen()
+				$('select.openwith-program').chosen();
 			}
-		} ];
+		}];
 		$('body').append(jade.render('properties/index.jade', {
 			tabs: tabs.map(function (t) {
 				return {
@@ -562,14 +618,14 @@ $(d).on('click', '#contextMenu-file-makeLink', function () {
 		nosel: true
 	}, function (dir, parent) {
 		if (dir) {
-			var complete = -1;
+			var complete = 0;
 			sel.forEach(function (f, i) {
 				$.post('/mod', {
 					action: 'link',
 					dest: LBFile.addSlashIfNeeded(dir.exists ? dir.path : parent) + f.name,
 					src: f.path
 				}, function () {
-					if (++complete == i) {
+					if (complete++ == i) {
 						refresh();
 					}
 				});
@@ -587,7 +643,7 @@ $(d).on('click', '#contextMenu-folder-newFolder', function () {
 		action: 'mkdir',
 		file: file.addSlashIfNeeded() + ('Untitled Folder ' + (function (d) {
 			return d.count() ? d.order('name asec').get().map(function (name, i) {
-				return i == 0 ? true : name.name.substr(16) == i + 1;
+				return i === 0 ? true : name.name.substr(16) == i + 1;
 			}).concat(false).indexOf(false) + 1 : '';
 		})($('#file').data('files')({
 			name: {
