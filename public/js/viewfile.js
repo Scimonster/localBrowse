@@ -13,9 +13,7 @@ function viewFile() {
 	}
 	// Check if the requested file exists
 	$.post('info/info', 'content=true&file=' + file.path, function (f) {
-		var o = {};
-		o[f.path] = f;
-		updateCache(o, true);
+		updateCache(f, true);
 		f = file = new LBFile(f);
 		if (f.type == 'directory') {
 			getDirContents(file.path, listDir);

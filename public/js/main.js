@@ -49,7 +49,16 @@ LBFile.prototype.relative = function () {
 };
 
 function updateCache(o, info) {
-	$.extend(true, cache[info ? 'info' : 'dirlist'], o);
+	if (Array.isArray(o)) {
+		var realO = {};
+		o.forEach(function (f) {
+			realO[f.path] = f;
+		});
+	} else if (o.path) {
+		var realO = {};
+		realO[o.path] = o;
+	}
+	$.extend(true, cache[info ? 'info' : 'dirlist'], realO || o);
 }
 
 function load() {
@@ -80,9 +89,7 @@ function load() {
 		var done = 0;
 		file.forEach(function (f, i) {
 			$.getJSON('info/info' + f.resolve(), function (fil) {
-				var o = {};
-				o[fil.path] = fil;
-				updateCache(o, true);
+				updateCache(fil, true);
 				if (fil.path == '/') {
 					fil.name = _('path-root');
 				}
@@ -149,9 +156,7 @@ function cd(loc, cb) {
 	if (!type) {
 		$.getJSON('info/info' + file.resolve(), function (f) {
 			file = new LBFile(f);
-			var o = {};
-			o[f.path] = f;
-			updateCache(o, true);
+			updateCache(f, true);
 			if (loc == '/') {
 				file.name = _('path-root');
 			}
@@ -452,12 +457,8 @@ function getDirContents(dir, opts, callback) {
 		} else {
 			callback(TAFFY(r));
 			if (!opts.simple) {
+				updateCache(r, true);
 				var o = {};
-				r.forEach(function (f) {
-					o[f.path] = f;
-				});
-				updateCache(o, true);
-				o = {};
 				o[dir] = (new LBFile.FileList(r)).paths();
 				updateCache(o, false);
 			} else {
