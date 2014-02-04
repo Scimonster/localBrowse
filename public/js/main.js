@@ -449,6 +449,11 @@ function getDirContents(dir, opts, callback) {
 			simple: false
 		};
 	}
+	if (!opts.nocache && cache.dirlist[dir]) {
+		callback(TAFFY(opts.simple ? cache.dirlist[dir] : cache.dirlist[dir].map(function(f){
+			return new LBFile(cache.info[f] || f);
+		})));
+	}
 	$.post('info/dir', $.extend(opts, {
 		file: (new LBFile(dir)).resolve()
 	}), function (r) {
