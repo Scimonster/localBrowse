@@ -340,7 +340,7 @@ actions.isDir = function (req, res) {
  * @param {boolean} [content=false] Same as {@code cont} parameter to {@link module:info~info info}
  * @todo Add CWD option to avoid hacks like used in {@link module:info~dir dir}
  */
-exports.fileListInfo = function (files, cb, content, cwd) {
+exports.fileListInfo = function (files, cb, content, cwd, stat) {
 	cwd = cwd || '/';
 	cwd = cwd.toString();
 	var fileList = []; // final list, will be passed to cb once populated
@@ -351,7 +351,7 @@ exports.fileListInfo = function (files, cb, content, cwd) {
 		exports.info(path.join(cwd, f), function (i) { // get info on current one
 			fileList.push(i);
 			finished();
-		}, content);
+		}, content, stat);
 	});
 
 	function finished() {

@@ -16,7 +16,7 @@ The `var name = ` is optional, but allows for easier inclusion of the module's n
 
 ### `html` - Function
 This is a function taking two parameters, both required:
-* `file`: an instance of `LBFile` (from `./File.js`) OR an array of `LBFile`s, if `exports.tabs` is true
+* `file`: an instance of `LBFile` (from `./File.js`) OR an instance of `LBFile.FileList`, if `exports.tabs` is false
 * `cb`: a callback function to be passed a single string
 The string passed to the callback will be inserted into `#file-container`. A string **must** be passed to it, or else the URL will never return!
 
@@ -48,7 +48,7 @@ The route `/programs/YOUR PROGRAM NAME/html` is reserved for outputting the call
 
 ### `buttons` - Functions
 This function creates the barebones for the buttons in `#toolbar-left`. It is passed to parameters:
-* `file`: an instance of `LBFile` (from `./File.js`) OR an array of `LBFile`s, if `exports.tabs` is true
+* `file`: an instance of `LBFile` (from `./File.js`) OR an instance of `LBFile.FileList`, if `exports.tabs` is false
 * `cb`: a callback function to be passed an array
 
 The array that gets passed to `cb` can contain a mix of arrays and objects. Arrays are to be buttonsets, while plain objects are buttons. Buttonset arrays should only contain objects for buttons.

@@ -26,12 +26,12 @@ function viewFile() {
 			loadProgram($('#file').data('program'));
 			return;
 		}
-		if (config.programs.defaults[f.type]) { // open in default program
-			loadProgram(config.programs.defaults[f.type]);
-			return;
-		}
 		if (url.program) { // a program was set via URL
 			loadProgram(url.program);
+			return;
+		}
+		if (config.programs.defaults[f.type]) { // open in default program
+			loadProgram(config.programs.defaults[f.type]);
 			return;
 		}
 		var editors = programs.editorsForFile(file);
