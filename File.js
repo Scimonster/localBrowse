@@ -240,56 +240,60 @@ LBFile.FileList.prototype = Object.create(LBFile.prototype);
 
 LBFile.FileList.prototype.update = function(){
 	var list = this.array();
-	LBFile.call(this, {
-		exists: list.every(function (f) {
-			return f.exists;
-		}),
-		executable: list.every(function (f) {
-			return f.executable;
-		}),
-		readable: list.every(function (f) {
-			return f.readable;
-		}),
-		writable: list.every(function (f) {
-			return f.writable;
-		}),
-		parentWritable: list.every(function (f) {
-			return f.parentWritable;
-		}),
+	if (list.length) {
+		LBFile.call(this, {
+			exists: list.every(function (f) {
+				return f.exists;
+			}),
+			executable: list.every(function (f) {
+				return f.executable;
+			}),
+			readable: list.every(function (f) {
+				return f.readable;
+			}),
+			writable: list.every(function (f) {
+				return f.writable;
+			}),
+			parentWritable: list.every(function (f) {
+				return f.parentWritable;
+			}),
 
-		path: list.map(function (f) {
-			return f.path;
-		}).join(pathMod.delimiter),
-		realpath: list.map(function (f) {
-			return f.realpath;
-		}).join(pathMod.delimiter),
+			path: list.map(function (f) {
+				return f.path;
+			}).join(pathMod.delimiter),
+			realpath: list.map(function (f) {
+				return f.realpath;
+			}).join(pathMod.delimiter),
 
-		date: list.reduce(function (one, two) {
-			return one.date < two.date ? two : one;
-		}).date,
-		perm: list.reduce(function (one, two) {
-			return {
-				perm: '0' + (one.perm[1] < two.perm[1] ? one : two).perm[1] + (one.perm[2] < two.perm[2] ? one : two).perm[2] + (one.perm[3] < two.perm[3] ? one : two).perm[3]
-			};
-		}).perm,
+			date: list.reduce(function (one, two) {
+				return one.date < two.date ? two : one;
+			}).date,
+			perm: list.reduce(function (one, two) {
+				return {
+					perm: '0' + (one.perm[1] < two.perm[1] ? one : two).perm[1] + (one.perm[2] < two.perm[2] ? one : two).perm[2] + (one.perm[3] < two.perm[3] ? one : two).perm[3]
+				};
+			}).perm,
 
-		owner: list.every(function (f) {
-			return f.owner.name == list[0].owner.name;
-		}) ? list[0].owner : undefined,
-		group: list.every(function (f) {
-			return f.group.name == list[0].group.name;
-		}) ? list[0].group : undefined,
+			owner: list.every(function (f) {
+				return f.owner.name == list[0].owner.name;
+			}) ? list[0].owner : undefined,
+			group: list.every(function (f) {
+				return f.group.name == list[0].group.name;
+			}) ? list[0].group : undefined,
 
-		type: list.every(function (f) {
-			return f.type == list[0].type;
-		}) ? list[0].type : list.every(function (f) {
-			return (f.type||'').split('/')[0] == (list[0].type||'').split('/')[0];
-		}) ? (list[0].type||'*').split('/')[0] + '/*' : undefined,
+			type: list.every(function (f) {
+				return f.type == list[0].type;
+			}) ? list[0].type : list.every(function (f) {
+				return (f.type||'').split('/')[0] == (list[0].type||'').split('/')[0];
+			}) ? (list[0].type||'*').split('/')[0] + '/*' : undefined,
 
-		size: list.length == 1 ? list[0].size : list.reduce(function (one, two) {
-			return one + two.size;
-		}, 0)
-	});
+			size: list.length == 1 ? list[0].size : list.reduce(function (one, two) {
+				return one + two.size;
+			}, 0)
+		});
+	} else {
+		LBFile.call(this, '');
+	}
 
 	this.name = this.ext = '';
 	this.dir = LBFile.FileList.deepestCommonParent(this.path.split(pathMod.delimiter));
