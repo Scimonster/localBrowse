@@ -19,7 +19,11 @@ var w = window, // shortcuts
 	iconset = [], // deprecated, probably
 	LBFile = require('./File.js'), // LBFile class, containing file methods
 	obj = require('./Object.js'), // object helpers
-	config; // configuration
+	config, // configuration
+	cache = {
+		info: {},
+		dirlist: {}
+	}; // cache for faster loading of dirs
 $.get('/info/localbrowseCWD', function (cwd) {
 	getDirContents(cwd + '/public/img/fatcow/16x16', {
 		cont: false,
@@ -43,6 +47,10 @@ LBFile.prototype.relative = function () {
 
 	return this.path.replace(/^~\/\.local\/share\/Trash\/files/, 'trash').replace(/^~/, homeroot);
 };
+
+function updateCache(o, info) {
+	$.extend(true, cache[info ? 'info' : 'dirlist'], o);
+}
 
 function load() {
 	// This function runs when a new file/dir is loaded.
@@ -72,6 +80,9 @@ function load() {
 		var done = 0;
 		file.forEach(function (f, i) {
 			$.getJSON('info/info' + f.resolve(), function (fil) {
+				var o = {};
+				o[fil.path] = fil;
+				updateCache(o, true);
 				if (fil.path == '/') {
 					fil.name = _('path-root');
 				}
@@ -138,6 +149,9 @@ function cd(loc, cb) {
 	if (!type) {
 		$.getJSON('info/info' + file.resolve(), function (f) {
 			file = new LBFile(f);
+			var o = {};
+			o[f.path] = f;
+			updateCache(o, true);
 			if (loc == '/') {
 				file.name = _('path-root');
 			}
@@ -437,6 +451,20 @@ function getDirContents(dir, opts, callback) {
 			callback(r.error);
 		} else {
 			callback(TAFFY(r));
+			if (!opts.simple) {
+				var o = {};
+				r.forEach(function (f) {
+					o[f.path] = f;
+				});
+				updateCache(o, true);
+				o = {};
+				o[dir] = (new LBFile.FileList(r)).paths();
+				updateCache(o, false);
+			} else {
+				var o = {};
+				o[dir] = r;
+				updateCache(o, false);
+			}
 		}
 	});
 }
